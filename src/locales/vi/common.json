@@ -1,0 +1,12 @@
+{
+  "app": {
+    "title": "Texture Optimizer"
+  },
+  "actions": {
+    "undo": "Hoàn tác",
+    "redo": "Làm lại",
+    "cancel": "Hủy",
+    "apply": "Áp dụng",
+    "reset": "Khôi phục mặc định"
+  }
+}

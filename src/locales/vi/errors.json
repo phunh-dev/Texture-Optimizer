@@ -1,0 +1,13 @@
+{
+  "NOT_IMPLEMENTED": "Chưa hỗ trợ: {{what}}",
+  "INVALID_PARAMS": "Tham số \"{{param}}\" không hợp lệ: {{reason}}",
+  "IO_READ_FAILED": "Không đọc được file {{path}}",
+  "IO_WRITE_FAILED": "Không ghi được file {{path}}",
+  "IMG_DECODE_FAILED": "Không giải mã được ảnh {{path}}",
+  "IMG_ENCODE_FAILED": "Không mã hóa được ảnh {{path}}",
+  "IMG_UNSUPPORTED_FORMAT": "Định dạng ảnh không được hỗ trợ: {{format}}",
+  "IMG_TOO_LARGE": "Ảnh lớn hơn kích thước tối đa {{max}}px",
+  "IMG_EMPTY": "Ảnh không có pixel nào hiển thị",
+  "CANCELLED": "Đã hủy",
+  "UNKNOWN": "Lỗi không xác định"
+}

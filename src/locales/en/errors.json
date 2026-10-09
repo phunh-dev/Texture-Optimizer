@@ -1,0 +1,13 @@
+{
+  "NOT_IMPLEMENTED": "Not implemented yet: {{what}}",
+  "INVALID_PARAMS": "Invalid parameter \"{{param}}\": {{reason}}",
+  "IO_READ_FAILED": "Cannot read file {{path}}",
+  "IO_WRITE_FAILED": "Cannot write file {{path}}",
+  "IMG_DECODE_FAILED": "Cannot decode image {{path}}",
+  "IMG_ENCODE_FAILED": "Cannot encode image {{path}}",
+  "IMG_UNSUPPORTED_FORMAT": "Unsupported image format: {{format}}",
+  "IMG_TOO_LARGE": "Image is larger than the maximum size {{max}}px",
+  "IMG_EMPTY": "Image has no visible pixels",
+  "CANCELLED": "Cancelled",
+  "UNKNOWN": "Unexpected error"
+}

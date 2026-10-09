@@ -1,0 +1,21 @@
+[workspace]
+resolver = "3"
+members = ["crates/texopt-core", "src-tauri"]
+
+[workspace.package]
+edition = "2024"
+version = "0.1.0"
+rust-version = "1.90"
+
+[workspace.dependencies]
+image = { version = "0.25", default-features = false, features = ["png", "jpeg", "tga", "bmp", "webp"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+blake3 = "1"
+rayon = "1"
+proptest = "1"
+texopt-core = { path = "crates/texopt-core" }
+
+[profile.dev.package."*"]
+opt-level = 2

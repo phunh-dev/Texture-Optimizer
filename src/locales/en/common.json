@@ -1,0 +1,12 @@
+{
+  "app": {
+    "title": "Texture Optimizer"
+  },
+  "actions": {
+    "undo": "Undo",
+    "redo": "Redo",
+    "cancel": "Cancel",
+    "apply": "Apply",
+    "reset": "Reset to defaults"
+  }
+}

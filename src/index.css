@@ -1,0 +1,83 @@
+@import 'tailwindcss';
+
+/* Design tokens (shadcn-style). Light is the default; dark follows the OS
+   unless the root element forces a theme with data-theme. */
+:root {
+  --background: oklch(0.985 0.002 260);
+  --foreground: oklch(0.21 0.02 260);
+  --card: oklch(1 0 0);
+  --muted: oklch(0.955 0.005 260);
+  --muted-foreground: oklch(0.52 0.02 260);
+  --border: oklch(0.91 0.006 260);
+  --primary: oklch(0.58 0.19 265);
+  --primary-foreground: oklch(0.99 0 0);
+  --accent: oklch(0.94 0.02 265);
+  --destructive: oklch(0.6 0.22 25);
+  --ring: oklch(0.58 0.19 265);
+  --radius: 0.625rem;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --background: oklch(0.17 0.01 260);
+    --foreground: oklch(0.95 0.005 260);
+    --card: oklch(0.21 0.012 260);
+    --muted: oklch(0.25 0.012 260);
+    --muted-foreground: oklch(0.7 0.015 260);
+    --border: oklch(0.3 0.012 260);
+    --primary: oklch(0.68 0.17 265);
+    --primary-foreground: oklch(0.15 0.01 260);
+    --accent: oklch(0.28 0.03 265);
+    --destructive: oklch(0.65 0.2 25);
+    --ring: oklch(0.68 0.17 265);
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme='dark'] {
+  --background: oklch(0.17 0.01 260);
+  --foreground: oklch(0.95 0.005 260);
+  --card: oklch(0.21 0.012 260);
+  --muted: oklch(0.25 0.012 260);
+  --muted-foreground: oklch(0.7 0.015 260);
+  --border: oklch(0.3 0.012 260);
+  --primary: oklch(0.68 0.17 265);
+  --primary-foreground: oklch(0.15 0.01 260);
+  --accent: oklch(0.28 0.03 265);
+  --destructive: oklch(0.65 0.2 25);
+  --ring: oklch(0.68 0.17 265);
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
+  --color-destructive: var(--destructive);
+  --color-ring: var(--ring);
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+}
