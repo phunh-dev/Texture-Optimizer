@@ -17,9 +17,9 @@ use std::sync::{Arc, Mutex};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use tauri::{AppHandle, Emitter, State};
+use texopt_core::OpError;
 use texopt_core::io::{ImportedFile, SkippedPath};
 use texopt_core::mesh::pack::{self, ModelInfo, ModelOutcome, PackOptions, PackReport};
-use texopt_core::OpError;
 
 use crate::commands::AppState;
 use crate::error::{AppError, parse_arg};
@@ -162,7 +162,11 @@ pub fn job_results(output_dir: &str, report: &PackReport) -> Vec<JobFileResult> 
             input: m.source.clone(),
             output: m.output.clone().or_else(|| m.sidecar.clone()),
             error: if m.outcome == ModelOutcome::Failed {
-                Some(m.error.clone().unwrap_or_else(|| OpError::new(crate::error::UNKNOWN)))
+                Some(
+                    m.error
+                        .clone()
+                        .unwrap_or_else(|| OpError::new(crate::error::UNKNOWN)),
+                )
             } else {
                 None
             },
@@ -264,7 +268,10 @@ pub fn mesh_pack(
                 Ok(report) => (false, job_results(&output_dir, &report)),
                 Err(e) => (
                     false,
-                    failed_results(&output_dir, OpError::new(crate::error::UNKNOWN).with("detail", e.to_string())),
+                    failed_results(
+                        &output_dir,
+                        OpError::new(crate::error::UNKNOWN).with("detail", e.to_string()),
+                    ),
                 ),
             },
             Err(CallError::Cancelled) => (true, Vec::new()),
@@ -329,9 +336,15 @@ mod tests {
         for lang in ["en", "vi"] {
             let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
                 .join(format!("../src/locales/{lang}/errors.json"));
-            let json: Value = serde_json::from_str(&std::fs::read_to_string(path).unwrap()).unwrap();
+            let json: Value =
+                serde_json::from_str(&std::fs::read_to_string(path).unwrap()).unwrap();
             for c in codes {
-                assert!(json.get(c).and_then(Value::as_str).is_some_and(|s| !s.is_empty()), "{lang}: {c}");
+                assert!(
+                    json.get(c)
+                        .and_then(Value::as_str)
+                        .is_some_and(|s| !s.is_empty()),
+                    "{lang}: {c}"
+                );
             }
         }
     }

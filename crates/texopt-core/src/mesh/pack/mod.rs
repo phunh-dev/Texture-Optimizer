@@ -374,8 +374,7 @@ fn prepare(source: &Path, options: &PackOptions) -> PreparedModel {
     let mut slots: Vec<Slot> = Vec::new();
     let mut slot_keys: HashMap<String, usize> = HashMap::new();
     for (mi, mat) in model.materials.iter().enumerate() {
-        if !model.meshes_with_material(mi).any(|m| m.vertex_count > 0) || mat.textures.is_empty()
-        {
+        if !model.meshes_with_material(mi).any(|m| m.vertex_count > 0) || mat.textures.is_empty() {
             continue;
         }
         let uv_channel = info::material_uv_channel(model, mi);
@@ -841,7 +840,15 @@ pub fn preview(
         .unwrap_or(TextureChannel::BaseColor);
     let mut model_warnings: Vec<Vec<OpError>> = vec![Vec::new(); plan.models.len()];
     let pages = (0..plan.pages.len())
-        .map(|p| compose_page(&plan, p, &channel, options, Some(model_warnings.as_mut_slice())))
+        .map(|p| {
+            compose_page(
+                &plan,
+                p,
+                &channel,
+                options,
+                Some(model_warnings.as_mut_slice()),
+            )
+        })
         .collect();
     let mut report = base_report(&plan, options);
     for (m, w) in model_warnings.into_iter().enumerate() {
@@ -867,9 +874,9 @@ pub fn validate_base_name(base: &str) -> OpResult<()> {
     let bad = base.trim().is_empty()
         || base != base.trim()
         || base.ends_with('.')
-        || base
-            .chars()
-            .any(|c| c.is_control() || matches!(c, '/' | '\\' | ':' | '*' | '?' | '"' | '<' | '>' | '|'));
+        || base.chars().any(|c| {
+            c.is_control() || matches!(c, '/' | '\\' | ':' | '*' | '?' | '"' | '<' | '>' | '|')
+        });
     if bad {
         return Err(OpError::invalid_param("baseName", "invalid"));
     }
@@ -881,7 +888,13 @@ pub fn atlas_file_name(base: &str, page: usize, channel: &TextureChannel) -> Str
     let key: String = channel
         .as_key()
         .chars()
-        .map(|c| if c.is_ascii_alphanumeric() || c == '_' || c == '-' { c } else { '-' })
+        .map(|c| {
+            if c.is_ascii_alphanumeric() || c == '_' || c == '-' {
+                c
+            } else {
+                '-'
+            }
+        })
         .collect();
     if page == 0 {
         format!("{base}_{key}.png")
@@ -1140,7 +1153,13 @@ pub fn run(
     let mut atlas_files: Vec<Vec<ChannelPath>> = vec![Vec::new(); plan.pages.len()];
     for (page, files) in atlas_files.iter_mut().enumerate() {
         for channel in &plan.channels {
-            let img = compose_page(&plan, page, channel, options, Some(model_warnings.as_mut_slice()));
+            let img = compose_page(
+                &plan,
+                page,
+                channel,
+                options,
+                Some(model_warnings.as_mut_slice()),
+            );
             let name = atlas_file_name(base_name, page, channel);
             names.reserve(&name);
             let path = out_dir.join(&name);
@@ -1260,8 +1279,14 @@ mod tests {
 
     #[test]
     fn atlas_names() {
-        assert_eq!(atlas_file_name("atlas", 0, &TextureChannel::BaseColor), "atlas_baseColor.png");
-        assert_eq!(atlas_file_name("atlas", 1, &TextureChannel::Normal), "atlas_p2_normal.png");
+        assert_eq!(
+            atlas_file_name("atlas", 0, &TextureChannel::BaseColor),
+            "atlas_baseColor.png"
+        );
+        assert_eq!(
+            atlas_file_name("atlas", 1, &TextureChannel::Normal),
+            "atlas_p2_normal.png"
+        );
         assert_eq!(
             atlas_file_name("a", 0, &TextureChannel::Other("x#1".into())),
             "a_other-x-1.png"
@@ -1277,12 +1302,24 @@ mod tests {
             used: HashSet::new(),
             protected: [normalized(&src)].into_iter().collect(),
         };
-        assert_eq!(p.pick(dir.path(), "crate", "obj"), dir.path().join("crate_2.obj"));
-        assert_eq!(p.pick(dir.path(), "crate", "dae"), dir.path().join("crate.dae"));
+        assert_eq!(
+            p.pick(dir.path(), "crate", "obj"),
+            dir.path().join("crate_2.obj")
+        );
+        assert_eq!(
+            p.pick(dir.path(), "crate", "dae"),
+            dir.path().join("crate.dae")
+        );
         // crate_2.* is taken by the first pick's sidecar/mtl companions.
-        assert_eq!(p.pick(dir.path(), "Crate", "DAE"), dir.path().join("Crate_3.DAE"));
+        assert_eq!(
+            p.pick(dir.path(), "Crate", "DAE"),
+            dir.path().join("Crate_3.DAE")
+        );
         // Same stem, other extension: the sidecar name would collide.
-        assert_eq!(p.pick(dir.path(), "crate", "fbx"), dir.path().join("crate_4.fbx"));
+        assert_eq!(
+            p.pick(dir.path(), "crate", "fbx"),
+            dir.path().join("crate_4.fbx")
+        );
         let q = p.pick(dir.path(), "box", "obj");
         p.release(&q);
         assert_eq!(p.pick(dir.path(), "box", "fbx"), dir.path().join("box.fbx"));

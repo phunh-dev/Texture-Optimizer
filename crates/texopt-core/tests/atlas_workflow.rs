@@ -79,7 +79,9 @@ impl Run {
 }
 
 fn load_doc(dir: &Path) -> ProjectDocument {
-    ProjectDocument::load(&project_path(dir, "atlas")).unwrap().unwrap()
+    ProjectDocument::load(&project_path(dir, "atlas"))
+        .unwrap()
+        .unwrap()
 }
 
 /// The untrimmed image of `name` as stored in the exported pages.
@@ -87,9 +89,9 @@ fn pixels_in_export(dir: &Path, name: &str) -> ImageBuf {
     let doc = load_doc(dir);
     let s = doc.project.sprite(name).unwrap().clone();
     let n = doc.project.pages.len();
-    let page = texopt_core::io::load_image(&dir.join(texopt_core::atlas::exporters::page_file_name(
-        "atlas", s.page, n,
-    )))
+    let page = texopt_core::io::load_image(&dir.join(
+        texopt_core::atlas::exporters::page_file_name("atlas", s.page, n),
+    ))
     .unwrap();
     recover_sprite(&page, &s, doc.project.params.premultiply_alpha).unwrap()
 }
@@ -97,7 +99,12 @@ fn pixels_in_export(dir: &Path, name: &str) -> ImageBuf {
 fn files_in(dir: &Path) -> Vec<String> {
     let mut v: Vec<String> = walk(dir)
         .into_iter()
-        .map(|p| p.strip_prefix(dir).unwrap().to_string_lossy().replace('\\', "/"))
+        .map(|p| {
+            p.strip_prefix(dir)
+                .unwrap()
+                .to_string_lossy()
+                .replace('\\', "/")
+        })
         .collect();
     v.sort();
     v
@@ -123,7 +130,10 @@ fn first_export_writes_pages_metadata_and_project() {
     let b = padded(8, 10, 3, 2);
     let report = Run::default().export(dir.path(), vec![src("a", &a), src("b", &b)]);
 
-    assert_eq!(files_in(dir.path()), ["atlas.json", "atlas.png", "atlas.texatlas.json"]);
+    assert_eq!(
+        files_in(dir.path()),
+        ["atlas.json", "atlas.png", "atlas.texatlas.json"]
+    );
     let written: Vec<String> = report
         .written
         .iter()
@@ -167,8 +177,15 @@ fn second_export_keeps_rects_and_sprites_missing_from_the_inputs() {
     let after = load_doc(dir.path());
     assert_eq!(after.project.all_names(), ["a", "b", "c"]);
     for name in ["a", "b"] {
-        let (x, y) = (before.sprite(name).unwrap(), after.project.sprite(name).unwrap());
-        assert_eq!((x.page, x.frame, x.rotated), (y.page, y.frame, y.rotated), "{name} moved");
+        let (x, y) = (
+            before.sprite(name).unwrap(),
+            after.project.sprite(name).unwrap(),
+        );
+        assert_eq!(
+            (x.page, x.frame, x.rotated),
+            (y.page, y.frame, y.rotated),
+            "{name} moved"
+        );
     }
     assert_eq!(pixels_in_export(dir.path(), "b"), b);
     assert_eq!(pixels_in_export(dir.path(), "c"), c);
@@ -217,8 +234,14 @@ fn same_name_input_replaces_the_previous_sprite_in_place() {
     run.export(dir.path(), vec![src("a", &new_a)]);
     let after = load_doc(dir.path()).project;
     assert_eq!(after.all_names(), ["a", "b"]);
-    assert_eq!(before.sprite("a").unwrap().frame, after.sprite("a").unwrap().frame);
-    assert_ne!(before.sprite("a").unwrap().hash, after.sprite("a").unwrap().hash);
+    assert_eq!(
+        before.sprite("a").unwrap().frame,
+        after.sprite("a").unwrap().frame
+    );
+    assert_ne!(
+        before.sprite("a").unwrap().hash,
+        after.sprite("a").unwrap().hash
+    );
     assert_eq!(pixels_in_export(dir.path(), "a"), new_a);
 }
 
@@ -262,7 +285,9 @@ fn unity_guid_and_sprite_ids_survive_incremental_exports() {
     );
     let meta = dir.path().join("atlas.png.meta");
     let guid = meta_guid(&meta);
-    let ids = texopt_core::atlas::exporters::unity::parse_meta(&std::fs::read_to_string(&meta).unwrap()).sprites;
+    let ids =
+        texopt_core::atlas::exporters::unity::parse_meta(&std::fs::read_to_string(&meta).unwrap())
+            .sprites;
 
     // Add a sprite (b not in the inputs any more) and export again.
     run.export(
@@ -270,7 +295,9 @@ fn unity_guid_and_sprite_ids_survive_incremental_exports() {
         vec![src("a", &pattern(20, 12, 1)), src("c", &pattern(10, 10, 3))],
     );
     assert_eq!(meta_guid(&meta), guid);
-    let ids2 = texopt_core::atlas::exporters::unity::parse_meta(&std::fs::read_to_string(&meta).unwrap()).sprites;
+    let ids2 =
+        texopt_core::atlas::exporters::unity::parse_meta(&std::fs::read_to_string(&meta).unwrap())
+            .sprites;
     assert_eq!(ids2["a"], ids["a"]);
     assert_eq!(ids2["b"], ids["b"]);
     assert!(ids2.contains_key("c"));
@@ -303,7 +330,13 @@ fn shrinking_page_count_removes_only_previously_generated_files() {
     multi.export(dir.path(), vec![src("a", &a), src("b", &b)]);
     assert_eq!(
         files_in(dir.path()),
-        ["atlas.texatlas.json", "atlas_0.png", "atlas_0.png.meta", "atlas_1.png", "atlas_1.png.meta"]
+        [
+            "atlas.texatlas.json",
+            "atlas_0.png",
+            "atlas_0.png.meta",
+            "atlas_1.png",
+            "atlas_1.png.meta"
+        ]
     );
     // Unknown files that merely look related are never touched.
     std::fs::write(dir.path().join("atlas_2.png"), b"user file").unwrap();
@@ -312,7 +345,13 @@ fn shrinking_page_count_removes_only_previously_generated_files() {
     let report = multi.export(dir.path(), vec![src("a", &a)]);
     assert_eq!(
         files_in(dir.path()),
-        ["atlas.png", "atlas.png.meta", "atlas.texatlas.json", "atlas_2.png", "notes.txt"]
+        [
+            "atlas.png",
+            "atlas.png.meta",
+            "atlas.texatlas.json",
+            "atlas_2.png",
+            "notes.txt"
+        ]
     );
     let mut deleted: Vec<String> = report
         .deleted
@@ -320,7 +359,15 @@ fn shrinking_page_count_removes_only_previously_generated_files() {
         .map(|p| p.file_name().unwrap().to_string_lossy().into_owned())
         .collect();
     deleted.sort();
-    assert_eq!(deleted, ["atlas_0.png", "atlas_0.png.meta", "atlas_1.png", "atlas_1.png.meta"]);
+    assert_eq!(
+        deleted,
+        [
+            "atlas_0.png",
+            "atlas_0.png.meta",
+            "atlas_1.png",
+            "atlas_1.png.meta"
+        ]
+    );
     assert_eq!(pixels_in_export(dir.path(), "a"), a);
 }
 
@@ -359,7 +406,12 @@ fn switching_exporter_keeps_unity_meta_of_a_still_generated_png() {
     assert!(report.deleted.is_empty());
     assert_eq!(
         files_in(dir.path()),
-        ["atlas.json", "atlas.png", "atlas.png.meta", "atlas.texatlas.json"]
+        [
+            "atlas.json",
+            "atlas.png",
+            "atlas.png.meta",
+            "atlas.texatlas.json"
+        ]
     );
 }
 
@@ -376,7 +428,11 @@ fn stale_file_selection_rules() {
         "atlas.texatlas.json".into(),
         "sub/x.tres".into(),
     ];
-    let stale = stale_files(Some(&doc), "atlas", &["atlas.png".into(), "atlas.json".into()]);
+    let stale = stale_files(
+        Some(&doc),
+        "atlas",
+        &["atlas.png".into(), "atlas.json".into()],
+    );
     assert_eq!(stale, ["atlas_0.png", "atlas_0.png.meta", "sub/x.tres"]);
     // Older project files without the record: only page PNGs are candidates.
     doc.app.generated_files.clear();
@@ -608,10 +664,16 @@ fn project_document_round_trip_and_plain_core_projects() {
     let plain = ProjectDocument::from_json(&doc.project.to_json()).unwrap();
     assert_eq!(plain.project, doc.project);
     assert_eq!(plain.app, ProjectAppData::default());
-    assert!(ProjectDocument::load(&dir.path().join("missing.texatlas.json")).unwrap().is_none());
+    assert!(
+        ProjectDocument::load(&dir.path().join("missing.texatlas.json"))
+            .unwrap()
+            .is_none()
+    );
     std::fs::write(dir.path().join("bad.texatlas.json"), "{").unwrap();
     assert_eq!(
-        ProjectDocument::load(&dir.path().join("bad.texatlas.json")).unwrap_err().code,
+        ProjectDocument::load(&dir.path().join("bad.texatlas.json"))
+            .unwrap_err()
+            .code,
         ATLAS_PROJECT_INVALID
     );
 }
@@ -624,7 +686,10 @@ fn plan_merge_statuses() {
         vec![src("a", &pattern(4, 4, 1)), src("b", &pattern(5, 5, 2))],
     );
     let doc = load_doc(dir.path());
-    let inputs = vec![("b".to_string(), Some("D:/b.png".to_string())), ("c".to_string(), None)];
+    let inputs = vec![
+        ("b".to_string(), Some("D:/b.png".to_string())),
+        ("c".to_string(), None),
+    ];
     let plan = plan_merge(Some(&doc), &inputs, false);
     let got: Vec<(&str, SpriteStatus, Option<&str>)> = plan
         .iter()
@@ -638,14 +703,24 @@ fn plan_merge_statuses() {
             ("c", SpriteStatus::New, None),
         ]
     );
-    assert_eq!(plan_merge(Some(&doc), &inputs, true)[0].status, SpriteStatus::Removed);
-    assert!(plan_merge(None, &inputs, false).iter().all(|e| e.status == SpriteStatus::New));
+    assert_eq!(
+        plan_merge(Some(&doc), &inputs, true)[0].status,
+        SpriteStatus::Removed
+    );
+    assert!(
+        plan_merge(None, &inputs, false)
+            .iter()
+            .all(|e| e.status == SpriteStatus::New)
+    );
 }
 
 #[test]
 fn stats_measure_occupancy() {
     let res = build(
-        vec![texopt_core::atlas::SpriteInput::new("a", pattern(16, 16, 1))],
+        vec![texopt_core::atlas::SpriteInput::new(
+            "a",
+            pattern(16, 16, 1),
+        )],
         &AtlasParams {
             padding: 0,
             ..AtlasParams::default()

@@ -32,7 +32,10 @@ pub struct OpError {
 
 impl OpError {
     pub fn new(code: impl Into<String>) -> Self {
-        Self { code: code.into(), params: BTreeMap::new() }
+        Self {
+            code: code.into(),
+            params: BTreeMap::new(),
+        }
     }
 
     pub fn with(mut self, key: impl Into<String>, value: impl Into<Value>) -> Self {
@@ -41,7 +44,9 @@ impl OpError {
     }
 
     pub fn invalid_param(name: &str, reason: &str) -> Self {
-        Self::new(codes::INVALID_PARAMS).with("param", name).with("reason", reason)
+        Self::new(codes::INVALID_PARAMS)
+            .with("param", name)
+            .with("reason", reason)
     }
 
     pub fn not_implemented(what: &str) -> Self {

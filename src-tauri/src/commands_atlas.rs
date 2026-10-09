@@ -13,8 +13,8 @@
 //! Decoded by `decodeAtlasPreview` in `src/tabs/atlas/ipc.ts`.
 
 use std::path::{Path, PathBuf};
-use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::sync::Mutex;
+use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::time::Instant;
 
 use rayon::prelude::*;
@@ -567,11 +567,19 @@ mod tests {
         assert_eq!(header["pages"].as_array().unwrap().len(), 1);
         let png_len = header["pages"][0]["byteLength"].as_u64().unwrap() as usize;
         assert_eq!(4 + len + png_len, buf.len());
-        let page = image::load_from_memory(&buf[4 + len..]).unwrap().into_rgba8();
+        let page = image::load_from_memory(&buf[4 + len..])
+            .unwrap()
+            .into_rgba8();
         assert_eq!(page, outcome.result.pages[0]);
         assert_eq!(
-            (header["pages"][0]["width"].as_u64(), header["pages"][0]["height"].as_u64()),
-            (Some(u64::from(page.width())), Some(u64::from(page.height())))
+            (
+                header["pages"][0]["width"].as_u64(),
+                header["pages"][0]["height"].as_u64()
+            ),
+            (
+                Some(u64::from(page.width())),
+                Some(u64::from(page.height()))
+            )
         );
         let frames = header["frames"].as_array().unwrap();
         let names: Vec<&str> = frames.iter().map(|f| f["name"].as_str().unwrap()).collect();
@@ -580,7 +588,10 @@ mod tests {
         assert_eq!(b["trimmed"], true);
         assert_eq!(b["frame"]["w"], 8);
         assert_eq!(b["sourceSize"], json!({ "w": 16, "h": 16 }));
-        assert_eq!(b["spriteSourceSize"], json!({ "x": 4, "y": 4, "w": 8, "h": 6 }));
+        assert_eq!(
+            b["spriteSourceSize"],
+            json!({ "x": 4, "y": 4, "w": 8, "h": 6 })
+        );
         assert_eq!(b["sourcePath"], paths[1].as_str());
         assert_eq!(b["status"], Value::Null);
         assert_eq!(header["stats"]["spriteCount"], 2);
@@ -604,7 +615,9 @@ mod tests {
         let paths = write_inputs(dir.path());
         let out = dir.path().join("out");
         let events: Mutex<Vec<(usize, usize, Option<String>)>> = Mutex::new(Vec::new());
-        let progress = ExportProgress::new(paths.len(), |d, t, c| events.lock().unwrap().push((d, t, c)));
+        let progress = ExportProgress::new(paths.len(), |d, t, c| {
+            events.lock().unwrap().push((d, t, c))
+        });
         let cache = SessionCache::default();
         let report = run_export(
             &cache,
@@ -621,9 +634,15 @@ mod tests {
         .unwrap();
         let events = events.into_inner().unwrap();
         assert!(events.iter().all(|(_, t, _)| *t == 5));
-        assert!(events.windows(2).all(|w| w[0].0 <= w[1].0), "monotonic: {events:?}");
+        assert!(
+            events.windows(2).all(|w| w[0].0 <= w[1].0),
+            "monotonic: {events:?}"
+        );
         assert_eq!(events.last().unwrap().0, 4);
-        assert!(events.iter().any(|(_, _, c)| c.as_deref() == Some(out.join("atlas.png").display().to_string().as_str())));
+        assert!(
+            events.iter().any(|(_, _, c)| c.as_deref()
+                == Some(out.join("atlas.png").display().to_string().as_str()))
+        );
 
         let results = export_results(&out, &report);
         let outputs: Vec<String> = results.iter().map(|r| r.output.clone().unwrap()).collect();
@@ -691,8 +710,11 @@ mod tests {
         assert_eq!(summary.frame_count, 2);
         assert_eq!(summary.exporter.as_deref(), Some("genericJson"));
         assert_eq!(summary.pages.len(), 1);
-        let plan: Vec<(&str, SpriteStatus)> =
-            summary.plan.iter().map(|e| (e.name.as_str(), e.status)).collect();
+        let plan: Vec<(&str, SpriteStatus)> = summary
+            .plan
+            .iter()
+            .map(|e| (e.name.as_str(), e.status))
+            .collect();
         assert_eq!(
             plan,
             [
@@ -702,15 +724,28 @@ mod tests {
             ]
         );
         let json = serde_json::to_value(&summary).unwrap();
-        assert_eq!(json["plan"][0], json!({ "name": "a", "status": "kept", "sourcePath": paths[0] }));
-        assert!(project_summary(&out.join("none.texatlas.json"), &[], false).unwrap().is_none());
+        assert_eq!(
+            json["plan"][0],
+            json!({ "name": "a", "status": "kept", "sourcePath": paths[0] })
+        );
+        assert!(
+            project_summary(&out.join("none.texatlas.json"), &[], false)
+                .unwrap()
+                .is_none()
+        );
     }
 
     #[test]
     fn incremental_options_parse_with_defaults() {
-        assert_eq!(parse_incremental(None).unwrap(), IncrementalOptions::default());
         assert_eq!(
-            parse_incremental(Some(json!({ "mode": "repackOptimal", "removeMissing": true }))).unwrap(),
+            parse_incremental(None).unwrap(),
+            IncrementalOptions::default()
+        );
+        assert_eq!(
+            parse_incremental(Some(
+                json!({ "mode": "repackOptimal", "removeMissing": true })
+            ))
+            .unwrap(),
             IncrementalOptions {
                 mode: IncrementalMode::RepackOptimal,
                 remove_missing: true
@@ -735,7 +770,8 @@ mod tests {
             },
             "incremental": IncrementalOptions::default(),
         });
-        let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("../src/tabs/atlas/rustDefaults.json");
+        let path =
+            Path::new(env!("CARGO_MANIFEST_DIR")).join("../src/tabs/atlas/rustDefaults.json");
         let text = std::fs::read_to_string(&path).unwrap_or_default();
         let expected: Value = serde_json::from_str(&text).unwrap_or(Value::Null);
         assert_eq!(
@@ -747,8 +783,10 @@ mod tests {
         );
         // Every exporter config round-trips through the tagged JSON shape.
         for kind in ["genericJson", "unity", "godot", "unreal"] {
-            let cfg: ExporterConfig =
-                serde_json::from_value(json!({ "kind": kind, "options": expected["exporters"][kind] })).unwrap();
+            let cfg: ExporterConfig = serde_json::from_value(
+                json!({ "kind": kind, "options": expected["exporters"][kind] }),
+            )
+            .unwrap();
             assert_eq!(cfg.id(), kind);
         }
     }

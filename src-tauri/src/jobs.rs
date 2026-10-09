@@ -19,7 +19,8 @@ use serde_json::Value;
 use texopt_core::error::codes;
 use texopt_core::ops::OpOutput;
 use texopt_core::output::{
-    OUTPUT_FORMAT_CHANGED, OutputFormat, OutputPlanner, keep_would_drop_alpha, save_image, save_meta,
+    OUTPUT_FORMAT_CHANGED, OutputFormat, OutputPlanner, keep_would_drop_alpha, save_image,
+    save_meta,
 };
 use texopt_core::{ImageBuf, OpError, OpResult};
 

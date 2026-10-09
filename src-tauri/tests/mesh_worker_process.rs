@@ -22,7 +22,9 @@ fn crashing(on: &str) -> WorkerCommand {
 }
 
 fn scratch(name: &str) -> PathBuf {
-    let dir = Path::new(env!("CARGO_TARGET_TMPDIR")).join("mesh_worker").join(name);
+    let dir = Path::new(env!("CARGO_TARGET_TMPDIR"))
+        .join("mesh_worker")
+        .join(name);
     let _ = std::fs::remove_dir_all(&dir);
     std::fs::create_dir_all(&dir).unwrap();
     dir
@@ -63,7 +65,10 @@ fn scan_through_the_worker_and_recover_from_a_crash() {
     let a = fixtures::two_quads_obj(&dir.join("a"));
     let b = fixtures::two_quads_dae(&dir.join("crash_me"));
     let c = fixtures::tiled_quads_obj(&dir.join("c"));
-    let paths: Vec<String> = [&a, &b, &c].iter().map(|p| p.display().to_string()).collect();
+    let paths: Vec<String> = [&a, &b, &c]
+        .iter()
+        .map(|p| p.display().to_string())
+        .collect();
 
     let items = scan_models(&worker(), &paths, &mut |_, _| {}, None).unwrap();
     assert!(items.iter().all(|i| i.info.is_some()), "{items:?}");
@@ -71,13 +76,22 @@ fn scan_through_the_worker_and_recover_from_a_crash() {
     // The worker aborts on the second model: it is reported as crashed, the
     // third one is scanned by a fresh worker.
     let mut seen = Vec::new();
-    let items = scan_models(&crashing("crash_me"), &paths, &mut |d, t| seen.push((d, t)), None).unwrap();
+    let items = scan_models(
+        &crashing("crash_me"),
+        &paths,
+        &mut |d, t| seen.push((d, t)),
+        None,
+    )
+    .unwrap();
     assert_eq!(items.len(), 3);
     assert!(items[0].info.is_some());
     let err = items[1].error.as_ref().unwrap();
     assert_eq!(err.code, MESH_WORKER_CRASHED);
     assert_eq!(err.params["path"], paths[1].as_str());
-    assert!(items[2].info.is_some(), "third model must be scanned by a new worker");
+    assert!(
+        items[2].info.is_some(),
+        "third model must be scanned by a new worker"
+    );
     assert_eq!(seen.last(), Some(&(3, 3)));
 
     // Folder discovery + scan as the command does it.
@@ -85,7 +99,12 @@ fn scan_through_the_worker_and_recover_from_a_crash() {
     assert_eq!(result.models.len(), 2);
     assert_eq!(result.skipped.len(), 1);
     assert_eq!(result.skipped[0].error.code, MESH_WORKER_CRASHED);
-    assert!(result.models.iter().all(|m| m.file.width == 0 && !m.file.id.is_empty()));
+    assert!(
+        result
+            .models
+            .iter()
+            .all(|m| m.file.width == 0 && !m.file.id.is_empty())
+    );
 }
 
 #[test]
@@ -112,6 +131,12 @@ fn cancel_kills_the_worker() {
 #[test]
 fn spawn_failure_is_reported() {
     let w = WorkerCommand::new("Z:/definitely/not/here.exe");
-    let err = call(&w, &WorkerRequest::Scan { paths: vec![] }, &mut |_| {}, None).unwrap_err();
+    let err = call(
+        &w,
+        &WorkerRequest::Scan { paths: vec![] },
+        &mut |_| {},
+        None,
+    )
+    .unwrap_err();
     assert!(matches!(err, CallError::Failed(e) if e.code == "MESH_WORKER_SPAWN_FAILED"));
 }

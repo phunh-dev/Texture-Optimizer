@@ -511,7 +511,8 @@ mod tests {
     fn empty_or_blank_suffix_is_rejected_so_sources_are_never_overwritten() {
         let input = PathBuf::from("assets").join("hero.png");
         for s in ["", "   "] {
-            let err = resolve_output_path(&input, &settings(suffix(s), OutputFormat::Keep)).unwrap_err();
+            let err =
+                resolve_output_path(&input, &settings(suffix(s), OutputFormat::Keep)).unwrap_err();
             assert_eq!(err.code, codes::INVALID_PARAMS);
             assert_eq!(err.params["param"], "output.mode.suffix");
             assert_eq!(err.params["reason"], "empty");

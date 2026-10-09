@@ -17,7 +17,16 @@ pub fn solid(w: u32, h: u32, color: Rgba<u8>) -> ImageBuf {
 
 /// `bg` canvas with an `fg` rectangle at (x, y, rw, rh), clipped to the canvas.
 #[allow(clippy::too_many_arguments)]
-pub fn rect_on(w: u32, h: u32, bg: Rgba<u8>, x: u32, y: u32, rw: u32, rh: u32, fg: Rgba<u8>) -> ImageBuf {
+pub fn rect_on(
+    w: u32,
+    h: u32,
+    bg: Rgba<u8>,
+    x: u32,
+    y: u32,
+    rw: u32,
+    rh: u32,
+    fg: Rgba<u8>,
+) -> ImageBuf {
     let mut img = solid(w, h, bg);
     for py in y..(y + rh).min(h) {
         for px in x..(x + rw).min(w) {
@@ -34,12 +43,20 @@ pub fn sprite(w: u32, h: u32, x: u32, y: u32, rw: u32, rh: u32, fg: Rgba<u8>) ->
 
 /// Checkerboard of two colors with square cells of `cell` pixels.
 pub fn checker(w: u32, h: u32, cell: u32, a: Rgba<u8>, b: Rgba<u8>) -> ImageBuf {
-    ImageBuf::from_fn(w, h, |x, y| if ((x / cell) + (y / cell)) % 2 == 0 { a } else { b })
+    ImageBuf::from_fn(w, h, |x, y| {
+        if ((x / cell) + (y / cell)).is_multiple_of(2) {
+            a
+        } else {
+            b
+        }
+    })
 }
 
 /// Opaque gradient: red varies with x, green with y.
 pub fn gradient(w: u32, h: u32) -> ImageBuf {
     let dx = w.saturating_sub(1).max(1);
     let dy = h.saturating_sub(1).max(1);
-    ImageBuf::from_fn(w, h, |x, y| Rgba([((x * 255) / dx) as u8, ((y * 255) / dy) as u8, 128, 255]))
+    ImageBuf::from_fn(w, h, |x, y| {
+        Rgba([((x * 255) / dx) as u8, ((y * 255) / dy) as u8, 128, 255])
+    })
 }

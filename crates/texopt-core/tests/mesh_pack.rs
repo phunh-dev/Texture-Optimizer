@@ -73,8 +73,12 @@ fn scene(dir: &Path) -> Scene {
     let green = quad_obj(&dir.join("m2"), "Green", GREEN, (16, 8));
     // Model 3: DAE, same layout as model 1 but its own colours, no normal.
     let dae = fixtures::two_quads_dae(&dir.join("m3"));
-    solid(8, 8, YELLOW).save(dir.join("m3/tex/red.png")).unwrap();
-    solid(8, 8, PURPLE).save(dir.join("m3/tex/blue.png")).unwrap();
+    solid(8, 8, YELLOW)
+        .save(dir.join("m3/tex/red.png"))
+        .unwrap();
+    solid(8, 8, PURPLE)
+        .save(dir.join("m3/tex/blue.png"))
+        .unwrap();
     let base = [
         ("two_quads.obj/MatA", fixtures::RED),
         ("two_quads.obj/MatB", fixtures::BLUE),
@@ -161,7 +165,10 @@ fn run(models: &[PathBuf], o: &PackOptions, out: &Path) -> PackReport {
 
 fn assert_pot(report: &PackReport, out: &Path) {
     for page in &report.pages {
-        assert!(page.width.is_power_of_two() && page.height.is_power_of_two(), "{page:?}");
+        assert!(
+            page.width.is_power_of_two() && page.height.is_power_of_two(),
+            "{page:?}"
+        );
         for t in &page.textures {
             let img = load(&out.join(&t.path));
             assert_eq!(img.dimensions(), (page.width, page.height), "{}", t.path);
@@ -172,7 +179,13 @@ fn assert_pot(report: &PackReport, out: &Path) {
 /// Re-import every rewritten model and sample the atlases at its UVs.
 fn check_rewritten_sampling(scene: &Scene, report: &PackReport, out: &Path, merged: bool) {
     for mr in &report.models {
-        assert_eq!(mr.outcome, ModelOutcome::Rewritten, "{}: {:?}", mr.name, mr.error);
+        assert_eq!(
+            mr.outcome,
+            ModelOutcome::Rewritten,
+            "{}: {:?}",
+            mr.name,
+            mr.error
+        );
         let output = PathBuf::from(mr.output.as_ref().unwrap());
         assert!(output.starts_with(out));
         let back = mesh::import(&output).unwrap().model;
@@ -202,14 +215,24 @@ fn check_rewritten_sampling(scene: &Scene, report: &PackReport, out: &Path, merg
                 };
                 sample_points(&sub, 0)
             }) {
-                let colors: HashSet<Rgba<u8>> = face_pts.iter().map(|&uv| sample(&base, uv)).collect();
-                assert_eq!(colors.len(), 1, "{}: face samples several colours {colors:?}", mr.name);
+                let colors: HashSet<Rgba<u8>> =
+                    face_pts.iter().map(|&uv| sample(&base, uv)).collect();
+                assert_eq!(
+                    colors.len(),
+                    1,
+                    "{}: face samples several colours {colors:?}",
+                    mr.name
+                );
                 let c = *colors.iter().next().unwrap();
                 if !merged {
                     let key = format!("{}/{}", mr.name, mat.name);
                     assert_eq!(Some(&c), scene.base.get(&key), "{key}");
                 }
-                assert!(expected.contains(&c), "{}: unexpected colour {c:?}", mr.name);
+                assert!(
+                    expected.contains(&c),
+                    "{}: unexpected colour {c:?}",
+                    mr.name
+                );
                 found.insert(c);
             }
         }
@@ -306,7 +329,11 @@ fn every_channel_shares_the_rects_and_missing_channels_are_filled() {
                 }
             }
             // Block size follows the base colour texture.
-            let expect = if mr.name == "Green.obj" { (16, 8) } else { (8, 8) };
+            let expect = if mr.name == "Green.obj" {
+                (16, 8)
+            } else {
+                (8, 8)
+            };
             assert_eq!((r.width, r.height), expect);
         }
     }
@@ -345,8 +372,14 @@ fn channel_selection_forced_resampled_and_missing_textures() {
     let codes_of = |w: &[OpError]| w.iter().map(|e| e.code.clone()).collect::<Vec<_>>();
     assert!(codes_of(&report.warnings).contains(&codes::MESH_CHANNEL_FORCED.to_string()));
     let mw = codes_of(&report.models[0].warnings);
-    assert!(mw.contains(&mesh::codes::MESH_TEXTURE_NOT_FOUND.to_string()), "{mw:?}");
-    assert!(mw.contains(&codes::MESH_TEXTURE_RESIZED.to_string()), "{mw:?}");
+    assert!(
+        mw.contains(&mesh::codes::MESH_TEXTURE_NOT_FOUND.to_string()),
+        "{mw:?}"
+    );
+    assert!(
+        mw.contains(&codes::MESH_TEXTURE_RESIZED.to_string()),
+        "{mw:?}"
+    );
     let base = atlas_of(&report, 0, &TextureChannel::BaseColor, &out);
     let normal = atlas_of(&report, 0, &TextureChannel::Normal, &out);
     let rect_of = |name: &str| {
@@ -365,7 +398,10 @@ fn channel_selection_forced_resampled_and_missing_textures() {
     let (ra, rb) = (a.rect.unwrap(), b.rect.unwrap());
     assert_eq!((ra.width, ra.height), (8, 8));
     assert_eq!(*normal.get_pixel(ra.x + 3, ra.y + 3), fixtures::NORMAL_A);
-    assert_eq!(*base.get_pixel(rb.x + 3, rb.y + 3), Rgba([255, 255, 255, 255]));
+    assert_eq!(
+        *base.get_pixel(rb.x + 3, rb.y + 3),
+        Rgba([255, 255, 255, 255])
+    );
     assert_eq!(*normal.get_pixel(rb.x + 3, rb.y + 3), fixtures::NORMAL_B);
 }
 
@@ -469,7 +505,10 @@ fn geometry_change_falls_back_to_uv_remap_data() {
     assert!(!out.join("two_quads_3.dae").exists());
     let sidecar = PathBuf::from(dae.sidecar.as_ref().unwrap());
     RemapFile::from_json(&std::fs::read_to_string(&sidecar).unwrap()).unwrap();
-    assert!(out.join(remap_json::UNITY_POSTPROCESSOR_FILE_NAME).is_file());
+    assert!(
+        out.join(remap_json::UNITY_POSTPROCESSOR_FILE_NAME)
+            .is_file()
+    );
     assert_eq!(report.count(ModelOutcome::Rewritten), 2);
     assert_eq!(report.count(ModelOutcome::Fallback), 1);
 
@@ -514,7 +553,15 @@ fn fbx_output_always_verifies_geometry_unless_advanced() {
         o.output.allow_unverified_fbx = allow;
         let spy = Spy(Default::default());
         let out = dir.join(format!("out_{format:?}_{allow}"));
-        pack::run(std::slice::from_ref(&green), &o, &out, "atlas", &spy, &mut |_| {}).unwrap();
+        pack::run(
+            std::slice::from_ref(&green),
+            &o,
+            &out,
+            "atlas",
+            &spy,
+            &mut |_| {},
+        )
+        .unwrap();
         assert_eq!(*spy.0.borrow(), vec![expect], "{format:?} allow={allow}");
     }
 }
@@ -557,8 +604,15 @@ fn out_of_range_policies() {
         2
     );
     // Only out-of-range models → nothing to pack.
-    let err = pack::run(std::slice::from_ref(&tiled), &o, &dir.join("none"), "atlas", &AssimpExporter, &mut |_| {})
-        .unwrap_err();
+    let err = pack::run(
+        std::slice::from_ref(&tiled),
+        &o,
+        &dir.join("none"),
+        "atlas",
+        &AssimpExporter,
+        &mut |_| {},
+    )
+    .unwrap_err();
     assert_eq!(err.code, codes::MESH_NOTHING_TO_PACK);
 
     // clamp
@@ -573,7 +627,9 @@ fn out_of_range_policies() {
     let r = run(&models, &o, &out);
     assert_eq!(status(&r, "MatB").status, MaterialStatus::Wrapped);
     assert!(codes_of(&r).contains(&mesh::codes::MESH_UV_WRAP_STRADDLE.to_string()));
-    let back = mesh::import(Path::new(r.models[0].output.as_ref().unwrap())).unwrap().model;
+    let back = mesh::import(Path::new(r.models[0].output.as_ref().unwrap()))
+        .unwrap()
+        .model;
     let base = atlas_of(&r, 0, &TextureChannel::BaseColor, &out);
     let b = back
         .meshes
@@ -603,11 +659,18 @@ fn out_of_range_policies() {
     assert_eq!((ra.width, ra.height), (16, 8));
     let base = atlas_of(&r, 0, &TextureChannel::BaseColor, &out);
     let remap = a.remap.unwrap();
-    for (u, want) in [(0.2, fixtures::RED), (0.8, fixtures::BLUE), (1.2, fixtures::RED), (1.8, fixtures::BLUE)] {
+    for (u, want) in [
+        (0.2, fixtures::RED),
+        (0.8, fixtures::BLUE),
+        (1.2, fixtures::RED),
+        (1.8, fixtures::BLUE),
+    ] {
         assert_eq!(sample(&base, remap.apply([u, 0.5])), want, "u={u}");
     }
     // Same through the exported + re-imported model.
-    let back = mesh::import(Path::new(r.models[0].output.as_ref().unwrap())).unwrap().model;
+    let back = mesh::import(Path::new(r.models[0].output.as_ref().unwrap()))
+        .unwrap()
+        .model;
     let m = back
         .meshes
         .iter()
@@ -645,28 +708,45 @@ fn multi_page_keeps_models_whole_and_falls_back_when_split() {
     // Model 1 needs two pages → cannot be rewritten → UV Remap Data.
     assert_eq!(report.models[0].pages.len(), 2);
     assert_eq!(report.models[0].outcome, ModelOutcome::Fallback);
-    assert!(report.models[0]
-        .warnings
-        .iter()
-        .any(|w| w.code == codes::MESH_MODEL_SPANS_PAGES));
+    assert!(
+        report.models[0]
+            .warnings
+            .iter()
+            .any(|w| w.code == codes::MESH_MODEL_SPANS_PAGES)
+    );
     assert_eq!(report.models[1].outcome, ModelOutcome::Rewritten);
     let sidecar = report.models[0].sidecar.as_ref().unwrap();
     let file = RemapFile::from_json(&std::fs::read_to_string(sidecar).unwrap()).unwrap();
-    let pages: BTreeSet<u32> = file.models[0].materials.iter().map(|m| m.atlas_page).collect();
+    let pages: BTreeSet<u32> = file.models[0]
+        .materials
+        .iter()
+        .map(|m| m.atlas_page)
+        .collect();
     assert_eq!(pages.len(), 2);
     assert_pot(&report, &out);
 
     // Single page only → does not fit.
     o.multi_page = false;
-    let err = pack::run(&[obj.clone(), green.clone()], &o, &dir.join("x"), "atlas", &AssimpExporter, &mut |_| {})
-        .unwrap_err();
+    let err = pack::run(
+        &[obj.clone(), green.clone()],
+        &o,
+        &dir.join("x"),
+        "atlas",
+        &AssimpExporter,
+        &mut |_| {},
+    )
+    .unwrap_err();
     assert_eq!(err.code, texopt_core::atlas::codes::ATLAS_DOES_NOT_FIT);
     // scaleToFit: halved until it fits one page.
     o.scale_to_fit = true;
     let r = run(&[obj, green], &o, &dir.join("fit"));
     assert_eq!(r.pages.len(), 1);
     assert!(r.scale_percent < 100.0);
-    assert!(r.warnings.iter().any(|w| w.code == codes::MESH_TEXTURES_DOWNSCALED));
+    assert!(
+        r.warnings
+            .iter()
+            .any(|w| w.code == codes::MESH_TEXTURES_DOWNSCALED)
+    );
 }
 
 #[test]
@@ -693,7 +773,10 @@ fn preview_writes_nothing_and_reports_layout() {
     let s = scene(&dir.join("src"));
     let before: Vec<_> = walk(&dir);
     let mut steps = Vec::new();
-    let p = pack::preview(&s.models, &PackOptions::default(), &mut |pr| steps.push(pr.done)).unwrap();
+    let p = pack::preview(&s.models, &PackOptions::default(), &mut |pr| {
+        steps.push(pr.done)
+    })
+    .unwrap();
     assert_eq!(walk(&dir), before);
     assert_eq!(p.channel, TextureChannel::BaseColor);
     assert_eq!(p.pages.len(), p.report.pages.len());
@@ -753,10 +836,11 @@ fn inspect_lists_materials_textures_and_uv_ranges() {
     let info = pack::inspect(&tiled).unwrap();
     let b = info.materials.iter().find(|m| m.name == "MatB").unwrap();
     assert!(!b.textures[0].exists);
-    assert!(info
-        .warnings
-        .iter()
-        .any(|w| w.code == mesh::codes::MESH_TEXTURE_NOT_FOUND));
+    assert!(
+        info.warnings
+            .iter()
+            .any(|w| w.code == mesh::codes::MESH_TEXTURE_NOT_FOUND)
+    );
 
     let err = pack::inspect(&dir.join("t/nope.obj")).unwrap_err();
     assert_eq!(err.code, mesh::codes::MESH_IMPORT_FAILED);
@@ -768,12 +852,27 @@ fn invalid_requests() {
     let green = quad_obj(&dir.join("src"), "Green", GREEN, (8, 8));
     let o = PackOptions::default();
     let e = |models: &[PathBuf], base: &str| {
-        pack::run(models, &o, &dir.join("out"), base, &AssimpExporter, &mut |_| {}).unwrap_err()
+        pack::run(
+            models,
+            &o,
+            &dir.join("out"),
+            base,
+            &AssimpExporter,
+            &mut |_| {},
+        )
+        .unwrap_err()
     };
     assert_eq!(e(&[], "atlas").code, codes::MESH_NO_MODELS);
-    assert_eq!(e(std::slice::from_ref(&green), "a/b").params["param"], "baseName");
+    assert_eq!(
+        e(std::slice::from_ref(&green), "a/b").params["param"],
+        "baseName"
+    );
     // A model that fails to import is reported, the others still packed.
-    let r = run(&[green, dir.join("missing.obj")], &PackOptions::default(), &dir.join("out2"));
+    let r = run(
+        &[green, dir.join("missing.obj")],
+        &PackOptions::default(),
+        &dir.join("out2"),
+    );
     assert_eq!(r.models[1].outcome, ModelOutcome::Failed);
     assert_eq!(r.models[0].outcome, ModelOutcome::Rewritten);
 }

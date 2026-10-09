@@ -6,9 +6,9 @@ use image::Rgba;
 use serde::{Deserialize, Serialize};
 
 use crate::atlas::MAX_ATLAS_SIZE;
+use crate::mesh::ExportFormat;
 use crate::mesh::model::{ModelFormat, TextureChannel};
 use crate::mesh::uv_remap::{InsetPolicy, OutOfRangePolicy};
-use crate::mesh::ExportFormat;
 use crate::{OpError, OpResult};
 
 /// Smallest accepted atlas edge.
@@ -135,7 +135,11 @@ pub fn parse_hex_color(s: &str) -> Option<Rgba<u8>> {
     let byte = |i: usize| u8::from_str_radix(h.get(i..i + 2)?, 16).ok();
     match h.len() {
         3 => {
-            let d = |i: usize| u8::from_str_radix(h.get(i..i + 1)?, 16).ok().map(|v| v * 17);
+            let d = |i: usize| {
+                u8::from_str_radix(h.get(i..i + 1)?, 16)
+                    .ok()
+                    .map(|v| v * 17)
+            };
             Some(Rgba([d(0)?, d(1)?, d(2)?, 255]))
         }
         6 => Some(Rgba([byte(0)?, byte(2)?, byte(4)?, 255])),
@@ -264,13 +268,22 @@ mod tests {
             "output": { "mode": "uvRemapData", "format": "collada", "mergeMaterials": false }
         }))
         .unwrap();
-        assert_eq!(o.channels, vec![TextureChannel::BaseColor, TextureChannel::Normal]);
-        assert_eq!(o.out_of_range, OutOfRangePolicy::BakeRepeat { max_tiles: 3 });
+        assert_eq!(
+            o.channels,
+            vec![TextureChannel::BaseColor, TextureChannel::Normal]
+        );
+        assert_eq!(
+            o.out_of_range,
+            OutOfRangePolicy::BakeRepeat { max_tiles: 3 }
+        );
         assert_eq!(o.output.mode, OutputMode::UvRemapData);
         assert_eq!(o.output.format, FormatChoice::Collada);
         assert!(!o.output.merge_materials);
         assert_eq!(o.output.merged_material_name, "AtlasMaterial");
-        assert_eq!(o.default_color(&TextureChannel::Normal), Rgba([128, 128, 255, 255]));
+        assert_eq!(
+            o.default_color(&TextureChannel::Normal),
+            Rgba([128, 128, 255, 255])
+        );
         assert_eq!(o.min_rect_edge(), 4);
         o.validate().unwrap();
     }
@@ -302,11 +315,15 @@ mod tests {
         );
         assert_eq!(
             bad(&|o| {
-                o.missing_defaults.insert(TextureChannel::Normal, "blue".into());
+                o.missing_defaults
+                    .insert(TextureChannel::Normal, "blue".into());
             }),
             "missingDefaults"
         );
-        assert_eq!(bad(&|o| o.output.merged_material_name = " ".into()), "mergedMaterialName");
+        assert_eq!(
+            bad(&|o| o.output.merged_material_name = " ".into()),
+            "mergedMaterialName"
+        );
     }
 
     #[test]
@@ -320,7 +337,13 @@ mod tests {
         assert!(!o.effective_verify(ExportFormat::Obj));
         o.allow_unverified_fbx = true;
         assert!(!o.effective_verify(ExportFormat::Fbx));
-        assert_eq!(FormatChoice::SameAsSource.resolve(ModelFormat::Dae), ExportFormat::Collada);
-        assert_eq!(FormatChoice::FbxAscii.resolve(ModelFormat::Obj), ExportFormat::FbxAscii);
+        assert_eq!(
+            FormatChoice::SameAsSource.resolve(ModelFormat::Dae),
+            ExportFormat::Collada
+        );
+        assert_eq!(
+            FormatChoice::FbxAscii.resolve(ModelFormat::Obj),
+            ExportFormat::FbxAscii
+        );
     }
 }

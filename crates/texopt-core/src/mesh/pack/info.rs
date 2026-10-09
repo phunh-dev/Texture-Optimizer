@@ -7,8 +7,8 @@ use std::path::{Path, PathBuf};
 use serde::{Deserialize, Serialize};
 
 use crate::io::{
-    ImportedFile, SCAN_PATH_NOT_FOUND, SkippedPath, extension_of, file_id, mtime_ms,
-    natural_cmp, normalize_path,
+    ImportedFile, SCAN_PATH_NOT_FOUND, SkippedPath, extension_of, file_id, mtime_ms, natural_cmp,
+    normalize_path,
 };
 use crate::mesh::model::{Model, ModelFormat, TextureChannel};
 use crate::mesh::uv_remap::UvRangeReport;
@@ -243,7 +243,12 @@ mod tests {
         assert_eq!(files.len(), 3);
 
         let (files, skipped) = find_models(
-            &[root.join("c.png"), root.join("missing.obj"), root.join("a.obj"), root.join("a.obj")],
+            &[
+                root.join("c.png"),
+                root.join("missing.obj"),
+                root.join("a.obj"),
+                root.join("a.obj"),
+            ],
             false,
         );
         assert_eq!(files.len(), 1);

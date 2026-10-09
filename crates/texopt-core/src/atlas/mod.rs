@@ -213,7 +213,12 @@ pub fn layout_sizes(sizes: &[(u32, u32)], params: &AtlasParams) -> OpResult<Vec<
             order: i,
         });
     }
-    prepared.sort_by_key(|p| (std::cmp::Reverse(u64::from(p.w()) * u64::from(p.h())), p.order));
+    prepared.sort_by_key(|p| {
+        (
+            std::cmp::Reverse(u64::from(p.w()) * u64::from(p.h())),
+            p.order,
+        )
+    });
     let pages = layout::layout_all(&prepared, &params)?;
     Ok(pages
         .into_iter()
@@ -261,7 +266,12 @@ mod layout_sizes_tests {
             assert!(page.width.is_power_of_two() && page.height.is_power_of_two());
             for (i, f) in &page.rects {
                 assert_eq!((f.w, f.h), sizes[*i], "never rotated");
-                assert!(f.x >= 4 && f.y >= 4 && f.x + f.w + 4 <= page.width && f.y + f.h + 4 <= page.height);
+                assert!(
+                    f.x >= 4
+                        && f.y >= 4
+                        && f.x + f.w + 4 <= page.width
+                        && f.y + f.h + 4 <= page.height
+                );
                 seen[*i] = true;
             }
             for (a, fa) in &page.rects {

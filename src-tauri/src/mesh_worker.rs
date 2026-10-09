@@ -224,31 +224,33 @@ pub fn handle(request: WorkerRequest, emit: &mut dyn FnMut(WorkerMessage)) {
             preview_max_size,
         } => {
             models.iter().for_each(|m| crash_hook(m));
-            let result = pack::preview(&to_paths(&models), &options, &mut |p| emit(progress_msg(p)))
-                .and_then(|p| {
-                    let images = p
-                        .pages
-                        .iter()
-                        .map(|img| {
-                            let small = pack::preview_downscale(img, preview_max_size);
-                            let png = encode_png(&small, PngCompression::Fast).map_err(|e| {
-                                OpError::new(texopt_core::error::codes::IMG_ENCODE_FAILED)
-                                    .with("path", "preview")
-                                    .with("detail", e.to_string())
-                            })?;
-                            Ok(PreviewPage {
-                                width: img.width(),
-                                height: img.height(),
-                                png: base64::engine::general_purpose::STANDARD.encode(png),
+            let result =
+                pack::preview(&to_paths(&models), &options, &mut |p| emit(progress_msg(p)))
+                    .and_then(|p| {
+                        let images = p
+                            .pages
+                            .iter()
+                            .map(|img| {
+                                let small = pack::preview_downscale(img, preview_max_size);
+                                let png =
+                                    encode_png(&small, PngCompression::Fast).map_err(|e| {
+                                        OpError::new(texopt_core::error::codes::IMG_ENCODE_FAILED)
+                                            .with("path", "preview")
+                                            .with("detail", e.to_string())
+                                    })?;
+                                Ok(PreviewPage {
+                                    width: img.width(),
+                                    height: img.height(),
+                                    png: base64::engine::general_purpose::STANDARD.encode(png),
+                                })
                             })
+                            .collect::<OpResult<Vec<_>>>()?;
+                        Ok(PreviewPayload {
+                            report: p.report,
+                            channel: p.channel,
+                            images,
                         })
-                        .collect::<OpResult<Vec<_>>>()?;
-                    Ok(PreviewPayload {
-                        report: p.report,
-                        channel: p.channel,
-                        images,
-                    })
-                });
+                    });
             match result {
                 Ok(payload) => WorkerMessage::Result {
                     value: serde_json::to_value(payload).unwrap_or(Value::Null),
@@ -413,7 +415,11 @@ pub fn collect(
 }
 
 /// Turn what was collected plus the exit status into the call result.
-pub fn finish(collected: Collected, exit_code: Option<i32>, stderr: &str) -> Result<Value, OpError> {
+pub fn finish(
+    collected: Collected,
+    exit_code: Option<i32>,
+    stderr: &str,
+) -> Result<Value, OpError> {
     match collected.terminal {
         Some(WorkerMessage::Result { value }) => Ok(value),
         Some(WorkerMessage::Error { error }) => Err(error),
@@ -424,12 +430,7 @@ pub fn finish(collected: Collected, exit_code: Option<i32>, stderr: &str) -> Res
 pub fn crash_error(exit_code: Option<i32>, stderr: &str) -> OpError {
     let tail: String = {
         let t = stderr.trim();
-        let start = t
-            .char_indices()
-            .rev()
-            .nth(499)
-            .map(|(i, _)| i)
-            .unwrap_or(0);
+        let start = t.char_indices().rev().nth(499).map(|(i, _)| i).unwrap_or(0);
         t[start..].to_string()
     };
     OpError::new(MESH_WORKER_CRASHED)
@@ -597,7 +598,8 @@ mod tests {
             } => assert_eq!(preview_max_size, DEFAULT_PREVIEW_MAX),
             other => panic!("{other:?}"),
         }
-        let err = decode_envelope(r#"{"protocol":9,"request":{"kind":"scan","paths":[]}}"#).unwrap_err();
+        let err =
+            decode_envelope(r#"{"protocol":9,"request":{"kind":"scan","paths":[]}}"#).unwrap_err();
         assert_eq!(err.params["reason"], "protocolVersion");
         assert!(decode_envelope("garbage").is_err());
     }
@@ -631,7 +633,10 @@ mod tests {
             serde_json::from_str::<Value>(&lines[0]).unwrap(),
             serde_json::json!({ "type": "progress", "done": 1, "total": 3, "current": "a.obj" })
         );
-        assert_eq!(serde_json::from_str::<Value>(&lines[1]).unwrap()["type"], "item");
+        assert_eq!(
+            serde_json::from_str::<Value>(&lines[1]).unwrap()["type"],
+            "item"
+        );
         for (l, m) in lines.iter().zip(&msgs) {
             assert_eq!(&decode_message(l).unwrap(), m);
         }
@@ -744,7 +749,10 @@ mod tests {
         let Some(WorkerMessage::Result { value }) = msgs.pop() else {
             panic!("no result: {msgs:?}");
         };
-        assert!(msgs.iter().all(|m| matches!(m, WorkerMessage::Progress { .. })));
+        assert!(
+            msgs.iter()
+                .all(|m| matches!(m, WorkerMessage::Progress { .. }))
+        );
         let payload: PreviewPayload = serde_json::from_value(value).unwrap();
         assert_eq!(payload.images.len(), 1);
         let png = base64::engine::general_purpose::STANDARD
@@ -783,6 +791,8 @@ mod tests {
             },
             &mut |m| msgs.push(m),
         );
-        assert!(matches!(msgs.last(), Some(WorkerMessage::Error { error }) if error.code == "MESH_NO_MODELS"));
+        assert!(
+            matches!(msgs.last(), Some(WorkerMessage::Error { error }) if error.code == "MESH_NO_MODELS")
+        );
     }
 }

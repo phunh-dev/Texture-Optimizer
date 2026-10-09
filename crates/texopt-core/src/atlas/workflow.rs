@@ -25,7 +25,9 @@ use image::imageops;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use super::exporters::{ExistingFiles, ExporterConfig, adapt_params, export, files_to_read, page_file_name};
+use super::exporters::{
+    ExistingFiles, ExporterConfig, adapt_params, export, files_to_read, page_file_name,
+};
 use super::incremental::{AtlasProject, IncrementalMode, ProjectSprite};
 use super::params::AtlasParams;
 use super::{AtlasResult, SpriteInput, build, codes};
@@ -245,7 +247,11 @@ fn project_invalid(reason: &str, name: &str) -> OpError {
 /// page was premultiplied, and place it at `spriteSourceSize` in a
 /// transparent `sourceSize` canvas. Pixels removed by trimming come back as
 /// transparent black (exact for trim threshold 0 with clean transparency).
-pub fn recover_sprite(page: &ImageBuf, sprite: &ProjectSprite, premultiplied: bool) -> OpResult<ImageBuf> {
+pub fn recover_sprite(
+    page: &ImageBuf,
+    sprite: &ProjectSprite,
+    premultiplied: bool,
+) -> OpResult<ImageBuf> {
     let f = sprite.frame;
     if u64::from(f.x) + u64::from(f.w) > u64::from(page.width())
         || u64::from(f.y) + u64::from(f.h) > u64::from(page.height())
@@ -286,7 +292,11 @@ pub struct SourceSprite {
 }
 
 impl SourceSprite {
-    pub fn new(name: impl Into<String>, path: Option<String>, image: impl Into<Arc<ImageBuf>>) -> Self {
+    pub fn new(
+        name: impl Into<String>,
+        path: Option<String>,
+        image: impl Into<Arc<ImageBuf>>,
+    ) -> Self {
         Self {
             name: name.into(),
             path,
@@ -496,7 +506,11 @@ pub fn atlas_stats(project: &AtlasProject) -> AtlasStats {
         let area = u64::from(p.width) * u64::from(p.height);
         total_area += area;
         total_used += p.used_area;
-        p.occupancy = if area > 0 { p.used_area as f64 / area as f64 } else { 0.0 };
+        p.occupancy = if area > 0 {
+            p.used_area as f64 / area as f64
+        } else {
+            0.0
+        };
     }
     AtlasStats {
         pages,
@@ -522,7 +536,11 @@ fn is_safe_relative(rel: &str) -> bool {
 /// comparisons are case-insensitive so nothing just written is removed on
 /// case-insensitive file systems, and a Unity `.meta` survives while its
 /// asset is still generated.
-pub fn stale_files(previous: Option<&ProjectDocument>, base_name: &str, new_files: &[String]) -> Vec<String> {
+pub fn stale_files(
+    previous: Option<&ProjectDocument>,
+    base_name: &str,
+    new_files: &[String],
+) -> Vec<String> {
     let Some(prev) = previous else {
         return Vec::new();
     };
@@ -540,7 +558,11 @@ pub fn stale_files(previous: Option<&ProjectDocument>, base_name: &str, new_file
     for c in candidates {
         let c = c.replace('\\', "/");
         let key = norm(&c);
-        if !is_safe_relative(&c) || fresh.contains(&key) || key == project_file || !seen.insert(key.clone()) {
+        if !is_safe_relative(&c)
+            || fresh.contains(&key)
+            || key == project_file
+            || !seen.insert(key.clone())
+        {
             continue;
         }
         if let Some(asset) = key.strip_suffix(".meta")
@@ -636,7 +658,11 @@ pub fn export_atlas(
     warnings.extend(output.warnings.iter().cloned());
     let mut project = outcome.result.project;
     project.exporter_state = output.exporter_state;
-    let generated: Vec<String> = output.files.iter().map(|(p, _)| p.replace('\\', "/")).collect();
+    let generated: Vec<String> = output
+        .files
+        .iter()
+        .map(|(p, _)| p.replace('\\', "/"))
+        .collect();
     let doc = ProjectDocument {
         project,
         app: ProjectAppData {

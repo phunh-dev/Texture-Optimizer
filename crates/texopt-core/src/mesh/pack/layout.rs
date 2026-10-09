@@ -123,7 +123,18 @@ pub(super) fn single_page(items: &[Item], options: &PackOptions) -> OpResult<Lay
 }
 
 fn assemble(n: usize, pages: PagePlacements) -> Layout {
-    let mut placed = vec![(0, AtlasRect { x: 0, y: 0, width: 0, height: 0 }); n];
+    let mut placed = vec![
+        (
+            0,
+            AtlasRect {
+                x: 0,
+                y: 0,
+                width: 0,
+                height: 0
+            }
+        );
+        n
+    ];
     let mut sizes = Vec::with_capacity(pages.len());
     for (pi, (size, rects)) in pages.into_iter().enumerate() {
         sizes.push(size);
@@ -279,7 +290,12 @@ mod tests {
     #[test]
     fn multi_page_keeps_models_together() {
         // Each model needs most of a 128 page; model 0 has two items.
-        let items = vec![item(0, 60, 100), item(0, 50, 100), item(1, 100, 100), item(2, 40, 40)];
+        let items = vec![
+            item(0, 60, 100),
+            item(0, 50, 100),
+            item(1, 100, 100),
+            item(2, 40, 40),
+        ];
         let o = opts(128);
         let p = plan_layout(&o, &|_| items.clone()).unwrap();
         assert!(p.layout.pages.len() >= 2);
