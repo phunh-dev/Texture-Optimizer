@@ -58,3 +58,4 @@ $RECYCLE.BIN/
 
 # Git worktrees for parallel agents
 .worktrees/
+.claude/worktrees/
