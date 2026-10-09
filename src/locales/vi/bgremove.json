@@ -1,1 +1,77 @@
-{}
+{
+  "presets": {
+    "title": "Bắt đầu nhanh",
+    "white": "Nền trắng",
+    "checker": "Nền caro",
+    "auto": "Tự động"
+  },
+  "groups": {
+    "background": "Nền",
+    "matching": "So khớp màu",
+    "edges": "Viền"
+  },
+  "params": {
+    "mode": {
+      "label": "Loại nền",
+      "desc": "Tự động dò theo viền ảnh: dùng nền caro nếu có, nếu không thì lấy màu xuất hiện nhiều nhất.",
+      "auto": "Tự động",
+      "white": "Trắng",
+      "checker": "Caro",
+      "color": "Màu"
+    },
+    "color": {
+      "label": "Màu nền",
+      "swatch": "Chọn màu nền",
+      "hex": "Màu nền (hex)",
+      "pick": "Lấy màu từ ảnh",
+      "picking": "Nhấp vào ảnh “Trước” trong phần xem trước để lấy màu."
+    },
+    "checkerCellSize": {
+      "label": "Kích thước ô caro",
+      "desc": "Kích thước một ô của nền caro. Hãy để tự động trừ khi dò sai.",
+      "auto": "Tự dò"
+    },
+    "fill": {
+      "label": "Phạm vi xóa",
+      "desc": "Từ viền giữ lại vùng cùng màu nền nằm bên trong vật thể (ví dụ tròng mắt trắng); Toàn ảnh xóa mọi pixel khớp màu.",
+      "floodFromEdges": "Từ viền",
+      "global": "Toàn ảnh"
+    },
+    "tolerance": {
+      "label": "Dung sai",
+      "desc": "Mức chênh lệch tối đa so với màu nền để pixel vẫn bị xóa."
+    },
+    "metric": {
+      "label": "Cách đo màu",
+      "desc": "Lab so màu gần với cảm nhận của mắt; RGB nhanh hơn và chặt hơn.",
+      "rgb": "RGB",
+      "lab": "Lab"
+    },
+    "feather": {
+      "label": "Làm mềm viền",
+      "desc": "Dải alpha chuyển mềm dọc theo mép cắt (0 = mép cứng)."
+    },
+    "defringe": {
+      "label": "Khử viền",
+      "desc": "Loại bỏ quầng trắng/màu còn sót ở mép khử răng cưa."
+    },
+    "defringeStrength": {
+      "label": "Mức khử viền"
+    }
+  },
+  "preview": {
+    "noFile": "Thêm ảnh để xem trước",
+    "loading": "Đang xử lý…",
+    "detected": "Phát hiện:",
+    "detectedModes": {
+      "white": "Nền trắng",
+      "checker": "Nền caro",
+      "color": "Màu đơn sắc",
+      "none": "Không có gì để xóa"
+    },
+    "cell": "Ô {{size}} px",
+    "colors": "Màu nền:",
+    "swatch": "Màu nền {{hex}}",
+    "removed": "Đã xóa {{percent}}%"
+  }
+}

@@ -165,13 +165,28 @@ function Field({ tabId, field, params, error }: { tabId: string; field: LeafFiel
     case 'size':
       control = <SizeControl tabId={tabId} field={field} params={params} common={common} />
       break
+    case 'custom':
+      control = field.render({ ...common, tabId, params })
+      if (!field.labelKey) {
+        return (
+          <div data-field-id={id}>
+            {control}
+            {error ? (
+              <p role="alert" className="mt-1.5 text-xs font-medium text-destructive">
+                {t(error.key, error.values)}
+              </p>
+            ) : null}
+          </div>
+        )
+      }
+      break
   }
 
   return (
     <FieldShell
       id={id}
       descId={descId}
-      label={t(field.labelKey)}
+      label={t(field.labelKey ?? '')}
       description={field.descKey ? t(field.descKey) : undefined}
       error={error ? t(error.key, error.values) : undefined}
       inline={field.kind === 'switch'}

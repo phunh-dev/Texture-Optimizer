@@ -199,3 +199,44 @@ describe('session history (undo/redo)', () => {
     expect(undoTooltip(t, null)).toBe('Nothing to undo')
   })
 })
+
+describe('replaceFiles (paths changed on disk, e.g. rename)', () => {
+  beforeEach(() => resetSessions())
+
+  it('swaps files by old path without a history step and rewrites past/future states', () => {
+    const store = createSession('r1')
+    const s = store.getState()
+    s.addFiles(makeFiles(3)) // f0 f1 f2 at C:/textures/tex_i.png
+    s.removeFiles(['f2'])
+    store.getState().undo() // f2 back, one redo step pending
+    store.getState().setSelection(['f1'])
+    const before = pastCount('r1')
+    const renamed = { ...makeFiles(1)[0], id: 'new1', path: 'C:/textures/renamed.png', name: 'renamed.png' }
+
+    expect(store.getState().replaceFiles([{ from: 'C:/textures/tex_1.png', file: renamed }])).toBe(1)
+    expect(ids('r1')).toEqual(['f0', 'new1', 'f2'])
+    expect(store.getState().selectedIds).toEqual(['new1'])
+    expect(pastCount('r1')).toBe(before)
+    expect(futureCount('r1')).toBe(1)
+    const paths = (files: { path: string }[]) => files.map((f) => f.path)
+    for (const st of [...store.temporal.getState().pastStates, ...store.temporal.getState().futureStates]) {
+      expect(paths(st.files ?? [])).not.toContain('C:/textures/tex_1.png')
+    }
+
+    store.getState().redo()
+    expect(ids('r1')).toEqual(['f0', 'new1'])
+    store.getState().undo()
+    store.getState().undo()
+    expect(ids('r1')).toEqual([])
+    store.getState().redo()
+    expect(paths(store.getState().files)).toEqual(['C:/textures/tex_0.png', 'C:/textures/renamed.png', 'C:/textures/tex_2.png'])
+  })
+
+  it('returns 0 and changes nothing for unknown paths', () => {
+    const store = createSession('r2')
+    store.getState().addFiles(makeFiles(1))
+    const files = store.getState().files
+    expect(store.getState().replaceFiles([{ from: 'C:/nope.png', file: makeFiles(1)[0] }])).toBe(0)
+    expect(store.getState().files).toBe(files)
+  })
+})

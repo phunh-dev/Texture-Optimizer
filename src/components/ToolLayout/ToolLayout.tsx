@@ -63,6 +63,11 @@ export interface ToolLayoutProps {
   countLabel?: string
   /** Hides the S/M/L grid size toggle (default: shown with the image grid only). */
   showGridSize?: boolean
+  /**
+   * Replaces the bottom Run button / job progress area (tools whose action is
+   * not a background job, e.g. the renamer's synchronous Rename + confirm).
+   */
+  runPanel?: ReactNode
 }
 
 type View = 'grid' | 'preview'
@@ -84,6 +89,7 @@ export function ToolLayout({
   content,
   countLabel,
   showGridSize,
+  runPanel,
 }: ToolLayoutProps) {
   const { t } = useTranslation('common')
   const toolId = getTabInfo(tabId)?.toolId ?? 'unknown'
@@ -213,7 +219,7 @@ export function ToolLayout({
           ) : null}
         </div>
         <div className="shrink-0 border-t border-border bg-card/80 p-4 backdrop-blur">
-          <RunPanel tabId={tabId} fileCount={files.length} disabledReason={disabledReason} onRun={onRun} label={runLabel} />
+          {runPanel ?? <RunPanel tabId={tabId} fileCount={files.length} disabledReason={disabledReason} onRun={onRun} label={runLabel} />}
         </div>
       </aside>
     </div>

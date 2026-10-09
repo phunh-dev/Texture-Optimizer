@@ -1,1 +1,204 @@
-{}
+{
+  "groups": {
+    "name": "Tên",
+    "numbering": "Đánh số & thứ tự",
+    "numberingDesc": "Tệp được sắp xếp trước, sau đó {index} đếm từ số bắt đầu.",
+    "findReplace": "Tìm & thay thế",
+    "smart": "Đặt tên thông minh",
+    "extension": "Phần mở rộng & an toàn",
+    "destination": "Đích"
+  },
+  "params": {
+    "template": {
+      "label": "Mẫu tên",
+      "desc": "Nhấp vào một token để chèn tại vị trí con trỏ.",
+      "tokens": "Các token của mẫu",
+      "insert": "Chèn {{token}}",
+      "token": {
+        "name": "Tên gốc (sau khi tìm & thay thế)",
+        "index": "Số thứ tự",
+        "parent": "Tên thư mục chứa",
+        "width": "Chiều rộng ảnh (px)",
+        "height": "Chiều cao ảnh (px)",
+        "ext": "Phần mở rộng gốc",
+        "date": "Ngày sửa đổi tệp",
+        "type": "Hậu tố loại texture phát hiện được (đặt tên thông minh)"
+      }
+    },
+    "prefix": { "label": "Tiền tố" },
+    "suffix": { "label": "Hậu tố" },
+    "dateFormat": {
+      "label": "Định dạng ngày",
+      "desc": "Định dạng strftime cho {date}, ví dụ %d-%m-%Y."
+    },
+    "case": {
+      "label": "Kiểu chữ",
+      "keep": "Giữ nguyên",
+      "lower": "chữ thường",
+      "upper": "CHỮ HOA",
+      "snake": "snake_case",
+      "kebab": "kebab-case",
+      "camel": "camelCase",
+      "pascal": "PascalCase"
+    },
+    "startNumber": { "label": "Số bắt đầu" },
+    "step": { "label": "Bước nhảy" },
+    "zeroPad": {
+      "label": "Số chữ số",
+      "desc": "Số chữ số tối thiểu của {index} (3 → 001). 0 = không thêm số 0."
+    },
+    "sortBy": {
+      "label": "Sắp xếp trước khi đánh số",
+      "none": "Thứ tự hiện tại",
+      "name": "Tên",
+      "naturalName": "Tên (tự nhiên: 2 trước 10)",
+      "modified": "Ngày sửa đổi",
+      "size": "Dung lượng tệp",
+      "dimensions": "Kích thước ảnh"
+    },
+    "sortDesc": { "label": "Giảm dần" },
+    "findReplace": {
+      "desc": "Áp dụng lần lượt lên tên gốc trước khi dựng mẫu tên.",
+      "empty": "Chưa có quy tắc nào.",
+      "find": "Tìm (quy tắc {{n}})",
+      "replace": "Thay bằng (quy tắc {{n}})",
+      "findPlaceholder": "Tìm",
+      "replacePlaceholder": "Thay bằng",
+      "regex": "Biểu thức chính quy ($1 chèn một nhóm)",
+      "caseSensitive": "Phân biệt hoa thường",
+      "moveUp": "Đưa quy tắc {{n}} lên",
+      "moveDown": "Đưa quy tắc {{n}} xuống",
+      "remove": "Xóa quy tắc {{n}}",
+      "add": "Thêm quy tắc",
+      "invalidRegex": "Biểu thức chính quy không hợp lệ: {{detail}}"
+    },
+    "smart": {
+      "enabled": "Quy ước đặt tên theo engine",
+      "desc": "Nhận diện loại texture từ tên (albedo, normal, roughness…) và thêm tiền tố/hậu tố theo engine.",
+      "preset": "Engine",
+      "presets": {
+        "unreal": "Unreal",
+        "unity": "Unity",
+        "godot": "Godot",
+        "custom": "Tùy chỉnh"
+      },
+      "examples": {
+        "unreal": "rock_normal → T_rock_N",
+        "unity": "rock_normal → rock_Normal",
+        "godot": "Rock Normal → rock_normal",
+        "custom": "rock_normal → rock_<hậu tố của bạn>"
+      },
+      "customMap": "Hậu tố cho từng loại texture",
+      "suffixFor": "Hậu tố cho {{type}}",
+      "types": {
+        "baseColor": "Màu gốc",
+        "normal": "Normal",
+        "roughness": "Độ nhám",
+        "metallic": "Kim loại",
+        "ao": "Che khuất môi trường (AO)",
+        "emissive": "Phát sáng",
+        "height": "Độ cao",
+        "mask": "Mặt nạ",
+        "orm": "ORM",
+        "opacity": "Độ trong suốt"
+      }
+    },
+    "keepExtension": {
+      "label": "Giữ phần mở rộng",
+      "desc": "Chỉ tắt khi mẫu tên tự ghi phần mở rộng."
+    },
+    "extensionCase": {
+      "label": "Kiểu chữ phần mở rộng",
+      "keep": "Giữ nguyên",
+      "lower": "thường",
+      "upper": "HOA"
+    },
+    "sanitize": {
+      "label": "Tự sửa tên không hợp lệ",
+      "desc": "Thay các ký tự không được phép trên Windows/macOS/Linux thay vì báo xung đột."
+    },
+    "invalidCharReplacement": { "label": "Thay ký tự không hợp lệ bằng" },
+    "mode": {
+      "label": "Chế độ",
+      "inPlace": "Đổi tên tại chỗ",
+      "copyTo": "Sao chép vào thư mục"
+    },
+    "copyDir": {
+      "label": "Thư mục đích",
+      "desc": "Bản sao đã đổi tên được ghi vào đây; tệp gốc giữ nguyên.",
+      "none": "Chưa chọn thư mục",
+      "choose": "Chọn…"
+    }
+  },
+  "validation": {
+    "unknownToken": "Token không xác định {{params.tokens}}",
+    "invalidReplacement": "Chuỗi thay thế cũng chứa ký tự không hợp lệ"
+  },
+  "conflicts": {
+    "duplicateInBatch": "Trùng tên với tệp khác",
+    "existsOnDisk": "Đã có tệp trùng tên",
+    "invalidName": "Tên tệp không hợp lệ"
+  },
+  "table": {
+    "label": "Xem trước đổi tên",
+    "noFiles": "Thêm tệp để xem trước tên mới",
+    "index": "#",
+    "current": "Tên hiện tại",
+    "new": "Tên mới",
+    "status": "Trạng thái",
+    "unchanged": "Không đổi",
+    "ok": "OK",
+    "updating": "Đang cập nhật…",
+    "summary": {
+      "total_one": "{{count}} tệp",
+      "total_other": "{{count}} tệp",
+      "toRename_one": "{{count}} tệp sẽ đổi tên",
+      "toRename_other": "{{count}} tệp sẽ đổi tên",
+      "toCopy_one": "{{count}} tệp sẽ sao chép",
+      "toCopy_other": "{{count}} tệp sẽ sao chép",
+      "unchanged_one": "{{count}} tệp không đổi",
+      "unchanged_other": "{{count}} tệp không đổi",
+      "conflicts_one": "{{count}} xung đột",
+      "conflicts_other": "{{count}} xung đột"
+    }
+  },
+  "run": {
+    "rename_one": "Đổi tên {{count}} tệp",
+    "rename_other": "Đổi tên {{count}} tệp",
+    "copy_one": "Sao chép {{count}} tệp",
+    "copy_other": "Sao chép {{count}} tệp",
+    "chooseFolder": "Hãy chọn thư mục đích trước",
+    "updating": "Đang cập nhật bản xem trước…",
+    "fixErrors": "Hãy sửa lỗi hiển thị trong bản xem trước",
+    "conflicts_one": "Hãy xử lý {{count}} xung đột trước",
+    "conflicts_other": "Hãy xử lý {{count}} xung đột trước",
+    "nothing": "Không có gì để đổi: mọi tên đã đúng như dự kiến"
+  },
+  "actions": {
+    "revert": "Hoàn tác",
+    "revertLast": "Hoàn tác lần đổi tên gần nhất"
+  },
+  "confirm": {
+    "title": "Đổi tên các tệp?",
+    "titleCopy": "Sao chép các tệp với tên mới?",
+    "desc": "Các tệp sẽ được đổi tên trên ổ đĩa.",
+    "descCopy": "Bản sao đã đổi tên sẽ được ghi vào {{dir}}. Tệp gốc giữ nguyên.",
+    "toRename_one": "{{count}} tệp sẽ được đổi tên",
+    "toRename_other": "{{count}} tệp sẽ được đổi tên",
+    "toCopy_one": "{{count}} tệp sẽ được sao chép",
+    "toCopy_other": "{{count}} tệp sẽ được sao chép",
+    "unchanged_one": "{{count}} tệp giữ nguyên tên",
+    "unchanged_other": "{{count}} tệp giữ nguyên tên",
+    "revertHint": "Bạn có thể hoàn tác sau bằng “Hoàn tác lần đổi tên gần nhất”."
+  },
+  "toast": {
+    "renamed_one": "Đã đổi tên {{count}} tệp",
+    "renamed_other": "Đã đổi tên {{count}} tệp",
+    "copied_one": "Đã sao chép {{count}} tệp",
+    "copied_other": "Đã sao chép {{count}} tệp",
+    "reverted_one": "Đã khôi phục tên gốc của {{count}} tệp",
+    "reverted_other": "Đã khôi phục tên gốc của {{count}} tệp",
+    "copiesRemoved_one": "Đã xóa {{count}} bản sao",
+    "copiesRemoved_other": "Đã xóa {{count}} bản sao"
+  }
+}
