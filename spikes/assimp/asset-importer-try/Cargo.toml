@@ -1,0 +1,15 @@
+# Throwaway spike: link Assimp 6.0.x via asset-importer-sys prebuilt binaries
+# (no CMake, no libclang), list exporters, OBJ -> FBX/DAE/OBJ round trip.
+# Own [workspace] table so it is NOT a member of the app workspace.
+[workspace]
+
+[package]
+name = "asset-importer-try"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+asset-importer-sys = { version = "0.8.0", features = ["prebuilt", "static-link"] }
+# Part 2 (src/bin/realworld.rs) drives the production mesh module.
+texopt-core = { path = "../../../crates/texopt-core" }

@@ -31,5 +31,16 @@
   "ATLAS_DUPLICATE_NAME": "Duplicate sprite name \"{{name}}\": the last image was used",
   "ATLAS_LAYOUT_RESET": "Previous layout could not be kept ({{reason}}); atlas was repacked",
   "ATLAS_FEATURE_DISABLED": "{{feature}} was turned off because {{exporter}} does not support it",
-  "ATLAS_META_UNREADABLE": "Could not read the GUID from {{path}}; a new one was generated"
+  "ATLAS_META_UNREADABLE": "Could not read the GUID from {{path}}; a new one was generated",
+  "MESH_IMPORT_FAILED": "Could not read 3D model {{path}}: {{detail}}",
+  "MESH_EXPORT_FAILED": "Could not write 3D model {{path}} ({{format}}): {{detail}}",
+  "MESH_FORMAT_UNSUPPORTED": "Unsupported 3D model format: {{path}} (FBX, OBJ, DAE only)",
+  "MESH_NO_UVS": "Material {{material}} has no UV channel {{uvChannel}}",
+  "MESH_UV_OUT_OF_RANGE": "UVs of {{material}} are outside 0–1 (tiling); it was left out of the atlas",
+  "MESH_UV_TOO_MANY_TILES": "{{material}} repeats {{tilesU}}×{{tilesV}} times, more than the allowed {{maxTiles}}",
+  "MESH_UV_WRAP_STRADDLE": "{{faces}} faces of {{mesh}} cross a UV tile border; texture may be wrong there",
+  "MESH_ATLAS_CHANNEL_MISSING": "{{material}} uses a {{channel}} texture but no {{channel}} atlas was provided",
+  "MESH_TEXTURE_NOT_FOUND": "Texture not found for {{material}} ({{channel}}): {{path}}",
+  "MESH_EXPORT_GEOMETRY_CHANGED": "The exported {{format}} file changed the model's geometry and was discarded. Try another format or UV Remap Data mode",
+  "MESH_BACKEND_UNAVAILABLE": "3D support is not included in this build"
 }
