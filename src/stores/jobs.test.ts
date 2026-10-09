@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { cancelJob } from '@/lib/ipc'
 import type { JobFinishedEvent } from '@/lib/ipc/types'
 
-import { useJobs } from './jobs'
+import { setJobFinishHandler, useJobs } from './jobs'
 
 vi.mock('@/lib/ipc', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/lib/ipc')>()),
@@ -66,5 +66,18 @@ describe('jobs store', () => {
     const id = await useJobs.getState().start('tab-a', 1, () => Promise.reject({ code: 'INVALID_PARAMS', params: {} }))
     expect(id).toBeNull()
     expect(useJobs.getState().byTab['tab-a'].status).toBe('failed')
+  })
+
+  it('a custom finish handler replaces the summary once', async () => {
+    const handler = vi.fn()
+    setJobFinishHandler('tab-a', handler)
+    await useJobs.getState().start('tab-a', 2, () => Promise.resolve('job-1'))
+    const e = finished('job-1', 'tab-a')
+    useJobs.getState().handleFinished(e)
+    expect(handler).toHaveBeenCalledWith(e)
+    expect(useJobs.getState().byTab['tab-a'].status).toBe('done')
+    await useJobs.getState().start('tab-a', 2, () => Promise.resolve('job-2'))
+    useJobs.getState().handleFinished(finished('job-2', 'tab-a'))
+    expect(handler).toHaveBeenCalledTimes(1)
   })
 })

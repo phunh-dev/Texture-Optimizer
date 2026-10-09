@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 import type { ComponentType } from 'react'
 
+import { atlasDefaults } from './atlas/defaults'
 import { imageOpDefaults } from './_imageOps/defaults'
 
 export type ToolId = 'resize' | 'resolution' | 'trim' | 'potPad' | 'atlas' | 'rename' | 'bgRemove' | 'meshPack'
@@ -42,7 +43,7 @@ export const tools: ToolDefinition[] = [
   { id: 'resolution', titleKey: 'tools.resolution.title', descriptionKey: 'tools.resolution.description', icon: Grid2x2CheckIcon, load: () => import('./resolution'), defaultParams: imageOpDefaults.resolution },
   { id: 'trim', titleKey: 'tools.trim.title', descriptionKey: 'tools.trim.description', icon: CropIcon, load: () => import('./trim'), defaultParams: imageOpDefaults.trim },
   { id: 'potPad', titleKey: 'tools.potPad.title', descriptionKey: 'tools.potPad.description', icon: MaximizeIcon, load: () => import('./potPad'), defaultParams: imageOpDefaults.potPad },
-  { id: 'atlas', titleKey: 'tools.atlas.title', descriptionKey: 'tools.atlas.description', icon: LayoutDashboardIcon, load: placeholder, defaultParams: noParams },
+  { id: 'atlas', titleKey: 'tools.atlas.title', descriptionKey: 'tools.atlas.description', icon: LayoutDashboardIcon, load: () => import('./atlas'), defaultParams: atlasDefaults },
   { id: 'rename', titleKey: 'tools.rename.title', descriptionKey: 'tools.rename.description', icon: TextCursorInputIcon, load: placeholder, defaultParams: noParams },
   { id: 'bgRemove', titleKey: 'tools.bgRemove.title', descriptionKey: 'tools.bgRemove.description', icon: EraserIcon, load: placeholder, defaultParams: noParams },
   { id: 'meshPack', titleKey: 'tools.meshPack.title', descriptionKey: 'tools.meshPack.description', icon: BoxesIcon, load: placeholder, defaultParams: noParams },

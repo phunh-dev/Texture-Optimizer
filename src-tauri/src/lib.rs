@@ -4,6 +4,7 @@
 //! tested without a running app.
 
 pub mod commands;
+pub mod commands_atlas;
 pub mod error;
 pub mod jobs;
 pub mod preview;
@@ -43,6 +44,9 @@ pub fn run() {
             commands::run_op,
             commands::cancel_job,
             commands::release_session,
+            commands_atlas::atlas_preview,
+            commands_atlas::atlas_export,
+            commands_atlas::atlas_load_project,
         ])
         .setup(|app| {
             if cfg!(debug_assertions) {
