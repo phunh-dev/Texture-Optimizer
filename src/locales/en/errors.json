@@ -44,5 +44,17 @@
   "MESH_ATLAS_CHANNEL_MISSING": "{{material}} uses a {{channel}} texture but no {{channel}} atlas was provided",
   "MESH_TEXTURE_NOT_FOUND": "Texture not found for {{material}} ({{channel}}): {{path}}",
   "MESH_EXPORT_GEOMETRY_CHANGED": "The exported {{format}} file changed the model's geometry and was discarded. Try another format or UV Remap Data mode",
-  "MESH_BACKEND_UNAVAILABLE": "3D support is not included in this build"
+  "MESH_BACKEND_UNAVAILABLE": "3D support is not included in this build",
+  "MESH_WORKER_CRASHED": "The 3D worker process stopped unexpectedly (exit code {{exitCode}}). The model may be corrupt or unsupported",
+  "MESH_WORKER_SPAWN_FAILED": "Could not start the 3D worker process: {{detail}}",
+  "MESH_NO_MODELS": "Add at least one 3D model",
+  "MESH_NOTHING_TO_PACK": "None of the models has a material that can be packed into an atlas",
+  "MESH_CHANNEL_FORCED": "The {{channel}} channel was packed although it is not selected: atlased materials use it",
+  "MESH_TEXTURE_RESIZED": "{{material}}: the {{channel}} texture ({{width}}×{{height}}) was resampled to {{targetWidth}}×{{targetHeight}}",
+  "MESH_TEXTURE_UNREADABLE": "Could not read the {{channel}} texture of {{material}}: {{path}}",
+  "MESH_MATERIAL_NO_TEXTURES": "{{material}} has no readable texture and was left out of the atlas",
+  "MESH_MODEL_SPANS_PAGES": "{{model}} needs {{pages}} atlas pages, which one model file cannot reference",
+  "MESH_FALLBACK_REMAP_DATA": "{{model}} was written as UV remap data instead of a rewritten model",
+  "MESH_TEXTURES_DOWNSCALED": "Textures were scaled to {{percent}}% to fit one atlas page",
+  "MESH_MODEL_SKIPPED": "{{model}} has nothing to pack and was not written"
 }

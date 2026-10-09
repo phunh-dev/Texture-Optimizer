@@ -16,6 +16,7 @@ import type { ComponentType } from 'react'
 
 import { atlasDefaults } from './atlas/defaults'
 import { imageOpDefaults } from './_imageOps/defaults'
+import { meshDefaults } from './meshPack/defaults'
 
 export type ToolId = 'resize' | 'resolution' | 'trim' | 'potPad' | 'atlas' | 'rename' | 'bgRemove' | 'meshPack'
 
@@ -46,7 +47,7 @@ export const tools: ToolDefinition[] = [
   { id: 'atlas', titleKey: 'tools.atlas.title', descriptionKey: 'tools.atlas.description', icon: LayoutDashboardIcon, load: () => import('./atlas'), defaultParams: atlasDefaults },
   { id: 'rename', titleKey: 'tools.rename.title', descriptionKey: 'tools.rename.description', icon: TextCursorInputIcon, load: placeholder, defaultParams: noParams },
   { id: 'bgRemove', titleKey: 'tools.bgRemove.title', descriptionKey: 'tools.bgRemove.description', icon: EraserIcon, load: placeholder, defaultParams: noParams },
-  { id: 'meshPack', titleKey: 'tools.meshPack.title', descriptionKey: 'tools.meshPack.description', icon: BoxesIcon, load: placeholder, defaultParams: noParams },
+  { id: 'meshPack', titleKey: 'tools.meshPack.title', descriptionKey: 'tools.meshPack.description', icon: BoxesIcon, load: () => import('./meshPack'), defaultParams: meshDefaults },
 ]
 
 export function getTool(id: ToolId): ToolDefinition {

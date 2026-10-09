@@ -514,7 +514,7 @@ fn fbx_output_always_verifies_geometry_unless_advanced() {
         o.output.allow_unverified_fbx = allow;
         let spy = Spy(Default::default());
         let out = dir.join(format!("out_{format:?}_{allow}"));
-        pack::run(&[green.clone()], &o, &out, "atlas", &spy, &mut |_| {}).unwrap();
+        pack::run(std::slice::from_ref(&green), &o, &out, "atlas", &spy, &mut |_| {}).unwrap();
         assert_eq!(*spy.0.borrow(), vec![expect], "{format:?} allow={allow}");
     }
 }
@@ -557,7 +557,7 @@ fn out_of_range_policies() {
         2
     );
     // Only out-of-range models → nothing to pack.
-    let err = pack::run(&[tiled.clone()], &o, &dir.join("none"), "atlas", &AssimpExporter, &mut |_| {})
+    let err = pack::run(std::slice::from_ref(&tiled), &o, &dir.join("none"), "atlas", &AssimpExporter, &mut |_| {})
         .unwrap_err();
     assert_eq!(err.code, codes::MESH_NOTHING_TO_PACK);
 
@@ -771,7 +771,7 @@ fn invalid_requests() {
         pack::run(models, &o, &dir.join("out"), base, &AssimpExporter, &mut |_| {}).unwrap_err()
     };
     assert_eq!(e(&[], "atlas").code, codes::MESH_NO_MODELS);
-    assert_eq!(e(&[green.clone()], "a/b").params["param"], "baseName");
+    assert_eq!(e(std::slice::from_ref(&green), "a/b").params["param"], "baseName");
     // A model that fails to import is reported, the others still packed.
     let r = run(&[green, dir.join("missing.obj")], &PackOptions::default(), &dir.join("out2"));
     assert_eq!(r.models[1].outcome, ModelOutcome::Failed);

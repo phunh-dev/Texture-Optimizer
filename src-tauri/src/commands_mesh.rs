@@ -288,6 +288,54 @@ pub fn mesh_pack(
 mod tests {
     use super::*;
 
+    /// The TS defaults (`buildPackOptions(meshDefaults())`, see
+    /// `src/tabs/meshPack/schema.test.ts`) and `PackOptions::default()` agree
+    /// through this shared file; the built-in fill colours are spelled out.
+    #[test]
+    fn rust_defaults_match_the_frontend_fixture() {
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../src/tabs/meshPack/rustDefaults.json");
+        let fixture: Value = serde_json::from_str(&std::fs::read_to_string(path).unwrap()).unwrap();
+        let mut defaults = PackOptions::default();
+        for c in pack::default_channels() {
+            let px = pack::builtin_default(&c).0;
+            defaults
+                .missing_defaults
+                .insert(c, format!("#{:02x}{:02x}{:02x}", px[0], px[1], px[2]));
+        }
+        assert_eq!(serde_json::to_value(&defaults).unwrap(), fixture);
+        // And the fixture parses back to the defaults.
+        let parsed: PackOptions = serde_json::from_value(fixture).unwrap();
+        assert_eq!(parsed, defaults);
+    }
+
+    #[test]
+    fn every_mesh_code_has_en_and_vi_messages() {
+        use texopt_core::mesh::pack::codes as p;
+        let codes = [
+            mesh_worker::MESH_WORKER_CRASHED,
+            mesh_worker::MESH_WORKER_SPAWN_FAILED,
+            p::MESH_NO_MODELS,
+            p::MESH_NOTHING_TO_PACK,
+            p::MESH_CHANNEL_FORCED,
+            p::MESH_TEXTURE_RESIZED,
+            p::MESH_TEXTURE_UNREADABLE,
+            p::MESH_MATERIAL_NO_TEXTURES,
+            p::MESH_MODEL_SPANS_PAGES,
+            p::MESH_FALLBACK_REMAP_DATA,
+            p::MESH_TEXTURES_DOWNSCALED,
+            p::MESH_MODEL_SKIPPED,
+        ];
+        for lang in ["en", "vi"] {
+            let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join(format!("../src/locales/{lang}/errors.json"));
+            let json: Value = serde_json::from_str(&std::fs::read_to_string(path).unwrap()).unwrap();
+            for c in codes {
+                assert!(json.get(c).and_then(Value::as_str).is_some_and(|s| !s.is_empty()), "{lang}: {c}");
+            }
+        }
+    }
+
     #[test]
     fn preview_flags_cancel_the_previous_one() {
         let s = MeshState::default();

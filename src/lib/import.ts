@@ -23,10 +23,38 @@ export interface ImportSummary {
   skipped: number
 }
 
+/**
+ * Custom import for tabs whose items are not images (e.g. 3D models). While
+ * registered, drag & drop, the file/folder pickers and `importPaths` of that
+ * tab go through it instead of the image scan.
+ */
+export interface TabImporter {
+  importPaths: (tabId: string, paths: string[], options: Required<ImportOptions>) => Promise<ImportSummary | null>
+  /** File picker filter: i18n key of its name and the accepted extensions. */
+  filterNameKey: string
+  extensions: readonly string[]
+}
+
+const tabImporters = new Map<string, TabImporter>()
+
+/** Registers a custom importer for a tab; returns the unregister function. */
+export function registerTabImporter(tabId: string, importer: TabImporter): () => void {
+  tabImporters.set(tabId, importer)
+  return () => {
+    if (tabImporters.get(tabId) === importer) tabImporters.delete(tabId)
+  }
+}
+
+export function getTabImporter(tabId: string): TabImporter | undefined {
+  return tabImporters.get(tabId)
+}
+
 /** Scans paths (files and/or folders) and adds the images to the tab's session. */
 export async function importPaths(tabId: string, paths: string[], options: ImportOptions = {}): Promise<ImportSummary | null> {
   if (paths.length === 0) return null
   const recursive = options.recursive ?? useSettings.getState().recursiveImport
+  const custom = tabImporters.get(tabId)
+  if (custom) return custom.importPaths(tabId, paths, { recursive })
   try {
     const result = await scanPaths(paths, { recursive })
     const added = requireSession(tabId).getState().addFiles(result.files)
@@ -65,11 +93,12 @@ function desktopOnly(): boolean {
 export async function importFromFilePicker(tabId: string): Promise<void> {
   if (desktopOnly()) return
   try {
-    const selected = await open({
-      multiple: true,
-      directory: false,
-      filters: [{ name: i18n.t('common:import.imagesFilter'), extensions: [...IMAGE_EXTENSIONS] }],
-    })
+    const custom = tabImporters.get(tabId)
+    const t = i18n.t as unknown as (key: string) => string
+    const filter = custom
+      ? { name: t(custom.filterNameKey), extensions: [...custom.extensions] }
+      : { name: i18n.t('common:import.imagesFilter'), extensions: [...IMAGE_EXTENSIONS] }
+    const selected = await open({ multiple: true, directory: false, filters: [filter] })
     if (!selected) return
     await importPaths(tabId, Array.isArray(selected) ? selected : [selected])
   } catch (err) {
