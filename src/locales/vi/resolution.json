@@ -1,1 +1,58 @@
-{}
+{
+  "groups": {
+    "target": "Kích thước đích",
+    "method": "Phương pháp"
+  },
+  "params": {
+    "target": {
+      "label": "Đưa các cạnh về",
+      "desc": "Các định dạng nén khối (DXT/BC, ETC, ASTC) cần bội số của 4; mipmap và GPU đời cũ ưu tiên lũy thừa của 2.",
+      "options": {
+        "multipleOf4": "×4",
+        "multipleOfN": "×N",
+        "pot": "POT"
+      }
+    },
+    "n": {
+      "label": "Bội số của",
+      "desc": "Mọi cạnh sẽ trở thành bội số của giá trị này."
+    },
+    "allowNonSquare": {
+      "label": "Cho phép POT không vuông",
+      "desc": "Tắt: cả hai cạnh lấy lũy thừa của 2 lớn hơn (texture vuông)."
+    },
+    "maxSize": {
+      "label": "Kích thước tối đa",
+      "desc": "Giới hạn mỗi cạnh ở kích thước hợp lệ lớn nhất không vượt quá giá trị này. 0 = không giới hạn."
+    },
+    "method": {
+      "label": "Phương pháp",
+      "desc": "Lấy mẫu lại sẽ co giãn ảnh, Thêm viền mở rộng khung (không mất pixel nào), Cắt sẽ cắt bớt mép (không thêm pixel nào).",
+      "options": {
+        "resample": "Lấy mẫu lại",
+        "pad": "Thêm viền",
+        "crop": "Cắt"
+      }
+    },
+    "round": {
+      "label": "Làm tròn",
+      "desc": "Hướng làm tròn về kích thước hợp lệ gần nhất. Chỉ áp dụng cho Lấy mẫu lại: Thêm viền luôn làm tròn lên, Cắt luôn làm tròn xuống."
+    },
+    "filter": {
+      "label": "Bộ lọc",
+      "desc": "Bộ lọc lấy mẫu lại; Nearest giữ pixel art sắc nét."
+    },
+    "keepAspect": {
+      "label": "Giữ tỷ lệ khung hình",
+      "desc": "Co giãn đều để nằm gọn trong kích thước mới, phần còn lại được tô bằng màu viền."
+    },
+    "anchor": {
+      "label": "Điểm neo",
+      "desc": "Vị trí của nội dung gốc trong khung mới (hoặc phần được giữ lại khi cắt)."
+    },
+    "padColor": {
+      "label": "Màu viền",
+      "desc": "Màu của vùng được thêm vào. Mặc định là trong suốt hoàn toàn."
+    }
+  }
+}

@@ -9,8 +9,13 @@
 //! `m` is only a cache-buster for the webview (a changed file gets a new URL);
 //! the disk cache key is computed from the real file metadata. Responses are
 //! therefore immutable and cached aggressively.
+//!
+//! `size=full` serves the full-resolution original instead of a thumbnail
+//! (the "before" image of previews): formats the webview can display (PNG,
+//! JPEG, WebP, BMP) are served byte-for-byte, others (TGA) are decoded and
+//! re-encoded as PNG. Only supported image extensions are served.
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::{Arc, OnceLock};
 
 use percent_encoding::percent_decode_str;
@@ -21,10 +26,24 @@ use texopt_core::thumbs::{THUMB_CONTENT_TYPE, ThumbCache, ThumbSize};
 
 pub const SCHEME: &str = "thumb";
 
+/// `size` query value requesting the full-resolution original.
+pub const FULL_SIZE: &str = "full";
+
+/// Extensions served byte-for-byte by `size=full` (the webview decodes them).
+const PASSTHROUGH: &[(&str, &str)] = &[
+    ("png", "image/png"),
+    ("jpg", "image/jpeg"),
+    ("jpeg", "image/jpeg"),
+    ("webp", "image/webp"),
+    ("bmp", "image/bmp"),
+];
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ThumbRequest {
     pub path: PathBuf,
     pub size: ThumbSize,
+    /// `size=full`: serve the original image (`size` then stays `Medium`).
+    pub full: bool,
 }
 
 /// Parse a `thumb` request URI (either platform form) into path + size.
@@ -51,15 +70,20 @@ pub fn parse_thumb_uri(uri: &str) -> Result<ThumbRequest, OpError> {
         return Err(bad("empty path"));
     }
     let mut size = ThumbSize::Medium;
+    let mut full = false;
     for pair in query.split('&').filter(|p| !p.is_empty()) {
         let (key, value) = pair.split_once('=').unwrap_or((pair, ""));
         if key == "size" {
-            size = ThumbSize::parse(value).ok_or_else(|| bad("size"))?;
+            full = value == FULL_SIZE;
+            if !full {
+                size = ThumbSize::parse(value).ok_or_else(|| bad("size"))?;
+            }
         }
     }
     Ok(ThumbRequest {
         path: PathBuf::from(decoded.into_owned()),
         size,
+        full,
     })
 }
 
@@ -73,15 +97,73 @@ fn error_response(status: StatusCode, error: &OpError) -> Response<Vec<u8>> {
         .expect("static response parts are valid")
 }
 
+fn ok_response(content_type: &str, body: Vec<u8>) -> Response<Vec<u8>> {
+    Response::builder()
+        .status(StatusCode::OK)
+        .header(header::CONTENT_TYPE, content_type)
+        .header(header::ACCESS_CONTROL_ALLOW_ORIGIN, "*")
+        .header(header::CACHE_CONTROL, "public, max-age=31536000, immutable")
+        .body(body)
+        .expect("static response parts are valid")
+}
+
+/// `size=full`: the original image at full resolution. 404 when missing,
+/// 415 for non-image extensions, 500 when reading/decoding fails.
+pub fn full_image_response(path: &Path) -> Response<Vec<u8>> {
+    let shown = path.display().to_string();
+    if !path.is_file() {
+        return error_response(
+            StatusCode::NOT_FOUND,
+            &OpError::new(texopt_core::io::SCAN_PATH_NOT_FOUND).with("path", shown),
+        );
+    }
+    let ext = texopt_core::io::extension_of(path);
+    if !texopt_core::io::is_supported_extension(&ext) {
+        return error_response(
+            StatusCode::UNSUPPORTED_MEDIA_TYPE,
+            &OpError::new(codes::IMG_UNSUPPORTED_FORMAT)
+                .with("format", ext)
+                .with("path", shown),
+        );
+    }
+    if let Some((_, content_type)) = PASSTHROUGH.iter().find(|(e, _)| *e == ext) {
+        return match std::fs::read(path) {
+            Ok(body) => ok_response(content_type, body),
+            Err(e) => error_response(
+                StatusCode::INTERNAL_SERVER_ERROR,
+                &OpError::new(codes::IO_READ_FAILED)
+                    .with("path", shown)
+                    .with("detail", e.to_string()),
+            ),
+        };
+    }
+    let encoded = texopt_core::io::load_image(path).and_then(|img| {
+        texopt_core::output::encode_png(&img, texopt_core::output::PngCompression::Fast).map_err(
+            |e| {
+                OpError::new(codes::IMG_ENCODE_FAILED)
+                    .with("path", shown.clone())
+                    .with("detail", e.to_string())
+            },
+        )
+    });
+    match encoded {
+        Ok(body) => ok_response("image/png", body),
+        Err(e) => error_response(StatusCode::INTERNAL_SERVER_ERROR, &e),
+    }
+}
+
 /// Full request handling (blocking: may decode and encode an image).
 /// 200 + WebP on success, 400 for malformed URLs, 404 when the source file
 /// is missing, 500 when decoding/encoding fails. Error bodies are the JSON
-/// `{ code, params }` of the failure.
+/// `{ code, params }` of the failure. `size=full` → [`full_image_response`].
 pub fn thumb_response(cache: &ThumbCache, uri: &str) -> Response<Vec<u8>> {
     let request = match parse_thumb_uri(uri) {
         Ok(r) => r,
         Err(e) => return error_response(StatusCode::BAD_REQUEST, &e),
     };
+    if request.full {
+        return full_image_response(&request.path);
+    }
     let cached = match cache.get_or_create(&request.path, request.size) {
         Ok(p) => p,
         Err(e) if e.code == texopt_core::io::SCAN_PATH_NOT_FOUND => {
@@ -90,13 +172,7 @@ pub fn thumb_response(cache: &ThumbCache, uri: &str) -> Response<Vec<u8>> {
         Err(e) => return error_response(StatusCode::INTERNAL_SERVER_ERROR, &e),
     };
     match std::fs::read(&cached) {
-        Ok(body) => Response::builder()
-            .status(StatusCode::OK)
-            .header(header::CONTENT_TYPE, THUMB_CONTENT_TYPE)
-            .header(header::ACCESS_CONTROL_ALLOW_ORIGIN, "*")
-            .header(header::CACHE_CONTROL, "public, max-age=31536000, immutable")
-            .body(body)
-            .expect("static response parts are valid"),
+        Ok(body) => ok_response(THUMB_CONTENT_TYPE, body),
         Err(e) => error_response(
             StatusCode::INTERNAL_SERVER_ERROR,
             &OpError::new(codes::IO_READ_FAILED)
@@ -287,6 +363,70 @@ mod tests {
             thumb_response(&cache, "garbage").status(),
             StatusCode::BAD_REQUEST
         );
+    }
+
+    #[test]
+    fn parses_full_size() {
+        let r = parse_thumb_uri(&windows_url(r"C:\tex\a.tga", "full")).unwrap();
+        assert!(r.full);
+        assert_eq!(r.path, PathBuf::from(r"C:\tex\a.tga"));
+        assert!(!parse_thumb_uri(&unix_url("/a.png", "small")).unwrap().full);
+        assert!(!parse_thumb_uri("thumb://localhost/%2Fa.png").unwrap().full);
+    }
+
+    #[test]
+    fn full_size_serves_originals() {
+        let dir = tempfile::tempdir().unwrap();
+        let cache = ThumbCache::new(dir.path().join("thumbs"));
+
+        // Displayable formats: the exact original bytes, never a thumbnail.
+        let png = dir.path().join("big ảnh.png");
+        fixtures::gradient(700, 300).save(&png).unwrap();
+        let res = thumb_response(&cache, &unix_url(&png.display().to_string(), "full"));
+        assert_eq!(res.status(), StatusCode::OK);
+        assert_eq!(res.headers()[header::CONTENT_TYPE], "image/png");
+        assert_eq!(res.body(), &std::fs::read(&png).unwrap());
+        assert_eq!(cache.generated_count(), 0, "no thumbnail generated");
+
+        let jpg = dir.path().join("photo.JPG");
+        image::DynamicImage::ImageRgba8(fixtures::gradient(40, 20))
+            .to_rgb8()
+            .save_with_format(&jpg, image::ImageFormat::Jpeg)
+            .unwrap();
+        let res = thumb_response(&cache, &windows_url(&jpg.display().to_string(), "full"));
+        assert_eq!(res.status(), StatusCode::OK);
+        assert_eq!(res.headers()[header::CONTENT_TYPE], "image/jpeg");
+        assert_eq!(res.body(), &std::fs::read(&jpg).unwrap());
+
+        // TGA is not displayable: decoded and served as a full-size PNG.
+        let tga = dir.path().join("sprite.tga");
+        let src = fixtures::gradient(33, 17);
+        src.save(&tga).unwrap();
+        let res = thumb_response(&cache, &unix_url(&tga.display().to_string(), "full"));
+        assert_eq!(res.status(), StatusCode::OK);
+        assert_eq!(res.headers()[header::CONTENT_TYPE], "image/png");
+        let decoded = image::load_from_memory_with_format(res.body(), image::ImageFormat::Png)
+            .unwrap()
+            .into_rgba8();
+        assert_eq!(decoded, src);
+
+        let missing = thumb_response(
+            &cache,
+            &unix_url(&dir.path().join("nope.png").display().to_string(), "full"),
+        );
+        assert_eq!(missing.status(), StatusCode::NOT_FOUND);
+
+        let text = dir.path().join("secret.txt");
+        std::fs::write(&text, b"not an image").unwrap();
+        let refused = thumb_response(&cache, &unix_url(&text.display().to_string(), "full"));
+        assert_eq!(refused.status(), StatusCode::UNSUPPORTED_MEDIA_TYPE);
+        let body: OpError = serde_json::from_slice(refused.body()).unwrap();
+        assert_eq!(body.code, codes::IMG_UNSUPPORTED_FORMAT);
+
+        let corrupt = dir.path().join("bad.tga");
+        std::fs::write(&corrupt, b"nope").unwrap();
+        let failed = thumb_response(&cache, &unix_url(&corrupt.display().to_string(), "full"));
+        assert_eq!(failed.status(), StatusCode::INTERNAL_SERVER_ERROR);
     }
 
     #[test]

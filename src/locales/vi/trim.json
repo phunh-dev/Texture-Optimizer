@@ -1,1 +1,55 @@
-{}
+{
+  "groups": {
+    "detection": "Nhận diện",
+    "sides": "Các cạnh cần cắt",
+    "sidesDesc": "Tắt một cạnh để giữ lại viền trong suốt của cạnh đó (ví dụ giữ chân nhân vật chạm mép dưới).",
+    "result": "Kết quả"
+  },
+  "params": {
+    "alphaThreshold": {
+      "label": "Ngưỡng alpha",
+      "desc": "Pixel có alpha nhỏ hơn hoặc bằng giá trị này được xem là trống. 0 chỉ cắt các pixel trong suốt hoàn toàn."
+    },
+    "margin": {
+      "label": "Lề",
+      "desc": "Giữ lại tối đa số pixel này quanh nội dung ở các cạnh được cắt."
+    },
+    "emptyBehavior": {
+      "label": "Ảnh trong suốt hoàn toàn",
+      "desc": "Cách xử lý khi ảnh không có pixel nào hiển thị.",
+      "options": {
+        "error": "Báo lỗi",
+        "onePixel": "Xuất ảnh 1×1"
+      }
+    },
+    "trimLeft": {
+      "label": "Trái"
+    },
+    "trimRight": {
+      "label": "Phải"
+    },
+    "trimTop": {
+      "label": "Trên"
+    },
+    "trimBottom": {
+      "label": "Dưới"
+    },
+    "snap": {
+      "label": "Làm tròn kích thước sau khi cắt",
+      "desc": "Mở rộng vùng đã cắt (căn giữa theo nội dung) thành bội số của 4 hoặc lũy thừa của 2."
+    },
+    "writeOffsets": {
+      "label": "Ghi file JSON độ lệch",
+      "desc": "Lưu <output>.json cạnh mỗi ảnh, chứa kích thước gốc và vùng cắt, để có thể khôi phục pivot ban đầu."
+    }
+  },
+  "preview": {
+    "offset": "Độ lệch {{x}}, {{y}}"
+  },
+  "sizes": {
+    "hint": "Kích thước sau khi cắt phụ thuộc vào pixel của từng ảnh. Ảnh đã xem trước sẽ được đo tự động.",
+    "measure_one": "Đo {{count}} ảnh",
+    "measure_other": "Đo {{count}} ảnh",
+    "measuring": "Đang đo {{done}} / {{total}}…"
+  }
+}
