@@ -20,6 +20,7 @@
 
 pub mod fixtures;
 pub mod model;
+pub mod pack;
 pub mod remap_json;
 pub mod uv_remap;
 

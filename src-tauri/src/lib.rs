@@ -4,8 +4,10 @@
 //! tested without a running app.
 
 pub mod commands;
+pub mod commands_mesh;
 pub mod error;
 pub mod jobs;
+pub mod mesh_worker;
 pub mod preview;
 pub mod session;
 pub mod thumb_protocol;
@@ -20,6 +22,7 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_store::Builder::new().build())
         .manage(commands::AppState::default())
+        .manage(commands_mesh::MeshState::default())
         .manage(ThumbService::new())
         .register_asynchronous_uri_scheme_protocol(
             thumb_protocol::SCHEME,
@@ -43,6 +46,9 @@ pub fn run() {
             commands::run_op,
             commands::cancel_job,
             commands::release_session,
+            commands_mesh::mesh_scan,
+            commands_mesh::mesh_preview_pack,
+            commands_mesh::mesh_pack,
         ])
         .setup(|app| {
             if cfg!(debug_assertions) {
