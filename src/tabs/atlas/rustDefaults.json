@@ -1,0 +1,55 @@
+{
+  "params": {
+    "algorithm": "maxRects",
+    "heuristic": "bestShortSideFit",
+    "maxWidth": 2048,
+    "maxHeight": 2048,
+    "forcePot": true,
+    "forceSquare": false,
+    "padding": 2,
+    "extrude": 0,
+    "border": 0,
+    "allowRotation": false,
+    "trim": true,
+    "trimThreshold": 0,
+    "dedupe": true,
+    "multiPage": false,
+    "sortBy": "area",
+    "premultiplyAlpha": false,
+    "sizeMode": "shrinkToFit"
+  },
+  "exporters": {
+    "genericJson": {
+      "format": "hash",
+      "imagePathPrefix": "",
+      "includeTrimInfo": true,
+      "pretty": true,
+      "pivot": { "x": 0.5, "y": 0.5 }
+    },
+    "unity": {
+      "unityVersion": "unity2022",
+      "pixelsPerUnit": 100.0,
+      "filterMode": "bilinear",
+      "textureCompression": "normalQuality",
+      "maxTextureSize": 0,
+      "mipmaps": false,
+      "pivot": "center",
+      "customPivot": { "x": 0.5, "y": 0.5 },
+      "preservePivotOnTrim": true
+    },
+    "godot": {
+      "version": "godot4",
+      "resPath": "res://",
+      "outputSubfolder": "",
+      "filterClip": false
+    },
+    "unreal": {
+      "pivot": { "x": 0.5, "y": 0.5 },
+      "fileExtension": "paper2dsprites"
+    }
+  },
+  "incremental": {
+    "mode": "keepPositions",
+    "removeMissing": false
+  }
+}

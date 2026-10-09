@@ -4,6 +4,7 @@
 //! tested without a running app.
 
 pub mod commands;
+pub mod commands_atlas;
 pub mod commands_rename;
 pub mod error;
 pub mod jobs;
@@ -44,6 +45,9 @@ pub fn run() {
             commands::run_op,
             commands::cancel_job,
             commands::release_session,
+            commands_atlas::atlas_preview,
+            commands_atlas::atlas_export,
+            commands_atlas::atlas_load_project,
             commands_rename::rename_plan,
             commands_rename::rename_execute,
             commands_rename::rename_revert_last,

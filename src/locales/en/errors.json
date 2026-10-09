@@ -35,6 +35,8 @@
   "ATLAS_LAYOUT_RESET": "Previous layout could not be kept ({{reason}}); atlas was repacked",
   "ATLAS_FEATURE_DISABLED": "{{feature}} was turned off because {{exporter}} does not support it",
   "ATLAS_META_UNREADABLE": "Could not read the GUID from {{path}}; a new one was generated",
+  "ATLAS_SPRITE_NOT_RECOVERED": "Sprite \"{{name}}\" could not be recovered from {{path}} and was dropped from the atlas",
+  "ATLAS_STALE_DELETE_FAILED": "Could not delete the outdated file {{path}}",
   "MESH_IMPORT_FAILED": "Could not read 3D model {{path}}: {{detail}}",
   "MESH_EXPORT_FAILED": "Could not write 3D model {{path}} ({{format}}): {{detail}}",
   "MESH_FORMAT_UNSUPPORTED": "Unsupported 3D model format: {{path}} (FBX, OBJ, DAE only)",

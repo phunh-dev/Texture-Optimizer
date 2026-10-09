@@ -53,6 +53,10 @@ export interface ToolLayoutProps {
   showOutput?: boolean
   /** Show the preset bar (default true when there are fields). */
   showPresets?: boolean
+  /** Custom Run button label (default "Process N images"). */
+  runLabel?: string
+  /** Extra tool-specific reason (already translated) that disables Run, checked after files/params. */
+  runDisabledReason?: string | null
   /**
    * Replaces the bottom Run button / job progress area (tools whose action is
    * not a background job, e.g. the renamer's synchronous Rename + confirm).
@@ -74,6 +78,8 @@ export function ToolLayout({
   sidePanelBottom,
   showOutput = true,
   showPresets,
+  runLabel,
+  runDisabledReason,
   runPanel,
 }: ToolLayoutProps) {
   const { t } = useTranslation('common')
@@ -98,6 +104,7 @@ export function ToolLayout({
   else if (files.length === 0) disabledReason = t('run.noFiles')
   else if (Object.keys(errors).length > 0) disabledReason = t('run.invalidParams')
   else if (showOutput && problem) disabledReason = t(problem)
+  else if (runDisabledReason) disabledReason = runDisabledReason
 
   const onRun = () => {
     const c = ctx()
@@ -201,7 +208,7 @@ export function ToolLayout({
           ) : null}
         </div>
         <div className="shrink-0 border-t border-border bg-card/80 p-4 backdrop-blur">
-          {runPanel ?? <RunPanel tabId={tabId} fileCount={files.length} disabledReason={disabledReason} onRun={onRun} />}
+          {runPanel ?? <RunPanel tabId={tabId} fileCount={files.length} disabledReason={disabledReason} onRun={onRun} label={runLabel} />}
         </div>
       </aside>
     </div>
