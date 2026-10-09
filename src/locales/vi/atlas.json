@@ -75,7 +75,8 @@
       "desc": "Sprite có thể được xoay 90° nếu giúp xếp chặt hơn.",
       "unsupported": {
         "unity": "Unity không hỗ trợ sprite bị xoay trong texture nên tính năng xoay bị tắt với định dạng này.",
-        "godot": "Vùng AtlasTexture của Godot không thể xoay nên tính năng xoay bị tắt với định dạng này."
+        "godot": "Vùng AtlasTexture của Godot không thể xoay nên tính năng xoay bị tắt với định dạng này.",
+        "imageOnly": "Không có metadata thì không ai biết sprite đã bị xoay, nên tính năng xoay bị tắt khi chỉ xuất ảnh."
       }
     },
     "dedupe": {
@@ -111,7 +112,8 @@
       "genericJson": "JSON chung (TexturePacker)",
       "unity": "Unity",
       "godot": "Godot",
-      "unreal": "Unreal Paper2D"
+      "unreal": "Unreal Paper2D",
+      "imageOnly": "Chỉ ảnh atlas"
     },
     "pivotX": {
       "label": "Tâm xoay X"
@@ -271,11 +273,6 @@
   },
   "output": {
     "title": "Đầu ra",
-    "folder": "Thư mục xuất",
-    "chooseFolder": "Chọn thư mục",
-    "noFolder": "Chưa chọn thư mục",
-    "baseName": "Tên gốc",
-    "baseNameDesc": "Ghi {{files}} và metadata.",
     "mode": {
       "label": "Khi atlas đã tồn tại",
       "keepPositions": "Giữ nguyên vị trí",
@@ -287,6 +284,10 @@
       "label": "Xóa sprite không có trong danh sách",
       "desc": "Tắt: sprite đã có trong atlas vẫn được giữ dù ảnh của nó không có trong danh sách này."
     },
+    "imageOnly": {
+      "files": "Chỉ ghi ảnh đã xếp: {{base}}.png (hoặc {{base}}_0.png, {{base}}_1.png… khi có nhiều trang), không có metadata hay file dự án.",
+      "noIncremental": "Atlas luôn được xếp lại từ đầu nên không thể cập nhật dần atlas có sẵn. File dự án và metadata của atlas đó không bao giờ bị sửa hay xóa (chỉ ảnh trùng tên bị ghi đè)."
+    },
     "existing": {
       "title": "Atlas hiện có",
       "checking": "Đang tìm atlas hiện có…",
@@ -295,6 +296,19 @@
       "found_other": "{{count}} sprite trên {{pages}} trang",
       "exporter": "Lần xuất trước cho {{exporter}}"
     }
+  },
+  "target": {
+    "label": "Atlas cần cập nhật",
+    "none": "Không có (tạo atlas mới)",
+    "choose": "Chọn atlas cần cập nhật",
+    "clear": "Bỏ chọn atlas cần cập nhật",
+    "desc": "Không bắt buộc: chọn một atlas có sẵn (file .png hoặc .texatlas.json) để cập nhật dần. Khi bấm Xuất…, hộp thoại lưu sẽ mở sẵn ở đây.",
+    "dialogTitle": "Chọn atlas cần cập nhật",
+    "filter": "Ảnh hoặc dự án atlas"
+  },
+  "export": {
+    "dialogTitle": "Xuất atlas",
+    "pngFilter": "Ảnh PNG"
   },
   "status": {
     "new": "Mới",
@@ -340,8 +354,7 @@
     }
   },
   "run": {
-    "export": "Xuất atlas",
-    "noFolder": "Hãy chọn thư mục xuất trước"
+    "export": "Xuất…"
   },
   "toast": {
     "exported": "Đã xuất atlas vào {{dir}}",

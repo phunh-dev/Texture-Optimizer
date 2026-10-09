@@ -75,7 +75,8 @@
       "desc": "Sprites may be rotated 90° when that packs tighter.",
       "unsupported": {
         "unity": "Unity sprites cannot be rotated in a texture, so rotation is turned off for this exporter.",
-        "godot": "Godot AtlasTexture regions cannot be rotated, so rotation is turned off for this exporter."
+        "godot": "Godot AtlasTexture regions cannot be rotated, so rotation is turned off for this exporter.",
+        "imageOnly": "Without metadata nobody can tell a sprite was rotated, so rotation is turned off for an image-only export."
       }
     },
     "dedupe": {
@@ -111,7 +112,8 @@
       "genericJson": "Generic JSON (TexturePacker)",
       "unity": "Unity",
       "godot": "Godot",
-      "unreal": "Unreal Paper2D"
+      "unreal": "Unreal Paper2D",
+      "imageOnly": "Atlas image only"
     },
     "pivotX": {
       "label": "Pivot X"
@@ -271,11 +273,6 @@
   },
   "output": {
     "title": "Output",
-    "folder": "Output folder",
-    "chooseFolder": "Choose folder",
-    "noFolder": "No folder selected",
-    "baseName": "Base name",
-    "baseNameDesc": "Writes {{files}} and the metadata.",
     "mode": {
       "label": "When the atlas already exists",
       "keepPositions": "Keep positions",
@@ -287,6 +284,10 @@
       "label": "Remove sprites not in the current list",
       "desc": "Off: sprites already in the atlas are kept even if their images are not listed here."
     },
+    "imageOnly": {
+      "files": "Writes only the packed image: {{base}}.png ({{base}}_0.png, {{base}}_1.png… with several pages), without metadata or a project file.",
+      "noIncremental": "The atlas is always packed from scratch: an existing atlas cannot be updated incrementally. Its project and metadata files are never changed or removed (an image with the same name is overwritten)."
+    },
     "existing": {
       "title": "Existing atlas",
       "checking": "Looking for an existing atlas…",
@@ -295,6 +296,19 @@
       "found_other": "{{count}} sprites on {{pages}} page(s)",
       "exporter": "Last exported for {{exporter}}"
     }
+  },
+  "target": {
+    "label": "Target atlas",
+    "none": "None (a new atlas)",
+    "choose": "Choose target atlas",
+    "clear": "Clear target atlas",
+    "desc": "Optional: pick an existing atlas (its .png or .texatlas.json) to update it incrementally. Export… asks where to save and starts here.",
+    "dialogTitle": "Choose the atlas to update",
+    "filter": "Atlas image or project"
+  },
+  "export": {
+    "dialogTitle": "Export atlas",
+    "pngFilter": "PNG image"
   },
   "status": {
     "new": "New",
@@ -340,8 +354,7 @@
     }
   },
   "run": {
-    "export": "Export atlas",
-    "noFolder": "Choose an output folder first"
+    "export": "Export…"
   },
   "toast": {
     "exported": "Atlas exported to {{dir}}",

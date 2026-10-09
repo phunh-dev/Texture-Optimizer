@@ -1,12 +1,15 @@
-// Run flow: start the `mesh_pack` job and report its outcome with a
-// packer-specific toast ("rewritten N, fallback M, skipped K").
+// Run flow: Pack… first asks for the output folder (native folder picker,
+// default = last used folder or the first model's folder); only then the
+// `mesh_pack` job starts. Its outcome is reported with a packer-specific
+// toast ("rewritten N, fallback M, skipped K").
+import { open } from '@tauri-apps/plugin-dialog'
 import { toast } from 'sonner'
 
-import type { ToolContext } from '@/components/ToolLayout'
 import i18n from '@/i18n'
 import { translateError } from '@/lib/errors'
 import type { JobFinishedEvent } from '@/lib/ipc/types'
-import { setJobFinishHandler } from '@/stores/jobs'
+import { setJobFinishHandler, useJobs } from '@/stores/jobs'
+import { requireSession } from '@/stores/session'
 
 import { isModelMeta, isSummaryMeta, meshPack } from './ipc'
 import { buildPackOptions, resolveParams } from './schema'
@@ -45,20 +48,54 @@ export function reportPack(e: JobFinishedEvent): void {
   else toast.success(title, { description })
 }
 
-/** ToolLayout `run`: starts the pack job and resolves with its id. */
-export async function startPack(ctx: ToolContext): Promise<string> {
-  const p = resolveParams(ctx.params)
-  setJobFinishHandler(ctx.tabId, reportPack)
+/** Folder of a file path ('' when it has none). */
+function folderOf(path: string): string {
+  const i = Math.max(path.lastIndexOf('/'), path.lastIndexOf('\\'))
+  if (i < 0) return ''
+  return i === 0 ? path.slice(0, 1) : path.slice(0, i)
+}
+
+/** Where the folder picker starts: the last used folder, else the first model's folder. */
+export function defaultPackFolder(tabId: string): string | undefined {
+  const s = requireSession(tabId).getState()
+  const last = resolveParams(s.params).outputDir.trim()
+  if (last) return last
+  const first = s.files[0]?.path
+  return (first && folderOf(first)) || undefined
+}
+
+/**
+ * Pack…: asks for the output folder, then starts the pack job there. Cancel
+ * or a dialog error start nothing. Resolves with the job id, or null.
+ */
+export async function packWithDialog(tabId: string): Promise<string | null> {
+  let chosen: string | string[] | null
   try {
-    return await meshPack(
-      ctx.tabId,
-      ctx.files.map((f) => f.path),
-      buildPackOptions(ctx.params),
-      p.outputDir.trim(),
-      p.baseName,
-    )
+    chosen = await open({
+      title: i18n.t('mesh:run.dialogTitle'),
+      directory: true,
+      multiple: false,
+      defaultPath: defaultPackFolder(tabId),
+    })
   } catch (err) {
-    setJobFinishHandler(ctx.tabId, null)
-    throw err
+    toast.error(translateError(err))
+    return null
   }
+  const dir = Array.isArray(chosen) ? chosen[0] : chosen
+  if (!dir) return null
+  const session = requireSession(tabId).getState()
+  // Remembered as the next default folder.
+  session.setParams({ outputDir: dir })
+  const p = resolveParams(session.params)
+  const models = session.files.map((f) => f.path)
+  const options = buildPackOptions(session.params)
+  return useJobs.getState().start(tabId, models.length, async () => {
+    setJobFinishHandler(tabId, reportPack)
+    try {
+      return await meshPack(tabId, models, options, dir, p.baseName)
+    } catch (err) {
+      setJobFinishHandler(tabId, null)
+      throw err
+    }
+  })
 }

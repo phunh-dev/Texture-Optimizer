@@ -1,5 +1,10 @@
 //! Engine exporters. The user picks exactly one [`ExporterConfig`] per export.
 //!
+//! [`ExporterConfig::ImageOnly`] writes the page PNG(s) and nothing else: no
+//! metadata, and the app workflow writes no project file for it either (see
+//! `workflow::export_atlas`), so such an atlas cannot be updated
+//! incrementally.
+//!
 //! Capability handling: [`build`](super::build) is exporter-agnostic. The app
 //! may call [`adapt_params`] first, which switches off features the exporter
 //! cannot represent and returns `ATLAS_FEATURE_DISABLED` warnings. [`export`]
@@ -45,7 +50,12 @@ impl Default for Pivot {
     }
 }
 
-/// `{ "kind": "genericJson" | "unity" | "godot" | "unreal", "options": { ... } }`
+/// Options of [`ExporterConfig::ImageOnly`]: none (`{}` on the wire).
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct ImageOnlyOptions {}
+
+/// `{ "kind": "genericJson" | "unity" | "godot" | "unreal" | "imageOnly", "options": { ... } }`
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "kind", content = "options", rename_all = "camelCase")]
 pub enum ExporterConfig {
@@ -53,6 +63,8 @@ pub enum ExporterConfig {
     Unity(UnityOptions),
     Godot(GodotOptions),
     Unreal(UnrealOptions),
+    /// Only the packed page image(s), no metadata.
+    ImageOnly(ImageOnlyOptions),
 }
 
 impl ExporterConfig {
@@ -63,10 +75,18 @@ impl ExporterConfig {
             ExporterConfig::Unity(_) => "unity",
             ExporterConfig::Godot(_) => "godot",
             ExporterConfig::Unreal(_) => "unreal",
+            ExporterConfig::ImageOnly(_) => "imageOnly",
         }
     }
 
-    /// Unity sprite rects and Godot `AtlasTexture` regions cannot be rotated.
+    /// False for [`ExporterConfig::ImageOnly`]: only page images are
+    /// produced, so there is no project to merge with or clean up after.
+    pub fn writes_metadata(&self) -> bool {
+        !matches!(self, ExporterConfig::ImageOnly(_))
+    }
+
+    /// Unity sprite rects and Godot `AtlasTexture` regions cannot be rotated;
+    /// without metadata (image only) nobody could tell a sprite was rotated.
     pub fn supports_rotation(&self) -> bool {
         matches!(
             self,
@@ -263,6 +283,7 @@ pub fn export(
             }
             state["unity"] = out.state;
         }
+        ExporterConfig::ImageOnly(_) => {}
     }
     Ok(ExportOutput {
         files,

@@ -6,7 +6,7 @@ import type { ImportedFile } from '@/lib/ipc/types'
 import type { Params } from '@/stores/session'
 
 import { atlasLoadProject, atlasPreview, type AtlasPreviewResult, type AtlasProjectSummary } from './ipc'
-import { baseNameProblem, buildAtlasRequest, projectFilePath } from './schema'
+import { baseNameProblem, buildAtlasRequest, EXPORTERS, projectFilePath, writesMetadata, type ExporterKind } from './schema'
 
 export const PREVIEW_DEBOUNCE_MS = 300
 
@@ -87,13 +87,18 @@ export interface ExistingAtlasState {
   loading: boolean
 }
 
-/** Looks up `<outputDir>/<baseName>.texatlas.json` and the merge plan for the current files. */
+/**
+ * Looks up the target atlas `<outputDir>/<baseName>.texatlas.json` and the
+ * merge plan for the current files (not for the image-only exporter, which
+ * never merges).
+ */
 export function useExistingAtlas(tabId: string, files: ImportedFile[], params: Params, delay = PREVIEW_DEBOUNCE_MS): ExistingAtlasState {
   const version = useAtlasRefresh((s) => s.versions[tabId] ?? 0)
   const outputDir = typeof params.outputDir === 'string' ? params.outputDir.trim() : ''
   const baseName = typeof params.baseName === 'string' ? params.baseName : ''
   const removeMissing = params.removeMissing === true
-  const path = outputDir && !baseNameProblem(baseName) ? projectFilePath(outputDir, baseName) : null
+  const exporter = EXPORTERS.includes(params.exporter as ExporterKind) ? (params.exporter as ExporterKind) : 'genericJson'
+  const path = outputDir && !baseNameProblem(baseName) && writesMetadata(exporter) ? projectFilePath(outputDir, baseName) : null
   const paths = useMemo(() => files.map((f) => f.path), [files])
   const key = JSON.stringify([path, paths, removeMissing, version])
   const [result, setResult] = useState<{ key: string; path: string; summary: AtlasProjectSummary | null } | null>(null)

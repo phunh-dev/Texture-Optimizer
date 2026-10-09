@@ -130,9 +130,6 @@
   },
   "output": {
     "title": "Nơi lưu",
-    "folder": "Thư mục đầu ra",
-    "noFolder": "Chưa chọn thư mục",
-    "chooseFolder": "Chọn thư mục đầu ra",
     "baseName": "Tên gốc",
     "baseNameDesc": "Atlas: {{example}}",
     "baseNameInvalid": "Hãy dùng tên file đơn giản (không có / \\ : * ? \" < > |)"
@@ -158,7 +155,7 @@
     "warnings_one": "{{count}} cảnh báo",
     "warnings_other": "{{count}} cảnh báo",
     "dropTitle": "Thả model 3D hoặc thư mục vào đây",
-    "dropHint": "FBX, OBJ và DAE. Model gốc không bao giờ bị sửa; kết quả được ghi vào thư mục bạn chọn.",
+    "dropHint": "FBX, OBJ và DAE. Model gốc không bao giờ bị sửa; khi bấm Gộp…, bạn sẽ chọn thư mục để lưu kết quả.",
     "dropActive": "Thả ra để thêm model",
     "or": "hoặc",
     "addFolder": "Thêm thư mục"
@@ -190,11 +187,11 @@
     "pages_other": "{{count}} trang"
   },
   "run": {
-    "label_one": "Gộp {{count}} model",
-    "label_other": "Gộp {{count}} model",
-    "noFolder": "Hãy chọn thư mục đầu ra trước",
+    "label_one": "Gộp {{count}} model…",
+    "label_other": "Gộp {{count}} model…",
     "badBaseName": "Hãy sửa tên gốc trước",
-    "noModels": "Hãy thêm mô hình 3D trước"
+    "noModels": "Hãy thêm mô hình 3D trước",
+    "dialogTitle": "Chọn thư mục lưu atlas và model"
   },
   "lastRun": {
     "title": "Lần chạy gần nhất",
@@ -204,7 +201,8 @@
     "skipped": "Bỏ qua",
     "failed": "Lỗi",
     "files_one": "Đã ghi {{count}} file",
-    "files_other": "Đã ghi {{count}} file"
+    "files_other": "Đã ghi {{count}} file",
+    "savedTo": "Đã lưu vào {{dir}}"
   },
   "toast": {
     "done": "Đã gộp: {{rewritten}} ghi lại, {{fallback}} dự phòng, {{skipped}} bỏ qua",

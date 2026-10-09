@@ -1,3 +1,4 @@
+import { open } from '@tauri-apps/plugin-dialog'
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { toast } from 'sonner'
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -27,6 +28,11 @@ vi.mock('./ipc', async (importOriginal) => ({
 vi.mock('@/lib/ipc', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/lib/ipc')>()),
   thumbnailUrl: vi.fn((file: { path: string }, size: string) => `thumb://localhost/${file.path}?size=${size}`),
+}))
+
+vi.mock('@tauri-apps/plugin-dialog', () => ({
+  open: vi.fn(() => Promise.resolve(null)),
+  save: vi.fn(() => Promise.resolve(null)),
 }))
 
 vi.mock('sonner', async (importOriginal) => {
@@ -73,6 +79,12 @@ function modelInfo(file: ImportedFile, overrides: Partial<ModelInfo> = {}): Mode
   }
 }
 
+function deferred<T>() {
+  let resolve!: (v: T) => void
+  const promise = new Promise<T>((r) => (resolve = r))
+  return { promise, resolve }
+}
+
 function renderTab(tabId: string) {
   return render(
     <TooltipProvider>
@@ -99,6 +111,8 @@ describe('MeshPackTab', { timeout: 30_000 }, () => {
     vi.mocked(meshScan).mockClear()
     vi.mocked(meshPack).mockClear()
     vi.mocked(meshPreviewPack).mockClear()
+    vi.mocked(open).mockReset()
+    vi.mocked(open).mockResolvedValue(null)
     for (const f of [toast, toast.success, toast.error, toast.info, toast.warning]) vi.mocked(f).mockClear()
     await i18n.changeLanguage('en')
     tabId = useTabs.getState().openTab('meshPack')
@@ -225,26 +239,47 @@ describe('MeshPackTab', { timeout: 30_000 }, () => {
     expect(screen.queryByText('Merged material name')).not.toBeInTheDocument()
   })
 
-  it('Run needs an output folder and a valid base name, then starts mesh_pack with the exact request', async () => {
-    const files = [modelFile('crate'), modelFile('barrel', 'dae')]
-    addModels(tabId, files)
+  it('has no output folder field; Pack… needs models and a valid base name', () => {
     renderTab(tabId)
+    expect(screen.queryByLabelText('Output folder')).not.toBeInTheDocument()
+    expect(screen.getByText('Add 3D models first')).toBeInTheDocument()
+    addModels(tabId, [modelFile('crate'), modelFile('barrel', 'dae')])
     const run = screen.getByTestId('run-button')
-    expect(run).toHaveTextContent('Pack 2 models')
-    expect(run).toBeDisabled()
-    expect(screen.getByText('Choose an output folder first')).toBeInTheDocument()
-    fireEvent.change(screen.getByLabelText('Output folder'), { target: { value: 'C:/out' } })
+    expect(run).toHaveTextContent('Pack 2 models…')
+    expect(run).toBeEnabled()
     fireEvent.change(screen.getByLabelText('Base name'), { target: { value: 'a/b' } })
     expect(screen.getByRole('alert')).toHaveTextContent('Use a plain file name')
     expect(run).toBeDisabled()
+    expect(screen.getByText('Fix the base name first')).toBeInTheDocument()
     fireEvent.change(screen.getByLabelText('Base name'), { target: { value: 'props' } })
     expect(screen.getByText(/props_baseColor\.png, props_normal\.png, props\.report\.json/)).toBeInTheDocument()
     expect(run).toBeEnabled()
+    // Invalid parameters block it too.
+    act(() => getSession(tabId)!.getState().setParams({ mergedMaterialName: '  ' }))
+    expect(run).toBeDisabled()
+    expect(screen.getByText('Fix the highlighted parameters first')).toBeInTheDocument()
+  })
 
-    fireEvent.click(run)
-    await waitFor(() => expect(meshPack).toHaveBeenCalled())
-    expect(meshPack).toHaveBeenCalledWith(tabId, ['C:/models/crate.fbx', 'C:/models/barrel.dae'], rustDefaults, 'C:/out', 'props')
+  it('Pack… asks for a folder (default: first model folder) and packs there only after it is chosen', async () => {
+    const files = [modelFile('crate'), modelFile('barrel', 'dae')]
+    addModels(tabId, files)
+    act(() => getSession(tabId)!.getState().setParams({ baseName: 'props' }))
+    const choice = deferred<string | null>()
+    vi.mocked(open).mockReturnValueOnce(choice.promise)
+    renderTab(tabId)
+    fireEvent.click(screen.getByTestId('run-button'))
+    await waitFor(() => expect(open).toHaveBeenCalledTimes(1))
+    expect(open).toHaveBeenCalledWith(expect.objectContaining({ directory: true, multiple: false, defaultPath: 'C:/models' }))
+    // Nothing runs while the picker is open.
+    expect(meshPack).not.toHaveBeenCalled()
+    expect(useJobs.getState().byTab[tabId]).toBeUndefined()
+
+    await act(async () => choice.resolve('D:/export'))
+    await waitFor(() => expect(meshPack).toHaveBeenCalledTimes(1))
+    expect(meshPack).toHaveBeenCalledWith(tabId, ['C:/models/crate.fbx', 'C:/models/barrel.dae'], rustDefaults, 'D:/export', 'props')
     expect(await screen.findByTestId('job-progress')).toBeInTheDocument()
+    // The folder is remembered as the next default.
+    expect(getSession(tabId)!.getState().params.outputDir).toBe('D:/export')
 
     act(() =>
       useJobs.getState().handleFinished({
@@ -252,14 +287,19 @@ describe('MeshPackTab', { timeout: 30_000 }, () => {
         tabId,
         cancelled: false,
         results: [
-          { input: files[0].path, output: 'C:/out/crate.fbx', error: null, meta: { kind: 'model', outcome: 'rewritten', sidecar: null, files: ['C:/out/crate.fbx'], warnings: [] } },
+          { input: files[0].path, output: 'D:/export/crate.fbx', error: null, meta: { kind: 'model', outcome: 'rewritten', sidecar: null, files: ['D:/export/crate.fbx'], warnings: [] } },
           {
             input: files[1].path,
-            output: 'C:/out/barrel.uvremap.json',
+            output: 'D:/export/barrel.uvremap.json',
             error: null,
-            meta: { kind: 'model', outcome: 'fallback', sidecar: 'C:/out/barrel.uvremap.json', files: [], warnings: [{ code: 'MESH_EXPORT_GEOMETRY_CHANGED', params: { format: 'fbx' } }] },
+            meta: { kind: 'model', outcome: 'fallback', sidecar: 'D:/export/barrel.uvremap.json', files: [], warnings: [{ code: 'MESH_EXPORT_GEOMETRY_CHANGED', params: { format: 'fbx' } }] },
           },
-          { input: 'C:/out', output: 'C:/out/props.report.json', error: null, meta: { kind: 'summary', rewritten: 1, fallback: 1, skipped: 0, failed: 0, files: ['a', 'b', 'c'], warnings: [] } },
+          {
+            input: 'D:/export',
+            output: 'D:/export/props.report.json',
+            error: null,
+            meta: { kind: 'summary', outputDir: 'D:/export', rewritten: 1, fallback: 1, skipped: 0, failed: 0, files: ['a', 'b', 'c'], warnings: [] },
+          },
         ],
       }),
     )
@@ -268,11 +308,31 @@ describe('MeshPackTab', { timeout: 30_000 }, () => {
     expect(last).toHaveTextContent('Rewritten: 1')
     expect(last).toHaveTextContent('Fallback: 1')
     expect(last).toHaveTextContent('3 files written')
+    expect(last).toHaveTextContent('Saved to D:/export')
+
+    // Next time the picker starts in the last used folder.
+    vi.mocked(open).mockResolvedValueOnce(null)
+    fireEvent.click(screen.getByTestId('run-button'))
+    await waitFor(() => expect(open).toHaveBeenCalledTimes(2))
+    expect(vi.mocked(open).mock.calls[1][0]).toMatchObject({ directory: true, defaultPath: 'D:/export' })
+  })
+
+  it('cancelling the folder picker packs nothing', async () => {
+    addModels(tabId, [modelFile('crate')])
+    renderTab(tabId)
+    fireEvent.click(screen.getByTestId('run-button'))
+    await waitFor(() => expect(open).toHaveBeenCalled())
+    await act(async () => undefined)
+    expect(meshPack).not.toHaveBeenCalled()
+    expect(useJobs.getState().byTab[tabId]).toBeUndefined()
+    expect(getSession(tabId)!.getState().params.outputDir).toBe('')
+    expect(toast.error).not.toHaveBeenCalled()
+    expect(screen.getByTestId('run-button')).toBeEnabled()
   })
 
   it('a failed run shows the translated error', async () => {
     addModels(tabId, [modelFile('crate')])
-    act(() => getSession(tabId)!.getState().setParams({ outputDir: 'C:/out' }))
+    vi.mocked(open).mockResolvedValueOnce('C:/out')
     renderTab(tabId)
     fireEvent.click(screen.getByTestId('run-button'))
     await waitFor(() => expect(meshPack).toHaveBeenCalled())
@@ -281,7 +341,7 @@ describe('MeshPackTab', { timeout: 30_000 }, () => {
         jobId: 'job-9',
         tabId,
         cancelled: false,
-        results: [{ input: 'C:/out', output: null, error: { code: 'MESH_WORKER_CRASHED', params: { exitCode: 3 } }, meta: { kind: 'summary' } }],
+        results: [{ input: 'C:/out', output: null, error: { code: 'MESH_WORKER_CRASHED', params: { exitCode: 3 } }, meta: { kind: 'summary', outputDir: 'C:/out' } }],
       }),
     )
     expect(toast.error).toHaveBeenCalledWith('Packing failed', {

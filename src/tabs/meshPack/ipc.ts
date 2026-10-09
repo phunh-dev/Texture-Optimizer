@@ -131,6 +131,8 @@ export interface PreviewPayload {
 /** Summary entry appended to the `job://finished` results of `mesh_pack`. */
 export interface PackSummaryMeta {
   kind: 'summary'
+  /** Folder the user picked for this run. */
+  outputDir?: string
   rewritten?: number
   fallback?: number
   remapData?: number

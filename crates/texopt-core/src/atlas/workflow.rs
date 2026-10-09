@@ -13,6 +13,14 @@
 //!   (e.g. `<base>_1.png` after the page count shrank, `.tres` of removed
 //!   sprites) are deleted. Unknown files are never touched.
 //!
+//! The image-only exporter ([`ExporterConfig::ImageOnly`]) opts out of all
+//! of this: an existing project at the target is ignored (fresh pack, warning
+//! `ATLAS_PROJECT_IGNORED`), only the page PNG(s) are written, no project
+//! file is written and nothing is ever deleted. Its pages may overwrite the
+//! pages of an atlas exported earlier with the same base name; that atlas's
+//! project and metadata are left as they were (so they no longer match the
+//! page image until it is exported again with a metadata exporter).
+//!
 //! App-level data (source paths, generated files) is stored in the project
 //! file under the extra top-level key `appData`, which [`AtlasProject`]
 //! ignores, so project files stay readable by the plain core API.
@@ -352,7 +360,19 @@ pub fn build_incremental(req: BuildRequest, load_page: &PageLoader) -> OpResult<
     let previous = match req.target {
         Some(t) => {
             validate_base_name(t.base_name)?;
-            ProjectDocument::load(&project_path(t.dir, t.base_name))?
+            let path = project_path(t.dir, t.base_name);
+            if req.exporter.writes_metadata() {
+                ProjectDocument::load(&path)?
+            } else {
+                // Image only: never merge; just tell the user an atlas is there.
+                if path.is_file() {
+                    warnings.push(
+                        OpError::new(codes::ATLAS_PROJECT_IGNORED)
+                            .with("path", path.display().to_string()),
+                    );
+                }
+                None
+            }
         }
         None => None,
     };
@@ -597,7 +617,8 @@ pub struct ExportRequest<'a> {
 #[derive(Debug, Clone, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ExportReport {
-    pub project_path: PathBuf,
+    /// The project file written (`None` for the image-only exporter).
+    pub project_path: Option<PathBuf>,
     /// Every written file (pages, metadata, then the project file).
     pub written: Vec<PathBuf>,
     /// Stale files of the previous export that were deleted.
@@ -613,7 +634,8 @@ fn cancelled() -> OpError {
 
 /// Full incremental export: merge, pack, export, write, clean up.
 /// `is_cancelled` is checked between stages; nothing is written once it
-/// returns true (the result is then `CANCELLED`).
+/// returns true (the result is then `CANCELLED`). With the image-only
+/// exporter only the page PNG(s) are written: no project file, no cleanup.
 pub fn export_atlas(
     req: ExportRequest,
     load_page: &PageLoader,
@@ -679,14 +701,26 @@ pub fn export_atlas(
         write_atomic(&path, bytes)?;
         written.push(path);
     }
-    let project_file = project_path(req.dir, req.base_name);
-    on_stage(ExportStage::Writing(project_file.clone()));
-    write_atomic(&project_file, doc.to_json().as_bytes())?;
-    written.push(project_file.clone());
+    let project_file = if req.exporter.writes_metadata() {
+        let path = project_path(req.dir, req.base_name);
+        on_stage(ExportStage::Writing(path.clone()));
+        write_atomic(&path, doc.to_json().as_bytes())?;
+        written.push(path.clone());
+        Some(path)
+    } else {
+        None
+    };
 
     on_stage(ExportStage::Cleaning);
     let mut deleted = Vec::new();
-    for rel in stale_files(outcome.previous.as_ref(), req.base_name, &generated) {
+    // Image only keeps no record of generated files: never delete anything
+    // (`previous` is always `None` for it, this guard makes it explicit).
+    let stale = if req.exporter.writes_metadata() {
+        stale_files(outcome.previous.as_ref(), req.base_name, &generated)
+    } else {
+        Vec::new()
+    };
+    for rel in stale {
         let path = req.dir.join(&rel);
         match std::fs::symlink_metadata(&path) {
             Ok(m) if m.is_file() => match std::fs::remove_file(&path) {

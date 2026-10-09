@@ -7,7 +7,9 @@ use std::sync::Arc;
 
 use atlas_support::{padded, pattern};
 use texopt_core::atlas::codes::*;
-use texopt_core::atlas::exporters::{GenericJsonOptions, GodotOptions, UnityOptions};
+use texopt_core::atlas::exporters::{
+    GenericJsonOptions, GodotOptions, ImageOnlyOptions, UnityOptions,
+};
 use texopt_core::atlas::workflow::*;
 use texopt_core::atlas::{AtlasParams, ExporterConfig, IncrementalMode, build};
 use texopt_core::error::codes::{CANCELLED, INVALID_PARAMS};
@@ -30,6 +32,10 @@ fn unity() -> ExporterConfig {
 
 fn godot() -> ExporterConfig {
     ExporterConfig::Godot(GodotOptions::default())
+}
+
+fn image_only() -> ExporterConfig {
+    ExporterConfig::ImageOnly(ImageOnlyOptions::default())
 }
 
 fn loader(path: &Path) -> OpResult<Arc<ImageBuf>> {
@@ -140,7 +146,10 @@ fn first_export_writes_pages_metadata_and_project() {
         .map(|p| p.file_name().unwrap().to_string_lossy().into_owned())
         .collect();
     assert_eq!(written, ["atlas.png", "atlas.json", "atlas.texatlas.json"]);
-    assert_eq!(report.project_path, dir.path().join("atlas.texatlas.json"));
+    assert_eq!(
+        report.project_path,
+        Some(dir.path().join("atlas.texatlas.json"))
+    );
     assert!(report.deleted.is_empty());
     assert_eq!(report.stats.sprite_count, 2);
     assert_eq!(report.stats.pages.len(), 1);
@@ -734,4 +743,228 @@ fn stats_measure_occupancy() {
     assert_eq!(st.pages[0].used_area, 256);
     assert!((st.occupancy - 1.0).abs() < 1e-9);
     assert_eq!(st.frame_count, 1);
+}
+
+// ------------------------------------------------------------ Image only
+
+/// Run with 40x40 sprites on 64x64 pages: one sprite per page.
+fn one_per_page(exporter: ExporterConfig) -> Run {
+    Run {
+        params: AtlasParams {
+            max_width: 64,
+            max_height: 64,
+            multi_page: true,
+            padding: 0,
+            ..AtlasParams::default()
+        },
+        exporter,
+        incremental: IncrementalOptions::default(),
+    }
+}
+
+fn snapshot(dir: &Path) -> Vec<(String, Vec<u8>)> {
+    files_in(dir)
+        .into_iter()
+        .map(|f| {
+            let bytes = std::fs::read(dir.join(&f)).unwrap();
+            (f, bytes)
+        })
+        .collect()
+}
+
+#[test]
+fn image_only_writes_only_the_page_png() {
+    let dir = tempfile::tempdir().unwrap();
+    let a = pattern(20, 12, 1);
+    let b = padded(8, 10, 3, 2);
+    let mut stages = Vec::new();
+    let report = export_atlas(
+        ExportRequest {
+            sprites: vec![src("a", &a), src("b", &b)],
+            params: &params(),
+            exporter: &image_only(),
+            incremental: IncrementalOptions::default(),
+            dir: dir.path(),
+            base_name: "atlas",
+        },
+        &loader,
+        &mut |s| stages.push(s),
+        &|| false,
+    )
+    .unwrap();
+    assert_eq!(files_in(dir.path()), ["atlas.png"]);
+    assert_eq!(report.written, [dir.path().join("atlas.png")]);
+    assert_eq!(report.project_path, None);
+    assert!(report.deleted.is_empty());
+    assert_eq!(report.stats.sprite_count, 2);
+    assert!(report.plan.iter().all(|e| e.status == SpriteStatus::New));
+    assert!(
+        ProjectDocument::load(&project_path(dir.path(), "atlas"))
+            .unwrap()
+            .is_none()
+    );
+    assert_eq!(
+        stages,
+        [
+            ExportStage::Packing,
+            ExportStage::Encoding,
+            ExportStage::Writing(dir.path().join("atlas.png")),
+            ExportStage::Cleaning,
+        ]
+    );
+    let page = texopt_core::io::load_image(&dir.path().join("atlas.png")).unwrap();
+    assert!(page.width().is_power_of_two() && page.height().is_power_of_two());
+}
+
+#[test]
+fn image_only_multi_page_writes_numbered_pngs_only() {
+    let dir = tempfile::tempdir().unwrap();
+    let report = one_per_page(image_only()).export(
+        dir.path(),
+        vec![src("a", &pattern(40, 40, 1)), src("b", &pattern(40, 40, 2))],
+    );
+    assert_eq!(files_in(dir.path()), ["atlas_0.png", "atlas_1.png"]);
+    assert_eq!(report.written.len(), 2);
+    assert_eq!(report.project_path, None);
+    for f in ["atlas_0.png", "atlas_1.png"] {
+        let page = texopt_core::io::load_image(&dir.path().join(f)).unwrap();
+        assert_eq!(page.dimensions(), (64, 64));
+    }
+}
+
+#[test]
+fn image_only_disables_rotation_with_a_warning() {
+    let dir = tempfile::tempdir().unwrap();
+    let run = Run {
+        params: AtlasParams {
+            allow_rotation: true,
+            max_width: 64,
+            max_height: 32,
+            ..params()
+        },
+        exporter: image_only(),
+        ..Run::default()
+    };
+    // 10x50 only fits a 64x32 page when rotated: without rotation it must fail.
+    let err = run
+        .try_export(dir.path(), vec![src("tall", &pattern(10, 50, 1))])
+        .unwrap_err();
+    assert_eq!(err.code, ATLAS_DOES_NOT_FIT);
+    assert!(files_in(dir.path()).is_empty());
+
+    let report = run.export(dir.path(), vec![src("a", &pattern(9, 30, 2))]);
+    let w: Vec<_> = report
+        .warnings
+        .iter()
+        .filter(|w| w.code == ATLAS_FEATURE_DISABLED)
+        .collect();
+    assert_eq!(w.len(), 1);
+    assert_eq!(w[0].params["feature"], "rotation");
+    assert_eq!(w[0].params["exporter"], "imageOnly");
+    // The page holds the sprite unrotated (9x30 at the top-left corner).
+    let page = texopt_core::io::load_image(&dir.path().join("atlas.png")).unwrap();
+    assert_eq!(
+        image::imageops::crop_imm(&page, 0, 0, 9, 30).to_image(),
+        pattern(9, 30, 2)
+    );
+}
+
+#[test]
+fn image_only_ignores_an_existing_atlas_and_never_deletes_its_files() {
+    let dir = tempfile::tempdir().unwrap();
+    // A two-page Unity atlas with its project file at the same base name.
+    one_per_page(unity()).export(
+        dir.path(),
+        vec![src("a", &pattern(40, 40, 1)), src("b", &pattern(40, 40, 2))],
+    );
+    let before = snapshot(dir.path());
+    assert_eq!(before.len(), 5);
+
+    let c = pattern(12, 12, 3);
+    let run = Run {
+        exporter: image_only(),
+        incremental: IncrementalOptions {
+            mode: IncrementalMode::KeepPositions,
+            remove_missing: false,
+        },
+        ..Run::default()
+    };
+    let report = run.export(dir.path(), vec![src("c", &c)]);
+
+    // Fresh pack: only the current inputs, nothing kept from the old atlas.
+    assert_eq!(report.stats.sprite_count, 1);
+    let plan: Vec<(&str, SpriteStatus)> = report
+        .plan
+        .iter()
+        .map(|e| (e.name.as_str(), e.status))
+        .collect();
+    assert_eq!(plan, [("c", SpriteStatus::New)]);
+    let page = texopt_core::io::load_image(&dir.path().join("atlas.png")).unwrap();
+    assert_eq!(image::imageops::crop_imm(&page, 0, 0, 12, 12).to_image(), c);
+    // The old atlas (pages, metas, project) is left exactly as it was.
+    assert!(report.deleted.is_empty());
+    assert_eq!(report.written, [dir.path().join("atlas.png")]);
+    let mut after = snapshot(dir.path());
+    after.retain(|(f, _)| f != "atlas.png");
+    assert_eq!(after, before);
+    // ...and the user is told the project was not used.
+    let ignored: Vec<_> = report
+        .warnings
+        .iter()
+        .filter(|w| w.code == ATLAS_PROJECT_IGNORED)
+        .collect();
+    assert_eq!(ignored.len(), 1);
+    assert_eq!(
+        ignored[0].params["path"],
+        project_path(dir.path(), "atlas").display().to_string()
+    );
+
+    // Same at preview time: no previous atlas, every sprite is new.
+    let outcome = build_incremental(
+        BuildRequest {
+            sprites: vec![src("c", &c)],
+            params: &params(),
+            exporter: &image_only(),
+            incremental: IncrementalOptions::default(),
+            target: Some(AtlasTarget {
+                dir: dir.path(),
+                base_name: "atlas",
+            }),
+        },
+        &loader,
+    )
+    .unwrap();
+    assert!(outcome.previous.is_none());
+    assert_eq!(outcome.plan.len(), 1);
+    assert_eq!(outcome.plan[0].status, SpriteStatus::New);
+    assert!(
+        outcome
+            .warnings
+            .iter()
+            .any(|w| w.code == ATLAS_PROJECT_IGNORED)
+    );
+}
+
+#[test]
+fn metadata_export_after_image_only_cleans_nothing_it_did_not_write() {
+    let dir = tempfile::tempdir().unwrap();
+    one_per_page(image_only()).export(
+        dir.path(),
+        vec![src("a", &pattern(40, 40, 1)), src("b", &pattern(40, 40, 2))],
+    );
+    // No project was written, so a later metadata export starts fresh and
+    // leaves the image-only pages alone.
+    let report = Run::default().export(dir.path(), vec![src("a", &pattern(20, 12, 1))]);
+    assert!(report.deleted.is_empty());
+    assert!(report.plan.iter().all(|e| e.status == SpriteStatus::New));
+    assert_eq!(
+        files_in(dir.path()),
+        [
+            "atlas.json",
+            "atlas.png",
+            "atlas.texatlas.json",
+            "atlas_0.png",
+            "atlas_1.png"
+        ]
+    );
 }
