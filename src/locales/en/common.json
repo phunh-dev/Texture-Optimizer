@@ -135,7 +135,9 @@
       "overwrite": "Overwrite",
       "skip": "Skip",
       "autoRename": "Rename"
-    }
+    },
+    "noSuffix": "Enter a suffix (an empty suffix would overwrite the originals)",
+    "badSuffix": "The suffix cannot contain / or \\"
   },
   "params": {
     "title": "Parameters",

@@ -126,6 +126,11 @@ impl OutputSettings {
                 }
             }
             OutputMode::Suffix { suffix } => {
+                // An empty suffix would resolve to the input path itself and
+                // silently overwrite the source.
+                if suffix.trim().is_empty() {
+                    return Err(OpError::invalid_param("output.mode.suffix", "empty"));
+                }
                 if suffix.contains(['/', '\\']) {
                     return Err(OpError::invalid_param(
                         "output.mode.suffix",
@@ -469,6 +474,17 @@ mod tests {
                 ((x * y * 5) % 256) as u8,
             ])
         })
+    }
+
+    #[test]
+    fn empty_or_blank_suffix_is_rejected_so_sources_are_never_overwritten() {
+        let input = PathBuf::from("assets").join("hero.png");
+        for s in ["", "   "] {
+            let err = resolve_output_path(&input, &settings(suffix(s), OutputFormat::Keep)).unwrap_err();
+            assert_eq!(err.code, codes::INVALID_PARAMS);
+            assert_eq!(err.params["param"], "output.mode.suffix");
+            assert_eq!(err.params["reason"], "empty");
+        }
     }
 
     #[test]

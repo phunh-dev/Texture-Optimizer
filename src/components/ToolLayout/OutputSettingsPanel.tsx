@@ -19,14 +19,21 @@ const COMPRESSIONS: OutputSettings['pngCompression'][] = ['fast', 'default', 'be
 const CONFLICTS: OutputSettings['conflict'][] = ['autoRename', 'overwrite', 'skip']
 
 /** Returns an i18n key explaining why the output settings cannot be used, or null. */
-export function outputProblem(output: OutputSettings): 'output.noFolder' | null {
-  return output.mode.kind === 'folder' && !output.mode.path ? 'output.noFolder' : null
+export function outputProblem(output: OutputSettings): 'output.noFolder' | 'output.noSuffix' | 'output.badSuffix' | null {
+  const { mode } = output
+  if (mode.kind === 'folder' && !mode.path) return 'output.noFolder'
+  // An empty suffix would write over the source file.
+  if (mode.kind === 'suffix' && !mode.suffix.trim()) return 'output.noSuffix'
+  if (mode.kind === 'suffix' && /[\\/]/.test(mode.suffix)) return 'output.badSuffix'
+  return null
 }
 
 /** Output destination / format panel bound to the session's `output` (undoable). */
 export function OutputSettingsPanel({ tabId }: { tabId: string }) {
   const { t } = useTranslation('common')
   const output = useSession(tabId, (s) => s.output)
+  const problem = outputProblem(output)
+  const suffixProblem = problem === 'output.noSuffix' || problem === 'output.badSuffix' ? problem : null
   // Remember the other modes' values when switching back and forth.
   const lastModes = useRef<{ folder: string; suffix: string }>({ folder: '', suffix: '_opt' })
 
@@ -101,7 +108,9 @@ export function OutputSettingsPanel({ tabId }: { tabId: string }) {
               spellCheck={false}
               onChange={(e) => set({ mode: { kind: 'suffix', suffix: e.target.value } }, true)}
               onBlur={commit}
+              aria-invalid={suffixProblem ? true : undefined}
             />
+            {suffixProblem && <p className="text-xs text-destructive">{t(suffixProblem)}</p>}
           </div>
         )}
       </div>

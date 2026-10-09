@@ -135,7 +135,9 @@
       "overwrite": "Ghi đè",
       "skip": "Bỏ qua",
       "autoRename": "Đổi tên"
-    }
+    },
+    "noSuffix": "Hãy nhập hậu tố (hậu tố trống sẽ ghi đè ảnh gốc)",
+    "badSuffix": "Hậu tố không được chứa / hoặc \\"
   },
   "params": {
     "title": "Tham số",
