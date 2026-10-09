@@ -20,6 +20,6 @@ describe('i18n', () => {
 
   it('interpolates error parameters', async () => {
     await i18n.changeLanguage('en')
-    expect(i18n.t('errors:IMG_TOO_LARGE', { max: 4096 })).toBe('Image is larger than the maximum size 4096px')
+    expect(i18n.t('errors:IMG_TOO_LARGE', { max: 4096, width: 5000, height: 100 })).toBe('Image size 5000×100 exceeds the maximum 4096px')
   })
 })

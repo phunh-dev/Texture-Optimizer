@@ -6,7 +6,7 @@ import tseslint from 'typescript-eslint'
 import noJsxLiteral from './eslint-rules/no-jsx-literal.js'
 
 export default tseslint.config(
-  { ignores: ['dist', 'src-tauri', 'target', 'coverage'] },
+  { ignores: ['dist', 'src-tauri', 'target', 'coverage', '.claude'] },
   {
     files: ['src/**/*.{ts,tsx}'],
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
