@@ -14,6 +14,10 @@ blake3.workspace = true
 rayon.workspace = true
 regex = "1"
 chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
+walkdir = "2"
+dunce = "1"
+tempfile = "3"
+oxipng = { version = "10", default-features = false, features = ["parallel"] }
 
 [dev-dependencies]
 proptest.workspace = true

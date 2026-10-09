@@ -24,9 +24,35 @@ export function thumbnailUrl(file: Pick<ImportedFile, 'path' | 'mtimeMs'>, size:
   return `${convertFileSrc(file.path, 'thumb')}?size=${size}&m=${file.mtimeMs}`
 }
 
+/**
+ * Decode the binary `preview_op` payload (see `src-tauri/src/preview.rs`):
+ * little-endian u32 `width | height | metaLen`, then `metaLen` bytes of UTF-8
+ * JSON (0 = null), then the PNG bytes.
+ */
+export function decodePreviewPayload(payload: ArrayBuffer | Uint8Array | number[]): PreviewResult {
+  const bytes =
+    payload instanceof Uint8Array
+      ? payload
+      : Array.isArray(payload)
+        ? Uint8Array.from(payload)
+        : new Uint8Array(payload)
+  const HEADER = 12
+  if (bytes.byteLength < HEADER) throw new Error('preview payload too short')
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength)
+  const width = view.getUint32(0, true)
+  const height = view.getUint32(4, true)
+  const metaLen = view.getUint32(8, true)
+  const meta: unknown =
+    metaLen > 0 ? JSON.parse(new TextDecoder().decode(bytes.subarray(HEADER, HEADER + metaLen))) : null
+  const start = bytes.byteOffset + HEADER + metaLen
+  const png = bytes.buffer.slice(start, bytes.byteOffset + bytes.byteLength) as ArrayBuffer
+  return { png, width, height, meta }
+}
+
 /** Process one image in memory and return the encoded result for preview. */
 export async function previewOp(tabId: string, path: string, request: OpRequest): Promise<PreviewResult> {
-  return invoke('preview_op', { tabId, path, request })
+  const payload = await invoke<ArrayBuffer | number[]>('preview_op', { tabId, path, request })
+  return decodePreviewPayload(payload)
 }
 
 /** Start a batch job; progress arrives via JOB_PROGRESS_EVENT / JOB_FINISHED_EVENT. Returns the job id. */
