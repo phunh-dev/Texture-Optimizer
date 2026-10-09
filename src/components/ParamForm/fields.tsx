@@ -17,6 +17,7 @@ import {
   type Anchor,
   type AnchorField,
   type ColorField,
+  type MultiSelectField,
   type NumberField,
   type SegmentedField,
   type SelectField,
@@ -132,6 +133,33 @@ export function SegmentedFieldControl({ field, id, value, disabled, describedBy,
     >
       {field.options.map(({ value: v, labelKey, icon: Icon }) => (
         <ToggleGroupItem key={v} value={v} aria-label={t(labelKey)}>
+          {Icon ? <Icon /> : null}
+          <span className="truncate">{t(labelKey)}</span>
+        </ToggleGroupItem>
+      ))}
+    </ToggleGroup>
+  )
+}
+
+export function MultiSelectFieldControl({ field, id, value, disabled, describedBy, onChange }: FieldProps<MultiSelectField, unknown>) {
+  const t = useLooseT()
+  const selected = Array.isArray(value) ? value.filter((v): v is string => typeof v === 'string') : []
+  return (
+    <ToggleGroup
+      id={id}
+      type="multiple"
+      className="flex w-full flex-wrap"
+      value={selected}
+      disabled={disabled}
+      aria-label={t(field.labelKey)}
+      aria-describedby={describedBy}
+      onValueChange={(v: string[]) => {
+        const set = new Set(v)
+        onChange(field.options.map((o) => o.value).filter((o) => set.has(o)))
+      }}
+    >
+      {field.options.map(({ value: v, labelKey, icon: Icon }) => (
+        <ToggleGroupItem key={v} value={v} aria-label={t(labelKey)} className="flex-none">
           {Icon ? <Icon /> : null}
           <span className="truncate">{t(labelKey)}</span>
         </ToggleGroupItem>

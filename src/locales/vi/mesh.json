@@ -1,1 +1,183 @@
-{}
+{
+  "errors": {
+    "mergedNameRequired": "Hãy nhập tên vật liệu"
+  },
+  "channels": {
+    "baseColor": "Màu gốc",
+    "normal": "Normal",
+    "metallic": "Metallic",
+    "roughness": "Độ nhám",
+    "occlusion": "Che khuất (AO)",
+    "emissive": "Phát sáng",
+    "opacity": "Độ trong suốt",
+    "specular": "Specular",
+    "height": "Độ cao",
+    "other": "Khác"
+  },
+  "sizes": {
+    "s256": "256 × 256",
+    "s512": "512 × 512",
+    "s1024": "1024 × 1024",
+    "s2048": "2048 × 2048",
+    "s4096": "4096 × 4096",
+    "s8192": "8192 × 8192",
+    "s16384": "16384 × 16384"
+  },
+  "groups": {
+    "channels": "Kênh texture",
+    "atlas": "Atlas",
+    "uv": "Ánh xạ lại UV",
+    "defaults": "Màu lấp kênh thiếu",
+    "defaultsDesc": "Màu dùng trong atlas của một kênh cho những vật liệu không có texture ở kênh đó.",
+    "output": "Đầu ra",
+    "advanced": "Nâng cao"
+  },
+  "params": {
+    "channels": {
+      "label": "Các kênh cần gộp",
+      "desc": "Mỗi kênh một atlas, tất cả dùng chung một bố cục. Kênh nào model đọc qua UV đã ánh xạ lại thì luôn được gộp, kể cả khi bỏ chọn."
+    },
+    "maxSize": { "label": "Kích thước atlas tối đa", "desc": "Trang atlas luôn là lũy thừa của 2 và không vượt quá giá trị này." },
+    "forceSquare": { "label": "Trang vuông" },
+    "padding": { "label": "Khoảng đệm", "desc": "Số pixel trống giữa các texture." },
+    "extrude": { "label": "Kéo dài mép", "desc": "Lặp lại pixel ở mép quanh mỗi texture để mipmap và bộ lọc không bị lem màu. Nên dùng 4–8 px." },
+    "textureScale": { "label": "Tỉ lệ texture", "desc": "Thu nhỏ mọi texture trước khi gộp (vd. 50% để xếp được nhiều hơn vào một atlas)." },
+    "scaleToFit": { "label": "Thu nhỏ để vừa một trang", "desc": "Giảm tỉ lệ một nửa (tối đa còn 1/8) cho đến khi mọi thứ vừa một atlas." },
+    "multiPage": { "label": "Cho phép nhiều trang", "desc": "Tạo thêm bộ atlas khi một trang không đủ. Mỗi model được giữ trên một trang khi có thể." },
+    "inset": {
+      "label": "Thụt lề UV",
+      "desc": "UV 0 và 1 nằm cách mép hình chữ nhật bao xa. Nửa texel giúp tránh lấy nhầm màu của ô bên cạnh.",
+      "halfTexel": "Nửa texel",
+      "none": "Không",
+      "pixels": "Tùy chỉnh"
+    },
+    "insetPixels": { "label": "Thụt lề (pixel)" },
+    "outOfRange": {
+      "label": "UV nằm ngoài 0–1",
+      "desc": "Texture lặp (tiling) không thể đưa thẳng vào atlas.",
+      "skipMaterial": "Bỏ qua vật liệu",
+      "clamp": "Kẹp về 0–1",
+      "wrapIntoTile": "Dời về ô gốc",
+      "bakeRepeat": "Lặp sẵn trong atlas"
+    },
+    "maxTiles": { "label": "Số lần lặp tối đa mỗi trục", "desc": "Chế độ lặp sẵn lưu texture N×M lần trong atlas." },
+    "outputMode": {
+      "label": "Đầu ra",
+      "rewriteModels": "Ghi lại model",
+      "uvRemapData": "Dữ liệu UV remap",
+      "rewriteDesc": "Ghi bản sao của model đã ánh xạ lại UV để dùng atlas.",
+      "remapDesc": "Giữ nguyên model: ghi các file <model>.uvremap.json và một script import cho Unity để áp dụng chúng."
+    },
+    "format": {
+      "label": "Định dạng model",
+      "sameAsSource": "Giống file gốc",
+      "obj": "OBJ",
+      "collada": "DAE (COLLADA)",
+      "fbx": "FBX (nhị phân)",
+      "fbxAscii": "FBX (ASCII)"
+    },
+    "mergeMaterials": { "label": "Gộp vật liệu", "desc": "Các vật liệu đã vào atlas của một model trở thành một vật liệu duy nhất (ít draw call hơn)." },
+    "mergedMaterialName": { "label": "Tên vật liệu gộp" },
+    "verifyGeometry": {
+      "label": "Kiểm tra hình học",
+      "desc": "Đọc lại từng model đã ghi và so với file gốc. Luôn bật với FBX trừ khi được cho phép trong mục Nâng cao."
+    },
+    "autoFallback": {
+      "label": "Chuyển sang dữ liệu UV remap khi lỗi",
+      "desc": "Nếu model ghi lại không qua được bước kiểm tra (hoặc cần nhiều trang atlas), ghi dữ liệu UV remap cho model đó thay thế."
+    },
+    "copySourceModels": { "label": "Sao chép model gốc", "desc": "Chép model nguyên bản vào cạnh file .uvremap.json của nó." },
+    "allowUnverifiedFbx": { "label": "Cho phép FBX không kiểm tra", "desc": "Cho phép tắt bước kiểm tra hình học với FBX. Không khuyến nghị." },
+    "defaultColor": { "label": "{{channel}}" }
+  },
+  "output": {
+    "title": "Nơi lưu",
+    "folder": "Thư mục đầu ra",
+    "noFolder": "Chưa chọn thư mục",
+    "chooseFolder": "Chọn thư mục đầu ra",
+    "baseName": "Tên gốc",
+    "baseNameDesc": "Atlas: {{example}}",
+    "baseNameInvalid": "Hãy dùng tên file đơn giản (không có / \\ : * ? \" < > |)"
+  },
+  "list": {
+    "count_one": "{{count}} model",
+    "count_other": "{{count}} model",
+    "add": "Thêm model",
+    "remove": "Gỡ {{name}}",
+    "removedToast_one": "Đã gỡ {{count}} model",
+    "removedToast_other": "Đã gỡ {{count}} model",
+    "meshes_one": "{{count}} mesh",
+    "meshes_other": "{{count}} mesh",
+    "vertices": "{{count}} đỉnh",
+    "materials_one": "{{count}} vật liệu",
+    "materials_other": "{{count}} vật liệu",
+    "loading": "Đang đọc model…",
+    "unavailable": "Không có thông tin model",
+    "noTextures": "Không có texture",
+    "missing": "Thiếu: {{path}}",
+    "embedded": "Texture nhúng trong file",
+    "uvChannel": "UV{{channel}}",
+    "warnings_one": "{{count}} cảnh báo",
+    "warnings_other": "{{count}} cảnh báo",
+    "dropTitle": "Thả model 3D hoặc thư mục vào đây",
+    "dropHint": "FBX, OBJ và DAE. Model gốc không bao giờ bị sửa; kết quả được ghi vào thư mục bạn chọn.",
+    "dropActive": "Thả ra để thêm model",
+    "or": "hoặc",
+    "addFolder": "Thêm thư mục"
+  },
+  "status": {
+    "inRange": "Trong 0–1",
+    "outOfRange": "Ngoài 0–1",
+    "clamped": "Đã kẹp",
+    "wrapped": "Đã dời về ô gốc",
+    "repeated": "Lặp {{u}}×{{v}}",
+    "skipped": "Bỏ qua",
+    "tooManyTiles": "Lặp quá nhiều",
+    "noUvs": "Không có UV",
+    "noTextures": "Không có texture"
+  },
+  "preview": {
+    "empty": "Thêm model để xem bố cục atlas",
+    "loading": "Đang xếp…",
+    "failed": "Không tạo được bản xem trước",
+    "page": "Trang {{n}}",
+    "pageSize": "{{width}}×{{height}} (POT)",
+    "occupancy": "Dùng {{value}}%",
+    "scale": "Tỉ lệ {{value}}%",
+    "channel": "Đang hiển thị: {{channel}}",
+    "rectTitle": "{{model}} › {{material}} — {{width}}×{{height}}",
+    "materials": "Vật liệu",
+    "warnings": "Cảnh báo",
+    "pages_one": "{{count}} trang",
+    "pages_other": "{{count}} trang"
+  },
+  "run": {
+    "label_one": "Gộp {{count}} model",
+    "label_other": "Gộp {{count}} model",
+    "noFolder": "Hãy chọn thư mục đầu ra trước",
+    "badBaseName": "Hãy sửa tên gốc trước"
+  },
+  "lastRun": {
+    "title": "Lần chạy gần nhất",
+    "rewritten": "Đã ghi lại",
+    "fallback": "Dự phòng",
+    "remapData": "Dữ liệu remap",
+    "skipped": "Bỏ qua",
+    "failed": "Lỗi",
+    "files_one": "Đã ghi {{count}} file",
+    "files_other": "Đã ghi {{count}} file"
+  },
+  "toast": {
+    "done": "Đã gộp: {{rewritten}} ghi lại, {{fallback}} dự phòng, {{skipped}} bỏ qua",
+    "doneRemap": "Đã gộp: dữ liệu UV remap cho {{count}} model, {{skipped}} bỏ qua",
+    "failedModels_one": "{{count}} model bị lỗi",
+    "failedModels_other": "{{count}} model bị lỗi",
+    "failed": "Gộp texture thất bại",
+    "importAdded_one": "Đã thêm {{count}} model",
+    "importAdded_other": "Đã thêm {{count}} model",
+    "importSkipped": "Đã thêm {{count}}, bỏ qua {{skipped}}",
+    "importDuplicates": "Các model này đã có trong danh sách",
+    "importNothing": "Không tìm thấy model FBX, OBJ hay DAE nào",
+    "modelsFilter": "Model 3D"
+  }
+}

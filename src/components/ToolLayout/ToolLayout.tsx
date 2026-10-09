@@ -57,6 +57,12 @@ export interface ToolLayoutProps {
   runLabel?: string
   /** Extra tool-specific reason (already translated) that disables Run, checked after files/params. */
   runDisabledReason?: string | null
+  /** Replaces the image grid in the main area (tools whose items are not images, e.g. 3D models). */
+  content?: (ctx: ToolContext) => ReactNode
+  /** Replaces the "N images" toolbar counter (already translated). */
+  countLabel?: string
+  /** Hides the S/M/L grid size toggle (default: shown with the image grid only). */
+  showGridSize?: boolean
   /**
    * Replaces the bottom Run button / job progress area (tools whose action is
    * not a background job, e.g. the renamer's synchronous Rename + confirm).
@@ -80,6 +86,9 @@ export function ToolLayout({
   showPresets,
   runLabel,
   runDisabledReason,
+  content,
+  countLabel,
+  showGridSize,
   runPanel,
 }: ToolLayoutProps) {
   const { t } = useTranslation('common')
@@ -146,7 +155,7 @@ export function ToolLayout({
           <HistoryButtons tabId={tabId} />
           <Separator orientation="vertical" className="mx-1" />
           <span className="truncate text-xs tabular-nums text-muted-foreground" data-testid="file-count">
-            {t('grid.count', { count: files.length })}
+            {countLabel ?? t('grid.count', { count: files.length })}
             {selectedIds.length > 0 ? (
               <span className="ml-1.5 rounded-full bg-primary/10 px-1.5 py-0.5 font-medium text-primary">
                 {t('grid.selected', { count: selectedIds.length })}
@@ -167,7 +176,7 @@ export function ToolLayout({
                 </ToggleGroupItem>
               </ToggleGroup>
             ) : null}
-            {view === 'grid' ? <GridSizeToggle tabId={tabId} /> : null}
+            {view === 'grid' && (showGridSize ?? !content) ? <GridSizeToggle tabId={tabId} /> : null}
             <Tooltip content={t('actions.clearAll')}>
               <Button
                 variant="ghost"
@@ -188,6 +197,8 @@ export function ToolLayout({
             <div className="size-full p-3">
               {preview({ tabId, files, params, output, selectedIds, focusFile })}
             </div>
+          ) : content ? (
+            content({ tabId, files, params, output, selectedIds, focusFile })
           ) : (
             <ImageGrid tabId={tabId} />
           )}

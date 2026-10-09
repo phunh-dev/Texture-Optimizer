@@ -1,0 +1,33 @@
+{
+  "channels": ["baseColor", "normal", "metallic", "roughness", "occlusion", "emissive", "opacity", "specular", "height"],
+  "maxSize": 2048,
+  "forceSquare": false,
+  "padding": 4,
+  "extrude": 4,
+  "textureScale": 100,
+  "scaleToFit": false,
+  "multiPage": true,
+  "inset": { "mode": "halfTexel" },
+  "outOfRange": { "mode": "skipMaterial" },
+  "missingDefaults": {
+    "baseColor": "#ffffff",
+    "normal": "#8080ff",
+    "metallic": "#000000",
+    "roughness": "#ffffff",
+    "occlusion": "#ffffff",
+    "emissive": "#000000",
+    "opacity": "#ffffff",
+    "specular": "#000000",
+    "height": "#808080"
+  },
+  "output": {
+    "mode": "rewriteModels",
+    "format": "sameAsSource",
+    "mergeMaterials": true,
+    "mergedMaterialName": "AtlasMaterial",
+    "verifyGeometry": true,
+    "allowUnverifiedFbx": false,
+    "autoFallback": true,
+    "copySourceModels": true
+  }
+}

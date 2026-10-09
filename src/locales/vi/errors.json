@@ -47,5 +47,17 @@
   "MESH_ATLAS_CHANNEL_MISSING": "{{material}} dùng texture {{channel}} nhưng chưa có atlas {{channel}}",
   "MESH_TEXTURE_NOT_FOUND": "Không tìm thấy texture của {{material}} ({{channel}}): {{path}}",
   "MESH_EXPORT_GEOMETRY_CHANGED": "File {{format}} xuất ra làm thay đổi hình học của mô hình nên đã bị huỷ. Hãy thử định dạng khác hoặc chế độ UV Remap Data",
-  "MESH_BACKEND_UNAVAILABLE": "Bản dựng này không có hỗ trợ 3D"
+  "MESH_BACKEND_UNAVAILABLE": "Bản dựng này không có hỗ trợ 3D",
+  "MESH_WORKER_CRASHED": "Tiến trình xử lý 3D dừng đột ngột (mã thoát {{exitCode}}). Có thể model bị hỏng hoặc không được hỗ trợ",
+  "MESH_WORKER_SPAWN_FAILED": "Không khởi động được tiến trình xử lý 3D: {{detail}}",
+  "MESH_NO_MODELS": "Hãy thêm ít nhất một model 3D",
+  "MESH_NOTHING_TO_PACK": "Không model nào có vật liệu có thể gộp vào atlas",
+  "MESH_CHANNEL_FORCED": "Kênh {{channel}} vẫn được gộp dù không được chọn vì các vật liệu trong atlas đang dùng nó",
+  "MESH_TEXTURE_RESIZED": "{{material}}: texture {{channel}} ({{width}}×{{height}}) đã được lấy mẫu lại thành {{targetWidth}}×{{targetHeight}}",
+  "MESH_TEXTURE_UNREADABLE": "Không đọc được texture {{channel}} của {{material}}: {{path}}",
+  "MESH_MATERIAL_NO_TEXTURES": "{{material}} không có texture đọc được nên không được đưa vào atlas",
+  "MESH_MODEL_SPANS_PAGES": "{{model}} cần {{pages}} trang atlas, một file model không thể tham chiếu như vậy",
+  "MESH_FALLBACK_REMAP_DATA": "{{model}} được xuất dưới dạng dữ liệu UV remap thay vì ghi lại model",
+  "MESH_TEXTURES_DOWNSCALED": "Texture đã được thu nhỏ còn {{percent}}% để vừa một trang atlas",
+  "MESH_MODEL_SKIPPED": "{{model}} không có gì để gộp nên không được ghi"
 }

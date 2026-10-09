@@ -172,3 +172,112 @@ pub fn build(
         warnings,
     })
 }
+
+/// One page of [`layout_sizes`].
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SizeLayoutPage {
+    pub width: u32,
+    pub height: u32,
+    /// `(input index, frame)` of every rect on this page (top-left origin).
+    pub rects: Vec<(usize, Frame)>,
+}
+
+/// Pack plain sizes (no pixels, no trimming or dedupe) with the same packer
+/// and page sizing as [`build`]; rotation is never used. The 3D texture
+/// packer uses this to compute one layout shared by several channel images.
+/// Sizes are packed largest area first (ties: input order). Fails with
+/// `ATLAS_DOES_NOT_FIT` (param `name` = input index) like [`build`].
+pub fn layout_sizes(sizes: &[(u32, u32)], params: &AtlasParams) -> OpResult<Vec<SizeLayoutPage>> {
+    let mut params = params.clone();
+    params.allow_rotation = false;
+    params.trim = false;
+    params.validate()?;
+    if sizes.is_empty() {
+        return Err(OpError::new(codes::ATLAS_EMPTY));
+    }
+    let mut prepared: Vec<sprites::Prepared> = Vec::with_capacity(sizes.len());
+    for (i, &(w, h)) in sizes.iter().enumerate() {
+        if w == 0 || h == 0 {
+            return Err(OpError::new(crate::error::codes::IMG_EMPTY).with("name", i.to_string()));
+        }
+        prepared.push(sprites::Prepared {
+            name: i.to_string(),
+            aliases: Vec::new(),
+            hash: String::new(),
+            image: ImageBuf::new(1, 1),
+            source_w: w,
+            source_h: h,
+            trim: packer::Rect::new(0, 0, w, h),
+            order: i,
+        });
+    }
+    prepared.sort_by_key(|p| (std::cmp::Reverse(u64::from(p.w()) * u64::from(p.h())), p.order));
+    let pages = layout::layout_all(&prepared, &params)?;
+    Ok(pages
+        .into_iter()
+        .map(|p| SizeLayoutPage {
+            width: p.width,
+            height: p.height,
+            rects: p
+                .placements
+                .iter()
+                .map(|pl| {
+                    (
+                        prepared[pl.idx].order,
+                        Frame {
+                            x: pl.frame.x,
+                            y: pl.frame.y,
+                            w: pl.frame.w,
+                            h: pl.frame.h,
+                        },
+                    )
+                })
+                .collect(),
+        })
+        .collect())
+}
+
+#[cfg(test)]
+mod layout_sizes_tests {
+    use super::*;
+
+    #[test]
+    fn packs_sizes_without_rotation_into_pot_pages() {
+        let params = AtlasParams {
+            padding: 4,
+            extrude: 4,
+            allow_rotation: true,
+            max_width: 256,
+            max_height: 256,
+            multi_page: true,
+            ..Default::default()
+        };
+        let sizes = [(100, 20), (20, 100), (64, 64), (200, 200)];
+        let pages = layout_sizes(&sizes, &params).unwrap();
+        let mut seen = vec![false; sizes.len()];
+        for page in &pages {
+            assert!(page.width.is_power_of_two() && page.height.is_power_of_two());
+            for (i, f) in &page.rects {
+                assert_eq!((f.w, f.h), sizes[*i], "never rotated");
+                assert!(f.x >= 4 && f.y >= 4 && f.x + f.w + 4 <= page.width && f.y + f.h + 4 <= page.height);
+                seen[*i] = true;
+            }
+            for (a, fa) in &page.rects {
+                for (b, fb) in &page.rects {
+                    if a < b {
+                        let sep = fa.x + fa.w + 12 <= fb.x
+                            || fb.x + fb.w + 12 <= fa.x
+                            || fa.y + fa.h + 12 <= fb.y
+                            || fb.y + fb.h + 12 <= fa.y;
+                        assert!(sep, "rects {a} and {b} overlap or are too close");
+                    }
+                }
+            }
+        }
+        assert!(seen.iter().all(|&s| s));
+        assert!(pages.len() >= 2);
+        let err = layout_sizes(&[(300, 10)], &params).unwrap_err();
+        assert_eq!(err.code, codes::ATLAS_DOES_NOT_FIT);
+        assert_eq!(err.params["name"], "0");
+    }
+}

@@ -1,1 +1,183 @@
-{}
+{
+  "errors": {
+    "mergedNameRequired": "Enter a material name"
+  },
+  "channels": {
+    "baseColor": "Base color",
+    "normal": "Normal",
+    "metallic": "Metallic",
+    "roughness": "Roughness",
+    "occlusion": "Occlusion",
+    "emissive": "Emissive",
+    "opacity": "Opacity",
+    "specular": "Specular",
+    "height": "Height",
+    "other": "Other"
+  },
+  "sizes": {
+    "s256": "256 × 256",
+    "s512": "512 × 512",
+    "s1024": "1024 × 1024",
+    "s2048": "2048 × 2048",
+    "s4096": "4096 × 4096",
+    "s8192": "8192 × 8192",
+    "s16384": "16384 × 16384"
+  },
+  "groups": {
+    "channels": "Channels",
+    "atlas": "Atlas",
+    "uv": "UV remapping",
+    "defaults": "Missing-channel fill",
+    "defaultsDesc": "Color used in a channel's atlas for materials that have no texture in that channel.",
+    "output": "Output",
+    "advanced": "Advanced"
+  },
+  "params": {
+    "channels": {
+      "label": "Channels to pack",
+      "desc": "One atlas per channel, all with the same layout. Maps a model samples through its remapped UVs are always packed, even if unchecked."
+    },
+    "maxSize": { "label": "Max atlas size", "desc": "Pages are always a power of two, never larger than this." },
+    "forceSquare": { "label": "Square pages" },
+    "padding": { "label": "Padding", "desc": "Empty pixels between textures." },
+    "extrude": { "label": "Extrude", "desc": "Edge pixels repeated around each texture so mipmaps and filtering do not bleed. 4–8 px recommended." },
+    "textureScale": { "label": "Texture scale", "desc": "Resize every texture before packing (e.g. 50% to fit more in one atlas)." },
+    "scaleToFit": { "label": "Shrink to fit one page", "desc": "Halve the scale (down to 1/8) until everything fits in one atlas." },
+    "multiPage": { "label": "Allow several pages", "desc": "Extra atlas sets when one page is not enough. A model is kept on one page whenever possible." },
+    "inset": {
+      "label": "UV inset",
+      "desc": "How far inside its rectangle UV 0 and 1 land. Half a texel avoids sampling the neighbour.",
+      "halfTexel": "Half texel",
+      "none": "None",
+      "pixels": "Custom"
+    },
+    "insetPixels": { "label": "Inset (pixels)" },
+    "outOfRange": {
+      "label": "UVs outside 0–1",
+      "desc": "Tiling textures cannot be atlased as is.",
+      "skipMaterial": "Skip material",
+      "clamp": "Clamp",
+      "wrapIntoTile": "Wrap into tile",
+      "bakeRepeat": "Bake repeats"
+    },
+    "maxTiles": { "label": "Max repeats per axis", "desc": "Bake repeats stores the texture N×M times in the atlas." },
+    "outputMode": {
+      "label": "Output",
+      "rewriteModels": "Rewrite models",
+      "uvRemapData": "UV remap data",
+      "rewriteDesc": "Writes remapped copies of the models that use the atlas.",
+      "remapDesc": "Leaves models untouched: writes <model>.uvremap.json files and a Unity import script that applies them."
+    },
+    "format": {
+      "label": "Model format",
+      "sameAsSource": "Same as source",
+      "obj": "OBJ",
+      "collada": "DAE (COLLADA)",
+      "fbx": "FBX (binary)",
+      "fbxAscii": "FBX (ASCII)"
+    },
+    "mergeMaterials": { "label": "Merge materials", "desc": "Atlased materials of a model become one material (fewer draw calls)." },
+    "mergedMaterialName": { "label": "Merged material name" },
+    "verifyGeometry": {
+      "label": "Verify geometry",
+      "desc": "Re-imports each written model and compares it with the source. Always on for FBX unless allowed under Advanced."
+    },
+    "autoFallback": {
+      "label": "Fall back to UV remap data",
+      "desc": "If a rewritten model fails the check (or needs several atlas pages), write UV remap data for it instead."
+    },
+    "copySourceModels": { "label": "Copy source models", "desc": "Copy the untouched model next to its .uvremap.json." },
+    "allowUnverifiedFbx": { "label": "Allow unverified FBX", "desc": "Lets you turn the geometry check off for FBX output. Not recommended." },
+    "defaultColor": { "label": "{{channel}}" }
+  },
+  "output": {
+    "title": "Destination",
+    "folder": "Output folder",
+    "noFolder": "No folder selected",
+    "chooseFolder": "Choose output folder",
+    "baseName": "Base name",
+    "baseNameDesc": "Atlases: {{example}}",
+    "baseNameInvalid": "Use a plain file name (no / \\ : * ? \" < > |)"
+  },
+  "list": {
+    "count_one": "{{count}} model",
+    "count_other": "{{count}} models",
+    "add": "Add models",
+    "remove": "Remove {{name}}",
+    "removedToast_one": "Removed {{count}} model",
+    "removedToast_other": "Removed {{count}} models",
+    "meshes_one": "{{count}} mesh",
+    "meshes_other": "{{count}} meshes",
+    "vertices": "{{count}} verts",
+    "materials_one": "{{count}} material",
+    "materials_other": "{{count}} materials",
+    "loading": "Reading model…",
+    "unavailable": "Model details unavailable",
+    "noTextures": "No textures",
+    "missing": "Missing: {{path}}",
+    "embedded": "Embedded texture",
+    "uvChannel": "UV{{channel}}",
+    "warnings_one": "{{count}} warning",
+    "warnings_other": "{{count}} warnings",
+    "dropTitle": "Drop 3D models or folders here",
+    "dropHint": "FBX, OBJ and DAE. Models are never modified; outputs go to the folder you choose.",
+    "dropActive": "Release to add models",
+    "or": "or",
+    "addFolder": "Add folder"
+  },
+  "status": {
+    "inRange": "In range",
+    "outOfRange": "Outside 0–1",
+    "clamped": "Clamped",
+    "wrapped": "Wrapped",
+    "repeated": "Repeated {{u}}×{{v}}",
+    "skipped": "Skipped",
+    "tooManyTiles": "Too many repeats",
+    "noUvs": "No UVs",
+    "noTextures": "No textures"
+  },
+  "preview": {
+    "empty": "Add models to see the atlas layout",
+    "loading": "Packing…",
+    "failed": "Preview failed",
+    "page": "Page {{n}}",
+    "pageSize": "{{width}}×{{height}} (POT)",
+    "occupancy": "{{value}}% used",
+    "scale": "Scale {{value}}%",
+    "channel": "Showing: {{channel}}",
+    "rectTitle": "{{model}} › {{material}} — {{width}}×{{height}}",
+    "materials": "Materials",
+    "warnings": "Warnings",
+    "pages_one": "{{count}} page",
+    "pages_other": "{{count}} pages"
+  },
+  "run": {
+    "label_one": "Pack {{count}} model",
+    "label_other": "Pack {{count}} models",
+    "noFolder": "Choose an output folder first",
+    "badBaseName": "Fix the base name first"
+  },
+  "lastRun": {
+    "title": "Last run",
+    "rewritten": "Rewritten",
+    "fallback": "Fallback",
+    "remapData": "Remap data",
+    "skipped": "Skipped",
+    "failed": "Failed",
+    "files_one": "{{count}} file written",
+    "files_other": "{{count}} files written"
+  },
+  "toast": {
+    "done": "Packed: {{rewritten}} rewritten, {{fallback}} fallback, {{skipped}} skipped",
+    "doneRemap": "Packed: UV remap data for {{count}} models, {{skipped}} skipped",
+    "failedModels_one": "{{count}} model failed",
+    "failedModels_other": "{{count}} models failed",
+    "failed": "Packing failed",
+    "importAdded_one": "Added {{count}} model",
+    "importAdded_other": "Added {{count}} models",
+    "importSkipped": "Added {{count}}, skipped {{skipped}}",
+    "importDuplicates": "These models are already in the list",
+    "importNothing": "No FBX, OBJ or DAE models found",
+    "modelsFilter": "3D models"
+  }
+}

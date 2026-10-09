@@ -54,6 +54,12 @@ export interface SegmentedField extends FieldBase {
   options: OptionDescriptor[]
 }
 
+/** Any subset of `options`; value is a string[] kept in option order. */
+export interface MultiSelectField extends FieldBase {
+  kind: 'multiSelect'
+  options: OptionDescriptor[]
+}
+
 export interface SwitchField extends FieldBase {
   kind: 'switch'
 }
@@ -132,6 +138,7 @@ export type FieldDescriptor =
   | SliderField
   | SelectField
   | SegmentedField
+  | MultiSelectField
   | SwitchField
   | ColorField
   | TextField

@@ -5,9 +5,11 @@
 
 pub mod commands;
 pub mod commands_atlas;
+pub mod commands_mesh;
 pub mod commands_rename;
 pub mod error;
 pub mod jobs;
+pub mod mesh_worker;
 pub mod preview;
 pub mod session;
 pub mod thumb_protocol;
@@ -22,6 +24,7 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_store::Builder::new().build())
         .manage(commands::AppState::default())
+        .manage(commands_mesh::MeshState::default())
         .manage(ThumbService::new())
         .register_asynchronous_uri_scheme_protocol(
             thumb_protocol::SCHEME,
@@ -48,6 +51,9 @@ pub fn run() {
             commands_atlas::atlas_preview,
             commands_atlas::atlas_export,
             commands_atlas::atlas_load_project,
+            commands_mesh::mesh_scan,
+            commands_mesh::mesh_preview_pack,
+            commands_mesh::mesh_pack,
             commands_rename::rename_plan,
             commands_rename::rename_execute,
             commands_rename::rename_revert_last,

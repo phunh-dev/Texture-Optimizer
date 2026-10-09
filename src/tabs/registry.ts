@@ -18,6 +18,7 @@ import { atlasDefaults } from './atlas/defaults'
 import { imageOpDefaults } from './_imageOps/defaults'
 import { defaultBgRemoveParams } from './bgRemove/defaults'
 import { defaultRenameParams } from './rename/defaults'
+import { meshDefaults } from './meshPack/defaults'
 
 export type ToolId = 'resize' | 'resolution' | 'trim' | 'potPad' | 'atlas' | 'rename' | 'bgRemove' | 'meshPack'
 
@@ -37,8 +38,6 @@ export interface ToolDefinition {
   defaultParams: () => Record<string, unknown>
 }
 
-const placeholder = () => import('./_placeholder')
-const noParams = () => ({})
 
 export const tools: ToolDefinition[] = [
   { id: 'resize', titleKey: 'tools.resize.title', descriptionKey: 'tools.resize.description', icon: ScalingIcon, load: () => import('./resize'), defaultParams: imageOpDefaults.resize },
@@ -48,7 +47,7 @@ export const tools: ToolDefinition[] = [
   { id: 'atlas', titleKey: 'tools.atlas.title', descriptionKey: 'tools.atlas.description', icon: LayoutDashboardIcon, load: () => import('./atlas'), defaultParams: atlasDefaults },
   { id: 'rename', titleKey: 'tools.rename.title', descriptionKey: 'tools.rename.description', icon: TextCursorInputIcon, load: () => import('./rename'), defaultParams: defaultRenameParams },
   { id: 'bgRemove', titleKey: 'tools.bgRemove.title', descriptionKey: 'tools.bgRemove.description', icon: EraserIcon, load: () => import('./bgRemove'), defaultParams: defaultBgRemoveParams },
-  { id: 'meshPack', titleKey: 'tools.meshPack.title', descriptionKey: 'tools.meshPack.description', icon: BoxesIcon, load: placeholder, defaultParams: noParams },
+  { id: 'meshPack', titleKey: 'tools.meshPack.title', descriptionKey: 'tools.meshPack.description', icon: BoxesIcon, load: () => import('./meshPack'), defaultParams: meshDefaults },
 ]
 
 export function getTool(id: ToolId): ToolDefinition {

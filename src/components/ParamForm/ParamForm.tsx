@@ -10,6 +10,7 @@ import { requireSession, useSession, type Params } from '@/stores/session'
 import {
   AnchorFieldControl,
   ColorFieldControl,
+  MultiSelectFieldControl,
   FieldShell,
   NumberFieldControl,
   SegmentedFieldControl,
@@ -145,6 +146,9 @@ function Field({ tabId, field, params, error }: { tabId: string; field: LeafFiel
       break
     case 'segmented':
       control = <SegmentedFieldControl field={field} {...common} />
+      break
+    case 'multiSelect':
+      control = <MultiSelectFieldControl field={field} {...common} />
       break
     case 'switch':
       control = <SwitchFieldControl field={field} {...common} />
