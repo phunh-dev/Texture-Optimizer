@@ -16,6 +16,7 @@ mod layout;
 mod packer;
 pub mod params;
 mod sprites;
+pub mod workflow;
 
 pub use exporters::{ExistingFiles, ExportOutput, ExporterConfig, export};
 pub use incremental::{
@@ -49,6 +50,13 @@ pub mod codes {
     /// Warning from the Unity exporter: an existing `.meta` had no readable
     /// guid, so a new one was generated. Params: `path`.
     pub const ATLAS_META_UNREADABLE: &str = "ATLAS_META_UNREADABLE";
+    /// Warning from the incremental workflow: a sprite of the previous atlas
+    /// could not be recovered from its page image and was dropped.
+    /// Params: `name`, `path` (page file), `reason` (error code or `pageMismatch`).
+    pub const ATLAS_SPRITE_NOT_RECOVERED: &str = "ATLAS_SPRITE_NOT_RECOVERED";
+    /// Warning from the incremental workflow: a stale file of the previous
+    /// export could not be deleted. Params: `path`, `detail`.
+    pub const ATLAS_STALE_DELETE_FAILED: &str = "ATLAS_STALE_DELETE_FAILED";
 }
 
 /// One input image. `name` is the sprite name used by exporters (usually the

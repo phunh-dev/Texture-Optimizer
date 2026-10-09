@@ -68,6 +68,8 @@ export interface OutputSettings {
    * inPlace + format 'keep' always overwrites the source. autoRename picks `name_1.ext`, `name_2.ext`, ...
    */
   conflict: 'overwrite' | 'skip' | 'autoRename'
+  /** Write the op metadata (e.g. trim offsets) to `<output>.json`. Optional, default false. */
+  writeMeta?: boolean
 }
 
 export interface PreviewResult {

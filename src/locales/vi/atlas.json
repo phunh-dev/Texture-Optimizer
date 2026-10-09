@@ -1,1 +1,354 @@
-{}
+{
+  "groups": {
+    "packing": "Xếp ảnh",
+    "size": "Kích thước atlas",
+    "spacing": "Khoảng cách",
+    "sprites": "Sprite",
+    "pages": "Trang",
+    "color": "Màu",
+    "exporter": "Định dạng xuất"
+  },
+  "params": {
+    "algorithm": {
+      "label": "Thuật toán",
+      "desc": "MaxRects thường xếp chặt hơn; Skyline nhanh hơn khi có nhiều sprite giống nhau."
+    },
+    "algorithms": {
+      "maxRects": "MaxRects",
+      "skyline": "Skyline"
+    },
+    "heuristic": {
+      "label": "Cách chọn vị trí",
+      "desc": "Cách chọn chỗ trống cho từng sprite."
+    },
+    "heuristics": {
+      "bestShortSideFit": "Khớp cạnh ngắn nhất",
+      "bestLongSideFit": "Khớp cạnh dài nhất",
+      "bestAreaFit": "Khớp diện tích nhất",
+      "bottomLeft": "Dưới cùng bên trái",
+      "contactPoint": "Tiếp xúc nhiều nhất",
+      "minWaste": "Ít lãng phí nhất"
+    },
+    "maxWidth": {
+      "label": "Chiều rộng tối đa"
+    },
+    "maxHeight": {
+      "label": "Chiều cao tối đa"
+    },
+    "forcePot": {
+      "label": "Lũy thừa của 2",
+      "desc": "Kích thước trang là lũy thừa của 2 (256, 512, 1024…)."
+    },
+    "forceSquare": {
+      "label": "Trang hình vuông"
+    },
+    "sizeMode": {
+      "label": "Kích thước trang",
+      "desc": "Thu nhỏ trang vừa với nội dung, hoặc luôn dùng kích thước tối đa."
+    },
+    "sizeModes": {
+      "shrinkToFit": "Vừa nội dung",
+      "fixed": "Cố định (tối đa)"
+    },
+    "padding": {
+      "label": "Khoảng đệm",
+      "desc": "Số pixel trong suốt giữa các sprite."
+    },
+    "extrude": {
+      "label": "Kéo dài viền",
+      "desc": "Lặp lại pixel viền của sprite ra ngoài để không bị lem màu khi lọc."
+    },
+    "border": {
+      "label": "Lề trang",
+      "desc": "Số pixel trong suốt chừa lại dọc mép trang."
+    },
+    "trim": {
+      "label": "Cắt viền trong suốt",
+      "desc": "Chỉ xếp phần nhìn thấy; độ lệch được ghi vào metadata."
+    },
+    "trimThreshold": {
+      "label": "Ngưỡng alpha khi cắt",
+      "desc": "Pixel có alpha nhỏ hơn hoặc bằng giá trị này được coi là trong suốt."
+    },
+    "allowRotation": {
+      "label": "Cho phép xoay",
+      "desc": "Sprite có thể được xoay 90° nếu giúp xếp chặt hơn.",
+      "unsupported": {
+        "unity": "Unity không hỗ trợ sprite bị xoay trong texture nên tính năng xoay bị tắt với định dạng này.",
+        "godot": "Vùng AtlasTexture của Godot không thể xoay nên tính năng xoay bị tắt với định dạng này."
+      }
+    },
+    "dedupe": {
+      "label": "Gộp ảnh giống hệt nhau",
+      "desc": "Các sprite có pixel giống hệt nhau dùng chung một vùng trên atlas."
+    },
+    "sortBy": {
+      "label": "Sắp xếp trước khi xếp"
+    },
+    "sortOptions": {
+      "area": "Diện tích",
+      "maxSide": "Cạnh dài nhất",
+      "height": "Chiều cao",
+      "width": "Chiều rộng",
+      "name": "Tên",
+      "none": "Thứ tự nhập"
+    },
+    "multiPage": {
+      "label": "Nhiều trang",
+      "desc": "Tràn sang trang mới thay vì báo lỗi khi không đủ chỗ."
+    },
+    "premultiplyAlpha": {
+      "label": "Alpha nhân trước",
+      "desc": "Lưu màu đã nhân với alpha (dùng cho chế độ hòa trộn premultiplied)."
+    }
+  },
+  "exporter": {
+    "kind": {
+      "label": "Xuất cho",
+      "desc": "Mỗi lần xuất dùng một định dạng; chỉ hiện tùy chọn của định dạng đó."
+    },
+    "kinds": {
+      "genericJson": "JSON chung (TexturePacker)",
+      "unity": "Unity",
+      "godot": "Godot",
+      "unreal": "Unreal Paper2D"
+    },
+    "pivotX": {
+      "label": "Tâm xoay X"
+    },
+    "pivotY": {
+      "label": "Tâm xoay Y"
+    },
+    "pivotTopLeft": "Tâm xoay chuẩn hóa, 0,0 = góc trên bên trái.",
+    "pivotBottomLeft": "Tâm xoay chuẩn hóa, 0,0 = góc dưới bên trái (quy ước của Unity).",
+    "generic": {
+      "format": {
+        "label": "Cấu trúc frames",
+        "desc": "Hash: frames theo tên. Array: danh sách có trường filename."
+      },
+      "formats": {
+        "hash": "Hash",
+        "array": "Array"
+      },
+      "imagePathPrefix": {
+        "label": "Tiền tố đường dẫn ảnh",
+        "desc": "Thêm vào trước tên file trang trong meta.image.",
+        "placeholder": "textures/"
+      },
+      "includeTrimInfo": {
+        "label": "Ghi thông tin cắt viền",
+        "desc": "Ghi trimmed, spriteSourceSize và sourceSize."
+      },
+      "pretty": {
+        "label": "Định dạng JSON dễ đọc"
+      }
+    },
+    "unity": {
+      "unityVersion": {
+        "label": "Phiên bản Unity"
+      },
+      "versions": {
+        "unity2021": "2021.3 LTS",
+        "unity2022": "2022.3 LTS",
+        "unity6": "Unity 6"
+      },
+      "pixelsPerUnit": {
+        "label": "Pixel trên mỗi đơn vị",
+        "desc": "Số pixel tương ứng với một đơn vị trong thế giới game."
+      },
+      "filterMode": {
+        "label": "Chế độ lọc"
+      },
+      "filterModes": {
+        "point": "Point (không lọc)",
+        "bilinear": "Bilinear",
+        "trilinear": "Trilinear"
+      },
+      "textureCompression": {
+        "label": "Nén"
+      },
+      "compressions": {
+        "none": "Không nén",
+        "lowQuality": "Chất lượng thấp",
+        "normalQuality": "Chất lượng thường",
+        "highQuality": "Chất lượng cao"
+      },
+      "maxTextureSize": {
+        "label": "Kích thước texture tối đa",
+        "desc": "Tự động sẽ chọn kích thước Unity nhỏ nhất chứa vừa trang."
+      },
+      "maxTextureSizes": {
+        "auto": "Tự động",
+        "s32": "32",
+        "s64": "64",
+        "s128": "128",
+        "s256": "256",
+        "s512": "512",
+        "s1024": "1024",
+        "s2048": "2048",
+        "s4096": "4096",
+        "s8192": "8192",
+        "s16384": "16384"
+      },
+      "mipmaps": {
+        "label": "Tạo mipmap"
+      },
+      "pivot": {
+        "label": "Tâm xoay"
+      },
+      "pivots": {
+        "center": "Giữa",
+        "topLeft": "Trên bên trái",
+        "topCenter": "Trên giữa",
+        "topRight": "Trên bên phải",
+        "leftCenter": "Giữa bên trái",
+        "rightCenter": "Giữa bên phải",
+        "bottomLeft": "Dưới bên trái",
+        "bottomCenter": "Dưới giữa",
+        "bottomRight": "Dưới bên phải",
+        "custom": "Tùy chỉnh"
+      },
+      "preservePivotOnTrim": {
+        "label": "Giữ tâm xoay của sprite đã cắt",
+        "desc": "Sprite đã cắt viền vẫn hiển thị đúng vị trí như ảnh gốc."
+      }
+    },
+    "godot": {
+      "version": {
+        "label": "Phiên bản Godot"
+      },
+      "versions": {
+        "godot3": "Godot 3",
+        "godot4": "Godot 4"
+      },
+      "resPath": {
+        "label": "Thư mục tài nguyên",
+        "desc": "Thư mục res:// sẽ chứa ảnh các trang được xuất."
+      },
+      "outputSubfolder": {
+        "label": "Thư mục con cho .tres",
+        "desc": "Tính từ thư mục xuất; để trống = cạnh file ảnh.",
+        "placeholder": "sprites"
+      },
+      "filterClip": {
+        "label": "Filter clip",
+        "desc": "Ngăn sprite bên cạnh lem vào khi lọc."
+      }
+    },
+    "unreal": {
+      "fileExtension": {
+        "label": "Đuôi file",
+        "desc": "Paper2D nhập file .paper2dsprites; JSON có cùng nội dung."
+      },
+      "extensions": {
+        "paper2dsprites": ".paper2dsprites",
+        "json": ".json"
+      }
+    }
+  },
+  "features": {
+    "rotation": "xoay sprite",
+    "multiPage": "nhiều trang",
+    "trim": "cắt viền"
+  },
+  "layoutReset": {
+    "spacingChanged": "khoảng đệm, kéo dài viền hoặc lề trang đã thay đổi",
+    "maxSizeReduced": "kích thước tối đa nhỏ hơn các trang hiện có",
+    "notPot": "các trang hiện có không phải lũy thừa của 2",
+    "notSquare": "các trang hiện có không phải hình vuông"
+  },
+  "errors": {
+    "positive": "Phải lớn hơn 0",
+    "resPath": "Phải bắt đầu bằng res://",
+    "subfolder": "Dùng thư mục tương đối, không chứa \"..\" hay ký tự ổ đĩa",
+    "baseName": {
+      "empty": "Hãy nhập tên gốc",
+      "tooLong": "Tên gốc quá dài",
+      "invalidChars": "Tên gốc không được chứa \\ / : * ? \" < > |",
+      "trailingDotOrSpace": "Tên gốc không được bắt đầu bằng dấu cách hoặc kết thúc bằng dấu chấm, dấu cách",
+      "reserved": "Tên này đã được Windows dành riêng"
+    }
+  },
+  "output": {
+    "title": "Đầu ra",
+    "folder": "Thư mục xuất",
+    "chooseFolder": "Chọn thư mục",
+    "noFolder": "Chưa chọn thư mục",
+    "baseName": "Tên gốc",
+    "baseNameDesc": "Ghi {{files}} và metadata.",
+    "mode": {
+      "label": "Khi atlas đã tồn tại",
+      "keepPositions": "Giữ nguyên vị trí",
+      "repackOptimal": "Xếp lại tối ưu",
+      "keepPositionsDesc": "Sprite cũ giữ nguyên chỗ; sprite mới lấp vào chỗ trống.",
+      "repackOptimalDesc": "Xếp lại toàn bộ để atlas nhỏ nhất (vẫn giữ ID trong engine)."
+    },
+    "removeMissing": {
+      "label": "Xóa sprite không có trong danh sách",
+      "desc": "Tắt: sprite đã có trong atlas vẫn được giữ dù ảnh của nó không có trong danh sách này."
+    },
+    "existing": {
+      "title": "Atlas hiện có",
+      "checking": "Đang tìm atlas hiện có…",
+      "none": "Chưa có atlas ở đây; một atlas mới sẽ được tạo.",
+      "found_one": "{{count}} sprite trên {{pages}} trang",
+      "found_other": "{{count}} sprite trên {{pages}} trang",
+      "exporter": "Lần xuất trước cho {{exporter}}"
+    }
+  },
+  "status": {
+    "new": "Mới",
+    "replaced": "Thay thế",
+    "kept": "Giữ lại",
+    "removed": "Bị xóa"
+  },
+  "statusCount": {
+    "new": "{{count}} mới",
+    "replaced": "{{count}} thay thế",
+    "kept": "{{count}} giữ lại",
+    "removed": "{{count}} bị xóa"
+  },
+  "preview": {
+    "empty": "Thêm ảnh để xem atlas.",
+    "loading": "Đang xếp…",
+    "failed": "Không thể tạo atlas",
+    "page": "Trang {{index}}",
+    "pages": "Các trang",
+    "zoomIn": "Phóng to",
+    "zoomOut": "Thu nhỏ",
+    "fit": "Vừa khung nhìn",
+    "actualSize": "Kích thước thật",
+    "canvas": "Xem trước trang atlas",
+    "stats": {
+      "size": "Kích thước",
+      "pages": "Số trang",
+      "occupancy": "Đã dùng",
+      "sprites": "Sprite",
+      "frames": "{{count}} tên"
+    },
+    "warnings": "Cảnh báo",
+    "sprites": "Sprite trong atlas",
+    "existing": "Đã gộp với atlas hiện có",
+    "tooltip": {
+      "size": "{{w}}×{{h}} px",
+      "source": "Ảnh gốc {{w}}×{{h}} px",
+      "rotated": "Đã xoay",
+      "trimmed": "Đã cắt viền",
+      "aliases": "Cũng là: {{names}}",
+      "notInList": "Không có trong danh sách hiện tại (giữ lại từ atlas cũ)",
+      "select": "Bấm để chọn ảnh tương ứng"
+    }
+  },
+  "run": {
+    "export": "Xuất atlas",
+    "noFolder": "Hãy chọn thư mục xuất trước"
+  },
+  "toast": {
+    "exported": "Đã xuất atlas vào {{dir}}",
+    "details_one": "Đã ghi {{count}} file",
+    "details_other": "Đã ghi {{count}} file",
+    "deleted_one": "Đã xóa {{count}} file cũ không còn dùng",
+    "deleted_other": "Đã xóa {{count}} file cũ không còn dùng",
+    "failed": "Xuất atlas thất bại"
+  }
+}

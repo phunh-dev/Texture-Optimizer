@@ -1,1 +1,354 @@
-{}
+{
+  "groups": {
+    "packing": "Packing",
+    "size": "Atlas size",
+    "spacing": "Spacing",
+    "sprites": "Sprites",
+    "pages": "Pages",
+    "color": "Color",
+    "exporter": "Exporter"
+  },
+  "params": {
+    "algorithm": {
+      "label": "Algorithm",
+      "desc": "MaxRects usually packs tighter; Skyline is faster for many similar sprites."
+    },
+    "algorithms": {
+      "maxRects": "MaxRects",
+      "skyline": "Skyline"
+    },
+    "heuristic": {
+      "label": "Placement heuristic",
+      "desc": "How the free spot for each sprite is chosen."
+    },
+    "heuristics": {
+      "bestShortSideFit": "Best short side fit",
+      "bestLongSideFit": "Best long side fit",
+      "bestAreaFit": "Best area fit",
+      "bottomLeft": "Bottom left",
+      "contactPoint": "Contact point",
+      "minWaste": "Minimum waste"
+    },
+    "maxWidth": {
+      "label": "Max width"
+    },
+    "maxHeight": {
+      "label": "Max height"
+    },
+    "forcePot": {
+      "label": "Power of two",
+      "desc": "Page sizes are powers of two (256, 512, 1024…)."
+    },
+    "forceSquare": {
+      "label": "Square pages"
+    },
+    "sizeMode": {
+      "label": "Page size",
+      "desc": "Shrink each page to its content, or always use the maximum size."
+    },
+    "sizeModes": {
+      "shrinkToFit": "Shrink to fit",
+      "fixed": "Fixed (max size)"
+    },
+    "padding": {
+      "label": "Padding",
+      "desc": "Transparent pixels between sprites."
+    },
+    "extrude": {
+      "label": "Extrude",
+      "desc": "Repeat each sprite's edge pixels outward to avoid bleeding when filtering."
+    },
+    "border": {
+      "label": "Border",
+      "desc": "Transparent pixels kept free along the page edges."
+    },
+    "trim": {
+      "label": "Trim transparent edges",
+      "desc": "Pack only the visible part; offsets are written to the metadata."
+    },
+    "trimThreshold": {
+      "label": "Trim alpha threshold",
+      "desc": "Pixels with alpha at or below this value count as transparent."
+    },
+    "allowRotation": {
+      "label": "Allow rotation",
+      "desc": "Sprites may be rotated 90° when that packs tighter.",
+      "unsupported": {
+        "unity": "Unity sprites cannot be rotated in a texture, so rotation is turned off for this exporter.",
+        "godot": "Godot AtlasTexture regions cannot be rotated, so rotation is turned off for this exporter."
+      }
+    },
+    "dedupe": {
+      "label": "Merge identical images",
+      "desc": "Sprites with identical pixels share one area of the atlas."
+    },
+    "sortBy": {
+      "label": "Sort before packing"
+    },
+    "sortOptions": {
+      "area": "Area",
+      "maxSide": "Longest side",
+      "height": "Height",
+      "width": "Width",
+      "name": "Name",
+      "none": "Input order"
+    },
+    "multiPage": {
+      "label": "Multiple pages",
+      "desc": "Spill onto extra pages instead of failing when sprites don't fit."
+    },
+    "premultiplyAlpha": {
+      "label": "Premultiplied alpha",
+      "desc": "Store colors multiplied by alpha (for premultiplied blending)."
+    }
+  },
+  "exporter": {
+    "kind": {
+      "label": "Export for",
+      "desc": "One exporter per export; only its options are shown."
+    },
+    "kinds": {
+      "genericJson": "Generic JSON (TexturePacker)",
+      "unity": "Unity",
+      "godot": "Godot",
+      "unreal": "Unreal Paper2D"
+    },
+    "pivotX": {
+      "label": "Pivot X"
+    },
+    "pivotY": {
+      "label": "Pivot Y"
+    },
+    "pivotTopLeft": "Normalized pivot, 0,0 = top left.",
+    "pivotBottomLeft": "Normalized pivot, 0,0 = bottom left (Unity convention).",
+    "generic": {
+      "format": {
+        "label": "Frames layout",
+        "desc": "Hash: frames keyed by name. Array: list with a filename field."
+      },
+      "formats": {
+        "hash": "Hash",
+        "array": "Array"
+      },
+      "imagePathPrefix": {
+        "label": "Image path prefix",
+        "desc": "Prepended to the page file name in meta.image.",
+        "placeholder": "textures/"
+      },
+      "includeTrimInfo": {
+        "label": "Include trim info",
+        "desc": "Write trimmed, spriteSourceSize and sourceSize."
+      },
+      "pretty": {
+        "label": "Pretty-print JSON"
+      }
+    },
+    "unity": {
+      "unityVersion": {
+        "label": "Unity version"
+      },
+      "versions": {
+        "unity2021": "2021.3 LTS",
+        "unity2022": "2022.3 LTS",
+        "unity6": "Unity 6"
+      },
+      "pixelsPerUnit": {
+        "label": "Pixels per unit",
+        "desc": "How many pixels make one world unit."
+      },
+      "filterMode": {
+        "label": "Filter mode"
+      },
+      "filterModes": {
+        "point": "Point (no filter)",
+        "bilinear": "Bilinear",
+        "trilinear": "Trilinear"
+      },
+      "textureCompression": {
+        "label": "Compression"
+      },
+      "compressions": {
+        "none": "None",
+        "lowQuality": "Low quality",
+        "normalQuality": "Normal quality",
+        "highQuality": "High quality"
+      },
+      "maxTextureSize": {
+        "label": "Max texture size",
+        "desc": "Automatic picks the smallest Unity size that holds the page."
+      },
+      "maxTextureSizes": {
+        "auto": "Automatic",
+        "s32": "32",
+        "s64": "64",
+        "s128": "128",
+        "s256": "256",
+        "s512": "512",
+        "s1024": "1024",
+        "s2048": "2048",
+        "s4096": "4096",
+        "s8192": "8192",
+        "s16384": "16384"
+      },
+      "mipmaps": {
+        "label": "Generate mipmaps"
+      },
+      "pivot": {
+        "label": "Pivot"
+      },
+      "pivots": {
+        "center": "Center",
+        "topLeft": "Top left",
+        "topCenter": "Top center",
+        "topRight": "Top right",
+        "leftCenter": "Left center",
+        "rightCenter": "Right center",
+        "bottomLeft": "Bottom left",
+        "bottomCenter": "Bottom center",
+        "bottomRight": "Bottom right",
+        "custom": "Custom"
+      },
+      "preservePivotOnTrim": {
+        "label": "Keep pivot of trimmed sprites",
+        "desc": "Trimmed sprites render at the same place as the untrimmed originals."
+      }
+    },
+    "godot": {
+      "version": {
+        "label": "Godot version"
+      },
+      "versions": {
+        "godot3": "Godot 3",
+        "godot4": "Godot 4"
+      },
+      "resPath": {
+        "label": "Resource folder",
+        "desc": "res:// folder that will contain the exported page images."
+      },
+      "outputSubfolder": {
+        "label": ".tres subfolder",
+        "desc": "Relative to the output folder; empty = next to the image.",
+        "placeholder": "sprites"
+      },
+      "filterClip": {
+        "label": "Filter clip",
+        "desc": "Prevents neighbouring sprites from bleeding in when filtering."
+      }
+    },
+    "unreal": {
+      "fileExtension": {
+        "label": "File extension",
+        "desc": "Paper2D imports .paper2dsprites files; JSON is the same content."
+      },
+      "extensions": {
+        "paper2dsprites": ".paper2dsprites",
+        "json": ".json"
+      }
+    }
+  },
+  "features": {
+    "rotation": "Rotation",
+    "multiPage": "Multiple pages",
+    "trim": "Trimming"
+  },
+  "layoutReset": {
+    "spacingChanged": "padding, extrude or border changed",
+    "maxSizeReduced": "the maximum size is smaller than the existing pages",
+    "notPot": "existing pages are not powers of two",
+    "notSquare": "existing pages are not square"
+  },
+  "errors": {
+    "positive": "Must be greater than 0",
+    "resPath": "Must start with res://",
+    "subfolder": "Use a relative folder without \"..\" or drive letters",
+    "baseName": {
+      "empty": "Enter a base name",
+      "tooLong": "Base name is too long",
+      "invalidChars": "Base name cannot contain \\ / : * ? \" < > |",
+      "trailingDotOrSpace": "Base name cannot start with a space or end with a dot or space",
+      "reserved": "This name is reserved by Windows"
+    }
+  },
+  "output": {
+    "title": "Output",
+    "folder": "Output folder",
+    "chooseFolder": "Choose folder",
+    "noFolder": "No folder selected",
+    "baseName": "Base name",
+    "baseNameDesc": "Writes {{files}} and the metadata.",
+    "mode": {
+      "label": "When the atlas already exists",
+      "keepPositions": "Keep positions",
+      "repackOptimal": "Repack optimally",
+      "keepPositionsDesc": "Existing sprites stay where they are; new ones fill free space.",
+      "repackOptimalDesc": "Everything is packed again for the smallest atlas (engine IDs are kept)."
+    },
+    "removeMissing": {
+      "label": "Remove sprites not in the current list",
+      "desc": "Off: sprites already in the atlas are kept even if their images are not listed here."
+    },
+    "existing": {
+      "title": "Existing atlas",
+      "checking": "Looking for an existing atlas…",
+      "none": "No atlas here yet; a new one will be created.",
+      "found_one": "{{count}} sprite on {{pages}} page(s)",
+      "found_other": "{{count}} sprites on {{pages}} page(s)",
+      "exporter": "Last exported for {{exporter}}"
+    }
+  },
+  "status": {
+    "new": "New",
+    "replaced": "Replaced",
+    "kept": "Kept",
+    "removed": "Removed"
+  },
+  "statusCount": {
+    "new": "{{count}} new",
+    "replaced": "{{count}} replaced",
+    "kept": "{{count}} kept",
+    "removed": "{{count}} removed"
+  },
+  "preview": {
+    "empty": "Add images to see the atlas.",
+    "loading": "Packing…",
+    "failed": "Could not build the atlas",
+    "page": "Page {{index}}",
+    "pages": "Pages",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "fit": "Fit to view",
+    "actualSize": "Actual size",
+    "canvas": "Atlas page preview",
+    "stats": {
+      "size": "Size",
+      "pages": "Pages",
+      "occupancy": "Used",
+      "sprites": "Sprites",
+      "frames": "{{count}} names"
+    },
+    "warnings": "Warnings",
+    "sprites": "Sprites in the atlas",
+    "existing": "Merged with the existing atlas",
+    "tooltip": {
+      "size": "{{w}}×{{h}} px",
+      "source": "Source {{w}}×{{h}} px",
+      "rotated": "Rotated",
+      "trimmed": "Trimmed",
+      "aliases": "Also: {{names}}",
+      "notInList": "Not in the current list (kept from the existing atlas)",
+      "select": "Click to select its image"
+    }
+  },
+  "run": {
+    "export": "Export atlas",
+    "noFolder": "Choose an output folder first"
+  },
+  "toast": {
+    "exported": "Atlas exported to {{dir}}",
+    "details_one": "{{count}} file written",
+    "details_other": "{{count}} files written",
+    "deleted_one": "{{count}} outdated file removed",
+    "deleted_other": "{{count}} outdated files removed",
+    "failed": "Atlas export failed"
+  }
+}

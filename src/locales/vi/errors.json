@@ -32,6 +32,8 @@
   "ATLAS_LAYOUT_RESET": "Không giữ được bố cục cũ ({{reason}}); atlas đã được xếp lại",
   "ATLAS_FEATURE_DISABLED": "Đã tắt {{feature}} vì {{exporter}} không hỗ trợ",
   "ATLAS_META_UNREADABLE": "Không đọc được GUID từ {{path}}; đã tạo GUID mới",
+  "ATLAS_SPRITE_NOT_RECOVERED": "Không khôi phục được sprite \"{{name}}\" từ {{path}} nên đã bỏ khỏi atlas",
+  "ATLAS_STALE_DELETE_FAILED": "Không xóa được file cũ {{path}}",
   "MESH_IMPORT_FAILED": "Không thể đọc mô hình 3D {{path}}: {{detail}}",
   "MESH_EXPORT_FAILED": "Không thể ghi mô hình 3D {{path}} ({{format}}): {{detail}}",
   "MESH_FORMAT_UNSUPPORTED": "Định dạng mô hình 3D không được hỗ trợ: {{path}} (chỉ FBX, OBJ, DAE)",

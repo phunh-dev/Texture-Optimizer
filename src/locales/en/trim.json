@@ -1,1 +1,55 @@
-{}
+{
+  "groups": {
+    "detection": "Detection",
+    "sides": "Sides to trim",
+    "sidesDesc": "Turn a side off to keep its transparent border (e.g. to keep a character's feet on the bottom edge).",
+    "result": "Result"
+  },
+  "params": {
+    "alphaThreshold": {
+      "label": "Alpha threshold",
+      "desc": "Pixels with alpha at or below this value count as empty. 0 trims only fully transparent pixels."
+    },
+    "margin": {
+      "label": "Margin",
+      "desc": "Keeps up to this many pixels around the content on trimmed sides."
+    },
+    "emptyBehavior": {
+      "label": "Fully transparent images",
+      "desc": "What to do when an image has no visible pixel.",
+      "options": {
+        "error": "Report error",
+        "onePixel": "Output 1×1"
+      }
+    },
+    "trimLeft": {
+      "label": "Left"
+    },
+    "trimRight": {
+      "label": "Right"
+    },
+    "trimTop": {
+      "label": "Top"
+    },
+    "trimBottom": {
+      "label": "Bottom"
+    },
+    "snap": {
+      "label": "Snap trimmed size",
+      "desc": "Grows the trimmed area (centered on the content) to a multiple of 4 or a power of two."
+    },
+    "writeOffsets": {
+      "label": "Write offsets JSON",
+      "desc": "Saves <output>.json next to each image with the source size and trim rectangle, so the original pivot can be restored."
+    }
+  },
+  "preview": {
+    "offset": "Offset {{x}}, {{y}}"
+  },
+  "sizes": {
+    "hint": "Trimmed sizes depend on each image's pixels. Previewed images are measured automatically.",
+    "measure_one": "Measure {{count}} image",
+    "measure_other": "Measure {{count}} images",
+    "measuring": "Measuring {{done}} / {{total}}…"
+  }
+}

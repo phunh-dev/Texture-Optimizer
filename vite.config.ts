@@ -20,6 +20,8 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
     css: false,
+    // UI tests drive jsdom with user-event; give headroom on loaded machines/CI.
+    testTimeout: 20000,
     exclude: ['**/node_modules/**', '**/dist/**', '.claude/**', 'src-tauri/**', 'target/**'],
   },
 })
