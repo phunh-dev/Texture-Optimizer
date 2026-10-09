@@ -1,12 +1,202 @@
 {
   "app": {
-    "title": "Texture Optimizer"
+    "title": "Texture Optimizer",
+    "tagline": "Game-ready textures for Unity, Unreal and Godot"
   },
   "actions": {
     "undo": "Undo",
     "redo": "Redo",
     "cancel": "Cancel",
     "apply": "Apply",
-    "reset": "Reset to defaults"
+    "reset": "Reset to defaults",
+    "close": "Close",
+    "save": "Save",
+    "delete": "Delete",
+    "run": "Run",
+    "clearAll": "Clear all",
+    "addFiles": "Add files",
+    "addFolder": "Add folder",
+    "browse": "Browse…",
+    "more": "More actions"
+  },
+  "loading": "Loading…",
+  "history": {
+    "undoLabel": "Undo: {{action}}",
+    "redoLabel": "Redo: {{action}}",
+    "nothingToUndo": "Nothing to undo",
+    "nothingToRedo": "Nothing to redo",
+    "addFiles_one": "Add {{count}} image",
+    "addFiles_other": "Add {{count}} images",
+    "removeFiles_one": "Remove {{count}} image",
+    "removeFiles_other": "Remove {{count}} images",
+    "clearFiles_one": "Clear {{count}} image",
+    "clearFiles_other": "Clear {{count}} images",
+    "reorderFiles": "Reorder images",
+    "changeParams": "Change parameters",
+    "resetParams": "Reset parameters",
+    "applyPreset": "Apply preset",
+    "changeOutput": "Change output settings",
+    "removedToast_one": "Removed {{count}} image from the list",
+    "removedToast_other": "Removed {{count}} images from the list",
+    "clearedToast_one": "Cleared {{count}} image from the list",
+    "clearedToast_other": "Cleared {{count}} images from the list"
+  },
+  "import": {
+    "added_one": "Added {{count}} image",
+    "added_other": "Added {{count}} images",
+    "addedWithSkipped_one": "Added {{count}} image, skipped {{skipped}} unsupported file(s)",
+    "addedWithSkipped_other": "Added {{count}} images, skipped {{skipped}} unsupported file(s)",
+    "allDuplicates_one": "This image is already in the list",
+    "allDuplicates_other": "All {{count}} images are already in the list",
+    "nothingFound": "No supported images found",
+    "desktopOnly": "File access is only available in the desktop app",
+    "imagesFilter": "Images",
+    "dropTitle": "Drop images or folders here",
+    "dropHint": "PNG, JPG, TGA, BMP, WebP, TIFF — your files are never modified until you run a tool",
+    "dropActive": "Release to add files",
+    "or": "or"
+  },
+  "grid": {
+    "label": "Images",
+    "viewSize": "Thumbnail size",
+    "sizeSmall": "Small",
+    "sizeMedium": "Medium",
+    "sizeLarge": "Large",
+    "addTile": "Add images",
+    "removeImage": "Remove {{name}} from the list",
+    "count_one": "{{count}} image",
+    "count_other": "{{count}} images",
+    "selected_one": "{{count}} selected",
+    "selected_other": "{{count}} selected",
+    "dimensions": "{{width}} × {{height}}",
+    "nonPot": "Not a power of two",
+    "nonPotShort": "NPOT",
+    "notMultipleOf4": "Not divisible by 4",
+    "notMultipleOf4Short": "÷4",
+    "selectAll": "Select all",
+    "clearSelection": "Clear selection",
+    "removeSelected": "Remove selected"
+  },
+  "views": {
+    "label": "View",
+    "grid": "Images",
+    "preview": "Preview"
+  },
+  "jobs": {
+    "finished_one": "Processed {{count}} image",
+    "finished_other": "Processed {{count}} images",
+    "finishedWithErrors": "{{ok}} succeeded, {{failed}} failed",
+    "cancelled": "Job cancelled",
+    "moreErrors_one": "…and {{count}} more error",
+    "moreErrors_other": "…and {{count}} more errors",
+    "progress": "{{done}} / {{total}}",
+    "starting": "Starting…",
+    "busy": "Processing {{percent}}%"
+  },
+  "run": {
+    "label": "Run",
+    "runCount_one": "Process {{count}} image",
+    "runCount_other": "Process {{count}} images",
+    "noFiles": "Add images first",
+    "invalidParams": "Fix the highlighted parameters first",
+    "notAvailable": "This tool is not available yet",
+    "cancel": "Cancel job"
+  },
+  "output": {
+    "title": "Output",
+    "mode": "Destination",
+    "modeInPlace": "Overwrite",
+    "modeFolder": "Folder",
+    "modeSuffix": "Suffix",
+    "inPlaceWarning": "Original files will be overwritten.",
+    "folder": "Output folder",
+    "chooseFolder": "Choose folder",
+    "noFolder": "No folder selected",
+    "suffix": "File name suffix",
+    "format": "Format",
+    "formats": {
+      "keep": "Keep original",
+      "png": "PNG",
+      "tga": "TGA",
+      "jpg": "JPG",
+      "webp": "WebP"
+    },
+    "pngCompression": "PNG compression",
+    "compression": {
+      "fast": "Fast",
+      "default": "Balanced",
+      "best": "Smallest"
+    },
+    "jpgQuality": "Quality",
+    "optimizePng": "Optimize PNG",
+    "optimizePngDesc": "Extra lossless pass, slower but smaller files",
+    "conflict": "If the file exists",
+    "conflicts": {
+      "overwrite": "Overwrite",
+      "skip": "Skip",
+      "autoRename": "Rename"
+    }
+  },
+  "params": {
+    "title": "Parameters",
+    "empty": "This tool has no parameters yet.",
+    "width": "Width",
+    "height": "Height",
+    "linkSize": "Keep width and height linked",
+    "hex": "Hex color",
+    "alpha": "Opacity",
+    "pickColor": "Pick color",
+    "anchor": {
+      "topLeft": "Top left",
+      "top": "Top",
+      "topRight": "Top right",
+      "left": "Left",
+      "center": "Center",
+      "right": "Right",
+      "bottomLeft": "Bottom left",
+      "bottom": "Bottom",
+      "bottomRight": "Bottom right"
+    }
+  },
+  "presets": {
+    "label": "Presets",
+    "saveAs": "Save as preset…",
+    "saveTitle": "Save preset",
+    "saveDescription": "Store the current parameters to reuse them in any tab of this tool.",
+    "name": "Preset name",
+    "namePlaceholder": "e.g. Mobile UI",
+    "replaceHint": "A preset with this name already exists and will be replaced.",
+    "empty": "No saved presets yet",
+    "delete": "Delete preset {{name}}",
+    "saved": "Preset “{{name}}” saved",
+    "applied": "Preset “{{name}}” applied",
+    "deleted": "Preset “{{name}}” deleted"
+  },
+  "validation": {
+    "tooSmall": "Must be at least {{minimum}}",
+    "tooBig": "Must be at most {{maximum}}",
+    "invalidType": "Enter a valid value",
+    "invalidFormat": "Invalid format",
+    "notInteger": "Must be a whole number",
+    "invalid": "Invalid value"
+  },
+  "units": {
+    "px": "px",
+    "percent": "%",
+    "degrees": "°",
+    "times": "×"
+  },
+  "compare": {
+    "label": "Before / after comparison",
+    "before": "Before",
+    "after": "After",
+    "divider": "Comparison divider",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "fit": "Fit to view",
+    "actualSize": "Actual size",
+    "zoom": "{{value}}%",
+    "pixelated": "Pixelated",
+    "smooth": "Smooth"
   }
 }

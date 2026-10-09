@@ -1,7 +1,19 @@
 {
+  "title": "Cài đặt",
+  "description": "Tùy chọn được lưu trên máy tính này.",
   "language": {
     "label": "Ngôn ngữ",
     "en": "English",
     "vi": "Tiếng Việt"
+  },
+  "theme": {
+    "label": "Giao diện",
+    "light": "Sáng",
+    "dark": "Tối",
+    "system": "Theo hệ thống"
+  },
+  "import": {
+    "recursive": "Bao gồm thư mục con",
+    "recursiveDesc": "Khi thêm thư mục, nhập cả ảnh trong các thư mục con."
   }
 }

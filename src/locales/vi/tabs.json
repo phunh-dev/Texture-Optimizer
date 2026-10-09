@@ -1,1 +1,58 @@
-{}
+{
+  "tools": {
+    "resize": {
+      "title": "Đổi kích thước",
+      "description": "Thu phóng theo %, kích thước chính xác, vừa khung hoặc cạnh dài nhất với bộ lọc chất lượng."
+    },
+    "resolution": {
+      "title": "Sửa độ phân giải",
+      "description": "Đưa kích thước về bội số của 4, của N hoặc lũy thừa của 2 bằng resample, thêm viền hoặc cắt."
+    },
+    "trim": {
+      "title": "Cắt viền sprite",
+      "description": "Cắt bỏ viền trong suốt và xuất offset để giữ nguyên pivot gốc."
+    },
+    "potPad": {
+      "title": "Thêm viền POT",
+      "description": "Mở rộng texture lên khung lũy thừa của 2 với nền trong suốt, màu hoặc kéo dài mép."
+    },
+    "atlas": {
+      "title": "Atlas thông minh",
+      "description": "Gộp sprite thành atlas, cập nhật tăng dần, xuất cho Unity, Godot, Unreal."
+    },
+    "rename": {
+      "title": "Đổi tên theo mẫu",
+      "description": "Đổi tên hàng loạt với mẫu, đánh số, kiểu chữ và quy ước đặt tên của engine."
+    },
+    "bgRemove": {
+      "title": "Xóa nền",
+      "description": "Xóa nền trắng, nền caro hoặc màu tùy chọn với mép sạch, không viền sáng."
+    },
+    "meshPack": {
+      "title": "Gộp texture 3D",
+      "description": "Gộp texture của model FBX, OBJ, DAE thành một atlas POT và ánh xạ lại UV."
+    }
+  },
+  "bar": {
+    "label": "Các công cụ đang mở",
+    "newTab": "Tab mới",
+    "closeTab": "Đóng {{title}}",
+    "tabTitle": "{{title}} {{n}}",
+    "percent": "{{percent}}%",
+    "busy": "Đang xử lý {{percent}}%",
+    "settings": "Cài đặt"
+  },
+  "picker": {
+    "title": "Mở công cụ",
+    "description": "Mỗi công cụ mở trong một tab riêng. Có thể mở cùng một công cụ nhiều lần."
+  },
+  "home": {
+    "title": "Hôm nay bạn muốn tối ưu gì?",
+    "subtitle": "Chọn một công cụ để bắt đầu. Mỗi tab giữ riêng danh sách ảnh, tham số và lịch sử hoàn tác.",
+    "shortcutsTitle": "Phím tắt",
+    "shortcutNewTab": "Tab mới",
+    "shortcutCloseTab": "Đóng tab",
+    "shortcutNextTab": "Tab kế tiếp",
+    "shortcutUndo": "Hoàn tác / Làm lại"
+  }
+}

@@ -1,7 +1,19 @@
 {
+  "title": "Settings",
+  "description": "Preferences are saved on this computer.",
   "language": {
     "label": "Language",
     "en": "English",
     "vi": "Tiếng Việt"
+  },
+  "theme": {
+    "label": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "import": {
+    "recursive": "Include sub-folders",
+    "recursiveDesc": "When adding a folder, also import images from its sub-folders."
   }
 }
