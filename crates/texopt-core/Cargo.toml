@@ -5,6 +5,16 @@ edition.workspace = true
 version.workspace = true
 rust-version.workspace = true
 
+[features]
+default = ["assimp"]
+# 3D model import/export (FBX/OBJ/DAE) through Assimp 6.0.x. Links the
+# prebuilt static Assimp from `asset-importer-sys` (downloaded once at build
+# time from its GitHub release; no CMake/libclang needed). Without this
+# feature `mesh::import`/`mesh::export` return `MESH_BACKEND_UNAVAILABLE`,
+# everything else in `mesh` (UV math, remap JSON, Unity script) still works.
+# See docs/spikes/3d-assimp.md.
+assimp = ["dep:asset-importer-sys"]
+
 [dependencies]
 image.workspace = true
 serde.workspace = true
@@ -12,6 +22,7 @@ serde_json.workspace = true
 thiserror.workspace = true
 blake3.workspace = true
 rayon.workspace = true
+asset-importer-sys = { version = "0.8.0", optional = true, default-features = false, features = ["prebuilt", "static-link"] }
 
 [dev-dependencies]
 proptest.workspace = true
