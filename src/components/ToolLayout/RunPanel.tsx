@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
 import { Progress, Spinner } from '@/components/ui/misc'
+import { Tooltip } from '@/components/ui/tooltip'
 import { isJobActive, useJobs, useTabJob } from '@/stores/jobs'
 
 interface RunPanelProps {
@@ -13,10 +14,12 @@ interface RunPanelProps {
   onRun: () => void
   /** Custom button label (default "Process N images"). */
   label?: string
+  /** Tooltip of the Run button (already translated), e.g. "results are not saved yet". */
+  hint?: string
 }
 
 /** Run button, or progress + cancel while the tab's job is running. */
-export function RunPanel({ tabId, fileCount, disabledReason, onRun, label }: RunPanelProps) {
+export function RunPanel({ tabId, fileCount, disabledReason, onRun, label, hint }: RunPanelProps) {
   const { t } = useTranslation('common')
   const job = useTabJob(tabId)
   const active = isJobActive(job)
@@ -44,10 +47,12 @@ export function RunPanel({ tabId, fileCount, disabledReason, onRun, label }: Run
 
   return (
     <div className="space-y-2">
-      <Button size="lg" className="w-full" disabled={disabledReason != null} onClick={onRun} data-testid="run-button">
-        <PlayIcon className="fill-current" />
-        {label ?? (fileCount > 0 ? t('run.runCount', { count: fileCount }) : t('run.label'))}
-      </Button>
+      <Tooltip content={disabledReason == null ? hint : undefined}>
+        <Button size="lg" className="w-full" disabled={disabledReason != null} onClick={onRun} data-testid="run-button" title={hint}>
+          <PlayIcon className="fill-current" />
+          {label ?? (fileCount > 0 ? t('run.runCount', { count: fileCount }) : t('run.label'))}
+        </Button>
+      </Tooltip>
       {disabledReason ? <p className="text-center text-xs text-muted-foreground">{disabledReason}</p> : null}
     </div>
   )

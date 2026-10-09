@@ -21,6 +21,15 @@ export interface ImageGridProps {
   onAddFiles?: () => void
   onAddFolder?: () => void
   className?: string
+  /**
+   * Show these files instead of the session's, read-only (no selection, removal or "+" tile),
+   * e.g. the staged results of a run.
+   */
+  files?: ImportedFile[]
+  /** Accessible label of a read-only grid (default "Images"). */
+  label?: string
+  /** Optional warning per file (already translated), shown as a badge on its cell. */
+  noteOf?: (file: ImportedFile) => string | null
 }
 
 /**
@@ -28,17 +37,20 @@ export interface ImageGridProps {
  * Click / Ctrl+click / Shift+click select, Delete removes (undoable), the
  * last cell is a "+" tile that opens the file picker.
  */
-export function ImageGrid({ tabId, onAddFiles, onAddFolder, className }: ImageGridProps) {
+export function ImageGrid({ tabId, onAddFiles, onAddFolder, className, files: shown, label, noteOf }: ImageGridProps) {
   const { t } = useTranslation('common')
-  const files = useSession(tabId, (s) => s.files)
-  const selectedIds = useSession(tabId, (s) => s.selectedIds)
+  const sessionFiles = useSession(tabId, (s) => s.files)
+  const sessionSelected = useSession(tabId, (s) => s.selectedIds)
+  const readOnly = shown !== undefined
+  const files = shown ?? sessionFiles
+  const selectedIds = readOnly ? NO_IDS : sessionSelected
   const viewSize = useSession(tabId, (s) => s.viewSize)
   const dragOver = useUi((s) => s.dragOver)
 
   const addFiles = useCallback(() => (onAddFiles ? onAddFiles() : void importFromFilePicker(tabId)), [onAddFiles, tabId])
   const addFolder = useCallback(() => (onAddFolder ? onAddFolder() : void importFromFolderPicker(tabId)), [onAddFolder, tabId])
 
-  if (files.length === 0) {
+  if (files.length === 0 && !readOnly) {
     return (
       <div className={cn('relative size-full', className)}>
         <EmptyDropZone dragOver={dragOver} onAddFiles={addFiles} onAddFolder={addFolder} />
@@ -55,7 +67,9 @@ export function ImageGrid({ tabId, onAddFiles, onAddFolder, className }: ImageGr
       dragOver={dragOver}
       onAddFiles={addFiles}
       className={className}
-      label={t('grid.label')}
+      readOnly={readOnly}
+      noteOf={noteOf}
+      label={label ?? t('grid.label')}
       addLabel={t('grid.addTile')}
       dropLabel={t('import.dropActive')}
     />
@@ -70,17 +84,34 @@ interface VirtualGridProps {
   dragOver: boolean
   onAddFiles: () => void
   className?: string
+  readOnly: boolean
+  noteOf?: (file: ImportedFile) => string | null
   label: string
   addLabel: string
   dropLabel: string
 }
 
-function VirtualGrid({ tabId, files, selectedIds, viewSize, dragOver, onAddFiles, className, label, addLabel, dropLabel }: VirtualGridProps) {
+const NO_IDS: string[] = []
+
+function VirtualGrid({
+  tabId,
+  files,
+  selectedIds,
+  viewSize,
+  dragOver,
+  onAddFiles,
+  className,
+  readOnly,
+  noteOf,
+  label,
+  addLabel,
+  dropLabel,
+}: VirtualGridProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const { width } = useElementSize(scrollRef)
   const metrics = GRID_SIZES[viewSize]
   const columns = columnCount(width, viewSize)
-  const itemCount = files.length + 1 // + the "+" tile
+  const itemCount = files.length + (readOnly ? 0 : 1) // + the "+" tile
   const rowCount = Math.ceil(itemCount / columns)
   const rowHeight = metrics.cell + metrics.caption
   const [focusIndex, setFocusIndex] = useState<number | null>(null)
@@ -104,19 +135,20 @@ function VirtualGrid({ tabId, files, selectedIds, viewSize, dragOver, onAddFiles
   // Restore the scroll position after waking up; remember it while scrolling.
   useLayoutEffect(() => {
     const el = scrollRef.current
-    const saved = requireSession(tabId).getState().scrollTop
+    const saved = readOnly ? 0 : requireSession(tabId).getState().scrollTop
     if (el && saved > 0) el.scrollTop = saved
-  }, [tabId])
+  }, [tabId, readOnly])
 
   const onSelect = useCallback(
     (file: ImportedFile, e: MouseEvent) => {
+      if (readOnly) return
       const session = requireSession(tabId).getState()
       const mode = e.shiftKey ? 'range' : hasModifier(e) ? 'toggle' : 'replace'
       session.select(file.id, mode)
       setFocusIndex(session.files.findIndex((f) => f.id === file.id))
       scrollRef.current?.focus({ preventScroll: true })
     },
-    [tabId],
+    [tabId, readOnly],
   )
 
   const onRemove = useCallback((file: ImportedFile) => removeFilesWithUndo(tabId, [file.id]), [tabId])
@@ -130,6 +162,7 @@ function VirtualGrid({ tabId, files, selectedIds, viewSize, dragOver, onAddFiles
   }
 
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+    if (readOnly) return
     const session = requireSession(tabId).getState()
     const current = focusIndex ?? -1
     switch (e.key) {
@@ -195,17 +228,20 @@ function VirtualGrid({ tabId, files, selectedIds, viewSize, dragOver, onAddFiles
         ref={scrollRef}
         role="grid"
         aria-label={label}
-        aria-multiselectable
+        aria-multiselectable={!readOnly}
+        aria-readonly={readOnly || undefined}
         aria-rowcount={rowCount}
         aria-colcount={columns}
         aria-activedescendant={activeDescendant}
         tabIndex={0}
-        data-testid="image-grid"
+        data-testid={readOnly ? 'result-grid' : 'image-grid'}
         data-columns={columns}
         onKeyDown={onKeyDown}
-        onScroll={(e) => requireSession(tabId).getState().setScrollTop(e.currentTarget.scrollTop)}
+        onScroll={(e) => {
+          if (!readOnly) requireSession(tabId).getState().setScrollTop(e.currentTarget.scrollTop)
+        }}
         onClick={(e) => {
-          if (e.target === e.currentTarget) requireSession(tabId).getState().clearSelection()
+          if (!readOnly && e.target === e.currentTarget) requireSession(tabId).getState().clearSelection()
         }}
         className="size-full overflow-y-auto overflow-x-hidden outline-none [scrollbar-gutter:stable]"
         style={{ overscrollBehavior: 'contain' }}
@@ -231,7 +267,7 @@ function VirtualGrid({ tabId, files, selectedIds, viewSize, dragOver, onAddFiles
               >
                 {Array.from({ length: end - start }, (_, i) => {
                   const index = start + i
-                  if (index === files.length) {
+                  if (index === files.length && !readOnly) {
                     return <AddTile key="__add" size={metrics.cell} height={rowHeight} label={addLabel} onClick={onAddFiles} compact={viewSize === 'small'} />
                   }
                   const file = files[index]
@@ -244,7 +280,8 @@ function VirtualGrid({ tabId, files, selectedIds, viewSize, dragOver, onAddFiles
                       selected={selected.has(file.id)}
                       focused={focusIndex === index}
                       onSelect={onSelect}
-                      onRemove={onRemove}
+                      onRemove={readOnly ? undefined : onRemove}
+                      note={noteOf?.(file) ?? null}
                     />
                   )
                 })}

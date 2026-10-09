@@ -52,7 +52,7 @@
     "desktopOnly": "Chỉ truy cập được tệp trong ứng dụng desktop",
     "imagesFilter": "Hình ảnh",
     "dropTitle": "Kéo thả ảnh hoặc thư mục vào đây",
-    "dropHint": "PNG, JPG, TGA, BMP, WebP, TIFF — tệp gốc không bị thay đổi cho tới khi bạn chạy công cụ",
+    "dropHint": "PNG, JPG, TGA, BMP, WebP — tệp gốc không bao giờ bị thay đổi: kết quả chỉ được lưu vào nơi bạn chọn",
     "dropActive": "Thả ra để thêm tệp",
     "or": "hoặc"
   },
@@ -102,19 +102,11 @@
     "noFiles": "Hãy thêm ảnh trước",
     "invalidParams": "Hãy sửa các tham số đang báo lỗi",
     "notAvailable": "Công cụ này chưa sẵn sàng",
-    "cancel": "Hủy tác vụ"
+    "cancel": "Hủy tác vụ",
+    "stagedHint": "Chỉ xử lý vào vùng tạm. Chưa lưu gì cho đến khi bạn bấm Lưu…"
   },
   "output": {
     "title": "Đầu ra",
-    "mode": "Nơi lưu",
-    "modeInPlace": "Ghi đè",
-    "modeFolder": "Thư mục",
-    "modeSuffix": "Hậu tố",
-    "inPlaceWarning": "Tệp gốc sẽ bị ghi đè.",
-    "folder": "Thư mục đầu ra",
-    "chooseFolder": "Chọn thư mục",
-    "noFolder": "Chưa chọn thư mục",
-    "suffix": "Hậu tố tên tệp",
     "format": "Định dạng",
     "formats": {
       "keep": "Giữ nguyên",
@@ -138,8 +130,7 @@
       "skip": "Bỏ qua",
       "autoRename": "Đổi tên"
     },
-    "noSuffix": "Hãy nhập hậu tố (hậu tố trống sẽ ghi đè ảnh gốc)",
-    "badSuffix": "Hậu tố không được chứa / hoặc \\"
+    "saveHint": "Chưa có gì được ghi cho đến khi bạn bấm Lưu… ở phần kết quả; quy tắc này được áp dụng lúc đó."
   },
   "params": {
     "title": "Tham số",
@@ -202,5 +193,34 @@
     "zoom": "{{value}}%",
     "pixelated": "Điểm ảnh",
     "smooth": "Mượt"
+  },
+  "results": {
+    "viewLabel": "Hiển thị",
+    "original": "Ảnh gốc",
+    "result": "Kết quả",
+    "gridLabel": "Kết quả",
+    "title": "Kết quả — chưa lưu",
+    "notSaved": "Các tệp đang nằm trong thư mục tạm. Bấm Lưu… để chọn nơi lưu.",
+    "notSavedToast": "Chưa lưu: hãy xem lại kết quả rồi bấm Lưu…",
+    "processed_one": "Đã xử lý {{count}}",
+    "processed_other": "Đã xử lý {{count}}",
+    "failed_one": "{{count}} lỗi",
+    "failed_other": "{{count}} lỗi",
+    "warnings_one": "{{count}} cảnh báo",
+    "warnings_other": "{{count}} cảnh báo",
+    "outdated": "Đã cũ",
+    "outdatedHint": "Tệp hoặc thiết lập đã thay đổi sau khi xử lý. Hãy xử lý lại để cập nhật kết quả.",
+    "save": "Lưu…",
+    "discard": "Bỏ kết quả",
+    "saveAnyway": "Vẫn lưu",
+    "confirmStaleTitle": "Lưu kết quả đã cũ?",
+    "confirmStale": "Kết quả này được tạo trước khi bạn thay đổi tệp hoặc thiết lập, nên có thể không khớp với những gì đang hiển thị. Vẫn lưu?",
+    "imageFilter": "Ảnh {{ext}}",
+    "saved_one": "Đã lưu {{count}} tệp vào {{folder}}",
+    "saved_other": "Đã lưu {{count}} tệp vào {{folder}}",
+    "savedWithSkipped_one": "Đã lưu {{count}} tệp vào {{folder}}, bỏ qua {{skipped}} tệp đã tồn tại",
+    "savedWithSkipped_other": "Đã lưu {{count}} tệp vào {{folder}}, bỏ qua {{skipped}} tệp đã tồn tại",
+    "saveFailed_one": "Không lưu được {{count}} tệp (đã lưu {{saved}})",
+    "saveFailed_other": "Không lưu được {{count}} tệp (đã lưu {{saved}})"
   }
 }

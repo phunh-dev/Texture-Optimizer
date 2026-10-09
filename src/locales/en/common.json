@@ -52,7 +52,7 @@
     "desktopOnly": "File access is only available in the desktop app",
     "imagesFilter": "Images",
     "dropTitle": "Drop images or folders here",
-    "dropHint": "PNG, JPG, TGA, BMP, WebP, TIFF — your files are never modified until you run a tool",
+    "dropHint": "PNG, JPG, TGA, BMP, WebP — your files are never modified: results are only saved where you choose",
     "dropActive": "Release to add files",
     "or": "or"
   },
@@ -102,19 +102,11 @@
     "noFiles": "Add images first",
     "invalidParams": "Fix the highlighted parameters first",
     "notAvailable": "This tool is not available yet",
-    "cancel": "Cancel job"
+    "cancel": "Cancel job",
+    "stagedHint": "Processes into a temporary area. Nothing is saved until you click Save…"
   },
   "output": {
     "title": "Output",
-    "mode": "Destination",
-    "modeInPlace": "Overwrite",
-    "modeFolder": "Folder",
-    "modeSuffix": "Suffix",
-    "inPlaceWarning": "Original files will be overwritten.",
-    "folder": "Output folder",
-    "chooseFolder": "Choose folder",
-    "noFolder": "No folder selected",
-    "suffix": "File name suffix",
     "format": "Format",
     "formats": {
       "keep": "Keep original",
@@ -138,8 +130,7 @@
       "skip": "Skip",
       "autoRename": "Rename"
     },
-    "noSuffix": "Enter a suffix (an empty suffix would overwrite the originals)",
-    "badSuffix": "The suffix cannot contain / or \\"
+    "saveHint": "Nothing is written until you click Save… on the results; this rule applies then."
   },
   "params": {
     "title": "Parameters",
@@ -202,5 +193,34 @@
     "zoom": "{{value}}%",
     "pixelated": "Pixelated",
     "smooth": "Smooth"
+  },
+  "results": {
+    "viewLabel": "Show",
+    "original": "Original",
+    "result": "Result",
+    "gridLabel": "Results",
+    "title": "Results — not saved yet",
+    "notSaved": "These files are in a temporary folder. Click Save… to choose where to keep them.",
+    "notSavedToast": "Not saved yet: review the results, then click Save…",
+    "processed_one": "{{count}} processed",
+    "processed_other": "{{count}} processed",
+    "failed_one": "{{count}} failed",
+    "failed_other": "{{count}} failed",
+    "warnings_one": "{{count}} warning",
+    "warnings_other": "{{count}} warnings",
+    "outdated": "Outdated",
+    "outdatedHint": "Files or settings changed after processing. Process again to update the results.",
+    "save": "Save…",
+    "discard": "Discard results",
+    "saveAnyway": "Save anyway",
+    "confirmStaleTitle": "Save outdated results?",
+    "confirmStale": "These results were made before your latest changes to the files or settings, so they may not match what you see now. Save them anyway?",
+    "imageFilter": "{{ext}} image",
+    "saved_one": "Saved {{count}} file to {{folder}}",
+    "saved_other": "Saved {{count}} files to {{folder}}",
+    "savedWithSkipped_one": "Saved {{count}} file to {{folder}}, skipped {{skipped}} that already exist",
+    "savedWithSkipped_other": "Saved {{count}} files to {{folder}}, skipped {{skipped}} that already exist",
+    "saveFailed_one": "{{count}} file could not be saved ({{saved}} saved)",
+    "saveFailed_other": "{{count}} files could not be saved ({{saved}} saved)"
   }
 }

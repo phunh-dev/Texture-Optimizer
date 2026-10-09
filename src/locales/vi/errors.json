@@ -60,6 +60,9 @@
   "MESH_FALLBACK_REMAP_DATA": "{{model}} được xuất dưới dạng dữ liệu UV remap thay vì ghi lại model",
   "MESH_TEXTURES_DOWNSCALED": "Texture đã được thu nhỏ còn {{percent}}% để vừa một trang atlas",
   "MESH_MODEL_SKIPPED": "{{model}} không có gì để gộp nên không được ghi",
-  "OUTPUT_FORMAT_CHANGED": "Đã lưu thành PNG để giữ nền trong suốt (JPEG không hỗ trợ): {{path}}",
-  "ATLAS_SPRITE_EMPTY": "Sprite \"{{name}}\" rỗng (rộng hoặc cao 0 pixel)"
+  "OUTPUT_FORMAT_CHANGED": "Giữ ở dạng PNG để không mất nền trong suốt (JPEG không hỗ trợ)",
+  "ATLAS_SPRITE_EMPTY": "Sprite \"{{name}}\" rỗng (rộng hoặc cao 0 pixel)",
+  "STAGING_NOT_FOUND": "Kết quả này không còn nữa. Hãy xử lý lại ảnh.",
+  "STAGING_PATH_REFUSED": "Không thể dùng vị trí này cho kết quả: {{path}}",
+  "SAVE_NEEDS_SINGLE_FILE": "Lưu thành chỉ dùng được khi có đúng một kết quả, nhưng đang có {{count}}"
 }

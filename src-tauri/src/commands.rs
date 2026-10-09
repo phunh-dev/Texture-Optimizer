@@ -9,12 +9,13 @@ use tauri::ipc::Response;
 use tauri::{AppHandle, Emitter, State};
 use texopt_core::io::{ScanOptions, ScanResult};
 use texopt_core::ops::OpRequest;
-use texopt_core::output::{OutputPlanner, OutputSettings};
+use texopt_core::output::OutputSettings;
 
+use crate::commands_staging::Staging;
 use crate::error::{AppError, parse_arg};
 use crate::jobs::{
     JOB_FINISHED_EVENT, JOB_PROGRESS_EVENT, JobFinishedEvent, JobProgressEvent, JobRegistry,
-    PROGRESS_INTERVAL, process_file, run_batch,
+    PROGRESS_INTERVAL, process_file, run_batch, staged_planner,
 };
 use crate::session::SessionCache;
 
@@ -71,10 +72,16 @@ pub async fn preview_op(
 /// the final results arrive as `job://progress` / `job://finished` events
 /// (both carry `jobId` and `tabId`; for tiny jobs they may arrive before this
 /// command's promise resolves, so listeners should be attached beforehand).
+///
+/// Results are never written into user folders: they go to the tab's staging
+/// folder (`<appCacheDir>/staging/<tabId>/<jobId>/`, replacing the tab's
+/// previous results) whatever `output.mode` says; `output` only contributes
+/// the format/encoding settings. The user then saves them (`save_results`).
 #[tauri::command]
 pub fn run_op(
     app: AppHandle,
     state: State<'_, AppState>,
+    staging: State<'_, Staging>,
     tab_id: String,
     request: serde_json::Value,
     paths: Vec<String>,
@@ -82,8 +89,18 @@ pub fn run_op(
 ) -> Result<String, AppError> {
     let request: OpRequest = parse_arg("request", request)?;
     let settings: OutputSettings = parse_arg("output", output)?;
-    let planner = OutputPlanner::new(settings)?;
+    texopt_core::staging::validate_id("tabId", &tab_id)?;
     let (job_id, cancel) = state.jobs.create();
+    let prepared = staging
+        .begin(&tab_id, &job_id)
+        .and_then(|dir| staged_planner(&dir, &settings));
+    let planner = match prepared {
+        Ok(planner) => planner,
+        Err(e) => {
+            state.jobs.finish(&job_id);
+            return Err(e.into());
+        }
+    };
     let jobs = state.jobs.clone();
     let id = job_id.clone();
 
@@ -108,6 +125,7 @@ pub fn run_op(
             PROGRESS_INTERVAL,
         );
         jobs.finish(&id);
+        tauri::Manager::state::<Staging>(&app).finish(&tab_id, &id);
         let event = JobFinishedEvent {
             job_id: id,
             tab_id,

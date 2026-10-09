@@ -1,6 +1,13 @@
 //! Output settings shared by every batch operation: where results go, in which
 //! format, and how they are encoded and written.
 //!
+//! The image tools no longer write into user folders when they run: `run_op`
+//! always targets the tab's staging folder (see [`crate::staging`]) and the
+//! user saves the results afterwards, so the conflict policy is applied at
+//! save time ([`resolve_conflict`]). [`OutputMode`] (in place / suffix /
+//! folder) is kept for compatibility, but the app only uses `folder` (the
+//! staging folder) for those runs.
+//!
 //! Documented choices:
 //! - **In-place**: the result is written next to the input with the same stem.
 //!   With `format: keep` this overwrites the source file (that is the point of
@@ -447,6 +454,34 @@ pub fn save_image(img: &ImageBuf, path: &Path, settings: &OutputSettings) -> OpR
     write_atomic(path, &data)
 }
 
+/// Final path for writing a file to `target` under `policy` (used when saving
+/// staged results): `Some(target)` when it is free or `overwrite`,
+/// `Some(name_N.ext)` for `autoRename`, `None` when `skip` and it exists.
+pub fn resolve_conflict(target: &Path, policy: ConflictPolicy) -> OpResult<Option<PathBuf>> {
+    if !target.exists() {
+        return Ok(Some(target.to_path_buf()));
+    }
+    match policy {
+        ConflictPolicy::Overwrite => Ok(Some(target.to_path_buf())),
+        ConflictPolicy::Skip => Ok(None),
+        ConflictPolicy::AutoRename => (1..=MAX_AUTO_RENAME)
+            .map(|n| numbered(target, n))
+            .find(|candidate| !candidate.exists())
+            .map(Some)
+            .ok_or_else(|| {
+                OpError::new(codes::IO_WRITE_FAILED)
+                    .with("path", target.display().to_string())
+                    .with("detail", "no free file name")
+            }),
+    }
+}
+
+/// Copy `src` to `dst` atomically (see [`write_atomic`]).
+pub fn copy_atomic(src: &Path, dst: &Path) -> OpResult<()> {
+    let data = std::fs::read(src).map_err(|e| crate::io::io_read_error(src, &e))?;
+    write_atomic(dst, &data)
+}
+
 /// Sidecar path of an output image's metadata: `<output>.json`.
 pub fn meta_path(output: &Path) -> PathBuf {
     let mut name = output.as_os_str().to_os_string();
@@ -868,6 +903,46 @@ mod tests {
             serde_json::to_value(&on).unwrap()["writeMeta"],
             serde_json::json!(true)
         );
+    }
+
+    #[test]
+    fn resolve_conflict_applies_each_policy() {
+        let dir = tempfile::tempdir().unwrap();
+        let free = dir.path().join("free.png");
+        let taken = dir.path().join("a.png");
+        std::fs::write(&taken, b"x").unwrap();
+        std::fs::write(dir.path().join("a_1.png"), b"x").unwrap();
+        for policy in [
+            ConflictPolicy::Overwrite,
+            ConflictPolicy::Skip,
+            ConflictPolicy::AutoRename,
+        ] {
+            assert_eq!(resolve_conflict(&free, policy).unwrap(), Some(free.clone()));
+        }
+        assert_eq!(
+            resolve_conflict(&taken, ConflictPolicy::Overwrite).unwrap(),
+            Some(taken.clone())
+        );
+        assert_eq!(
+            resolve_conflict(&taken, ConflictPolicy::Skip).unwrap(),
+            None
+        );
+        assert_eq!(
+            resolve_conflict(&taken, ConflictPolicy::AutoRename).unwrap(),
+            Some(dir.path().join("a_2.png"))
+        );
+    }
+
+    #[test]
+    fn copy_atomic_copies_bytes_and_reports_missing_sources() {
+        let dir = tempfile::tempdir().unwrap();
+        let src = dir.path().join("src.png");
+        std::fs::write(&src, b"bytes").unwrap();
+        let dst = dir.path().join("nested").join("dst.png");
+        copy_atomic(&src, &dst).unwrap();
+        assert_eq!(std::fs::read(&dst).unwrap(), b"bytes");
+        let err = copy_atomic(&dir.path().join("missing.png"), &dst).unwrap_err();
+        assert_eq!(err.code, codes::IO_READ_FAILED);
     }
 
     #[test]

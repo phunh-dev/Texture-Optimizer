@@ -9,17 +9,20 @@ import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/misc'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { Tooltip } from '@/components/ui/tooltip'
+import { translateError } from '@/lib/errors'
 import { clearFilesWithUndo } from '@/lib/history'
 import { importFromFilePicker, importFromFolderPicker } from '@/lib/import'
 import { runOp } from '@/lib/ipc'
 import type { ImportedFile, OpRequest, OutputSettings } from '@/lib/ipc/types'
 import { cn } from '@/lib/utils'
 import { useJobs } from '@/stores/jobs'
+import { beginStagedRun, resultSignature, setResultsView, useTabResults, type ResultsView } from '@/stores/results'
 import { requireSession, useSession, type Params } from '@/stores/session'
 import { getTabInfo } from '@/stores/tabs'
 
 import { HistoryButtons } from './HistoryButtons'
-import { OutputSettingsPanel, outputProblem } from './OutputSettingsPanel'
+import { OutputSettingsPanel } from './OutputSettingsPanel'
+import { ResultsPanel } from './ResultsPanel'
 import { RunPanel } from './RunPanel'
 
 /** Snapshot handed to the request builder, custom runners and the preview slot. */
@@ -51,6 +54,11 @@ export interface ToolLayoutProps {
   sidePanelBottom?: ReactNode
   /** Show the shared output settings panel (default true). */
   showOutput?: boolean
+  /**
+   * Runs only stage their results; the tab then offers Original / Result, Save… and Discard
+   * (default: same as `showOutput`, i.e. the image tools; atlas / 3D / rename handle their own output).
+   */
+  stagedResults?: boolean
   /** Show the preset bar (default true when there are fields). */
   showPresets?: boolean
   /** Custom Run button label (default "Process N images"). */
@@ -85,6 +93,7 @@ export function ToolLayout({
   sidePanelTop,
   sidePanelBottom,
   showOutput = true,
+  stagedResults,
   showPresets,
   runLabel,
   runDisabledReason,
@@ -103,6 +112,18 @@ export function ToolLayout({
   const previewFlag = useSession(tabId, (s) => s.uiFlags.preview === true)
   const view: View = preview && previewFlag ? 'preview' : 'grid'
   const errors = useMemo(() => validateParams(schema, params), [schema, params])
+  const staged = stagedResults ?? showOutput
+  const results = useTabResults(tabId)
+  const hasResults = staged && !!results && results.items.length > 0
+  const resultsView: ResultsView = hasResults && results.view === 'result' ? 'result' : 'original'
+  const resultFiles = useMemo(() => results?.items.map((item) => item.file) ?? [], [results])
+  const notes = useMemo(() => {
+    const byId = new Map<string, string>()
+    for (const item of results?.items ?? []) {
+      if (item.warnings.length > 0) byId.set(item.file.id, item.warnings.map((w) => translateError(w)).join('\n'))
+    }
+    return byId
+  }, [results])
 
   const ctx = (): ToolContext => {
     const s = requireSession(tabId).getState()
@@ -110,16 +131,16 @@ export function ToolLayout({
     return { tabId, files: s.files, params: s.params, output: s.output, selectedIds: s.selectedIds, focusFile }
   }
 
-  const problem = outputProblem(output)
   let disabledReason: string | null = null
   if (!run && !buildRequest) disabledReason = t('run.notAvailable')
   else if (files.length === 0) disabledReason = noFilesReason ?? t('run.noFiles')
   else if (Object.keys(errors).length > 0) disabledReason = t('run.invalidParams')
-  else if (showOutput && problem) disabledReason = t(problem)
   else if (runDisabledReason) disabledReason = runDisabledReason
 
   const onRun = () => {
     const c = ctx()
+    // Staged tools: the run only processes; results are reviewed and saved afterwards.
+    if (staged) beginStagedRun(tabId, resultSignature(requireSession(tabId).getState()))
     if (run) {
       void useJobs.getState().start(tabId, c.files.length, () => run(c))
       return
@@ -167,6 +188,22 @@ export function ToolLayout({
           </span>
 
           <div className="ml-auto flex items-center gap-1.5">
+            {staged && view === 'grid' ? (
+              <ToggleGroup
+                type="single"
+                value={resultsView}
+                aria-label={t('results.viewLabel')}
+                data-testid="results-toggle"
+                onValueChange={(v) => v && setResultsView(tabId, v as ResultsView)}
+              >
+                <ToggleGroupItem value="original" aria-label={t('results.original')}>
+                  {t('results.original')}
+                </ToggleGroupItem>
+                <ToggleGroupItem value="result" aria-label={t('results.result')} disabled={!hasResults}>
+                  {t('results.result')}
+                </ToggleGroupItem>
+              </ToggleGroup>
+            ) : null}
             {preview ? (
               <ToggleGroup type="single" value={view} aria-label={t('views.label')} onValueChange={(v) => v && changeView(v as View)}>
                 <ToggleGroupItem value="grid" aria-label={t('views.grid')}>
@@ -202,6 +239,8 @@ export function ToolLayout({
             </div>
           ) : content ? (
             content({ tabId, files, params, output, selectedIds, focusFile })
+          ) : resultsView === 'result' ? (
+            <ImageGrid tabId={tabId} files={resultFiles} label={t('results.gridLabel')} noteOf={(f) => notes.get(f.id) ?? null} />
           ) : (
             <ImageGrid tabId={tabId} />
           )}
@@ -221,8 +260,18 @@ export function ToolLayout({
             </PanelSection>
           ) : null}
         </div>
-        <div className="shrink-0 border-t border-border bg-card/80 p-4 backdrop-blur">
-          {runPanel ?? <RunPanel tabId={tabId} fileCount={files.length} disabledReason={disabledReason} onRun={onRun} label={runLabel} />}
+        <div className="shrink-0 space-y-3 border-t border-border bg-card/80 p-4 backdrop-blur">
+          {hasResults ? <ResultsPanel tabId={tabId} /> : null}
+          {runPanel ?? (
+            <RunPanel
+              tabId={tabId}
+              fileCount={files.length}
+              disabledReason={disabledReason}
+              onRun={onRun}
+              label={runLabel}
+              hint={staged ? t('run.stagedHint') : undefined}
+            />
+          )}
         </div>
       </aside>
     </div>

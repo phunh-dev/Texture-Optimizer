@@ -47,15 +47,16 @@ export interface OpRequest {
   params: Record<string, unknown>
 }
 
-export type OutputMode =
-  | { kind: 'inPlace' }
-  | { kind: 'folder'; path: string }
-  | { kind: 'suffix'; suffix: string }
-
 export type OutputFormat = 'keep' | 'png' | 'tga' | 'jpg' | 'webp'
 
+/** What to do when a file being saved already exists. autoRename picks `name_1.ext`, `name_2.ext`, ... */
+export type ConflictPolicy = 'overwrite' | 'skip' | 'autoRename'
+
+/**
+ * Encoding settings of a run. There is no destination: `runOp` always processes into the tab's
+ * staging folder and the user saves the results afterwards (`saveResults`), where `conflict` applies.
+ */
 export interface OutputSettings {
-  mode: OutputMode
   format: OutputFormat
   /** PNG zlib effort. */
   pngCompression: 'fast' | 'default' | 'best'
@@ -63,13 +64,40 @@ export interface OutputSettings {
   jpgQuality: number
   /** Run a lossless PNG optimizer pass after encoding. */
   optimizePng: boolean
-  /**
-   * What to do when the target file already exists. Never applied to the input itself, so
-   * inPlace + format 'keep' always overwrites the source. autoRename picks `name_1.ext`, `name_2.ext`, ...
-   */
-  conflict: 'overwrite' | 'skip' | 'autoRename'
-  /** Write the op metadata (e.g. trim offsets) to `<output>.json`. Optional, default false. */
+  /** Applied when saving the results to a folder. */
+  conflict: ConflictPolicy
+  /** Stage the op metadata (e.g. trim offsets) as `<output>.json` next to each result. Optional, default false. */
   writeMeta?: boolean
+}
+
+/** A staged result image of a run (`listResults`). */
+export interface StagedResult {
+  /** Header info of the staged image; `path` is inside the staging folder. */
+  file: ImportedFile
+  /** Its metadata sidecar (`<image>.json`), if any. */
+  sidecar: string | null
+}
+
+/**
+ * Where `saveResults` copies the staged results: every image into a folder (conflict policy
+ * applies), or "Save As" of the single staged image to exactly `path` (another image extension
+ * re-encodes to that format).
+ */
+export type SaveTarget = { kind: 'folder'; path: string } | { kind: 'file'; path: string }
+
+export interface SavedFile {
+  from: string
+  to: string
+  sidecar: string | null
+}
+
+export interface SaveReport {
+  /** Folder the files were saved to. */
+  destination: string
+  saved: SavedFile[]
+  /** Targets that exist and were left alone (policy `skip`). */
+  skipped: string[]
+  failed: { path: string; error: AppError }[]
 }
 
 export interface PreviewResult {

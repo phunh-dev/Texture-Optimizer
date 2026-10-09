@@ -7,7 +7,17 @@ vi.mock('@tauri-apps/api/core', () => ({
 
 import { invoke } from '@tauri-apps/api/core'
 
-import { decodePreviewPayload, originalImageUrl, previewOp, thumbnailUrl } from './index'
+import {
+  decodePreviewPayload,
+  discardResults,
+  listResults,
+  originalImageUrl,
+  previewOp,
+  runOp,
+  saveResults,
+  thumbnailUrl,
+  type OutputSettings,
+} from './index'
 
 function payload(width: number, height: number, meta: unknown, png: number[]): Uint8Array {
   const metaBytes = meta === null ? new Uint8Array() : new TextEncoder().encode(JSON.stringify(meta))
@@ -56,6 +66,39 @@ describe('ipc wrappers', () => {
       request: { kind: 'resize', params: {} },
     })
     expect([r.width, r.height]).toEqual([5, 6])
+  })
+
+  it('runOp sends encoding settings only (a legacy destination mode is dropped)', async () => {
+    vi.mocked(invoke).mockResolvedValueOnce('job-1')
+    const output = { format: 'png', pngCompression: 'best', jpgQuality: 80, optimizePng: true, conflict: 'skip' } as const
+    const legacy = { ...output, mode: { kind: 'inPlace' } } as unknown as OutputSettings
+    await expect(runOp('tab-1', { kind: 'resize', params: {} }, ['/a.png'], legacy)).resolves.toBe('job-1')
+    expect(invoke).toHaveBeenLastCalledWith('run_op', {
+      tabId: 'tab-1',
+      request: { kind: 'resize', params: {} },
+      paths: ['/a.png'],
+      output,
+    })
+    expect(legacy).toHaveProperty('mode')
+  })
+
+  it('staging commands: listResults, saveResults, discardResults', async () => {
+    const output: OutputSettings = { format: 'keep', pngCompression: 'default', jpgQuality: 90, optimizePng: false, conflict: 'autoRename' }
+    vi.mocked(invoke).mockResolvedValueOnce([])
+    await listResults('tab-1', 'job-2')
+    expect(invoke).toHaveBeenLastCalledWith('list_results', { tabId: 'tab-1', jobId: 'job-2' })
+    vi.mocked(invoke).mockResolvedValueOnce({ destination: 'D:/out', saved: [], skipped: [], failed: [] })
+    await saveResults('tab-1', 'job-2', { kind: 'folder', path: 'D:/out' }, 'skip', output)
+    expect(invoke).toHaveBeenLastCalledWith('save_results', {
+      tabId: 'tab-1',
+      jobId: 'job-2',
+      target: { kind: 'folder', path: 'D:/out' },
+      conflict: 'skip',
+      output,
+    })
+    vi.mocked(invoke).mockResolvedValueOnce(undefined)
+    await discardResults('tab-1')
+    expect(invoke).toHaveBeenLastCalledWith('discard_results', { tabId: 'tab-1' })
   })
 
   it('thumbnailUrl encodes the path and adds size + mtime', () => {

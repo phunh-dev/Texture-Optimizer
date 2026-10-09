@@ -8,6 +8,8 @@ import { temporal, type TemporalState } from 'zundo'
 import { createStore, useStore, type StoreApi } from 'zustand'
 import { shallow } from 'zustand/shallow'
 
+import { inTauri } from '@/lib/env'
+import { discardResults } from '@/lib/ipc'
 import type { ImportedFile, OutputSettings } from '@/lib/ipc/types'
 
 export const HISTORY_LIMIT = 100
@@ -101,8 +103,8 @@ export type SessionState = SessionData & SessionUi & SessionActions & { readonly
 
 export type SessionStore = StoreApi<SessionState> & { temporal: StoreApi<TemporalState<SessionData>> }
 
+/** Encoding settings of a new tab (runs are staged; nothing is saved until the user saves). */
 export const defaultOutputSettings = (): OutputSettings => ({
-  mode: { kind: 'suffix', suffix: '_opt' },
   format: 'keep',
   pngCompression: 'default',
   jpgQuality: 90,
@@ -373,12 +375,34 @@ export function requireSession(tabId: string): SessionStore {
   return sessions.get(tabId) ?? createSession(tabId)
 }
 
+type SessionDeletedListener = (tabId: string) => void
+const deletedListeners = new Set<SessionDeletedListener>()
+
+/** Called whenever a session is deleted (its tab was closed). Returns the unsubscribe function. */
+export function onSessionDeleted(listener: SessionDeletedListener): () => void {
+  deletedListeners.add(listener)
+  return () => deletedListeners.delete(listener)
+}
+
+/** Tell the backend to delete the tab's staged results (no-op outside Tauri). */
+function discardStagedResults(tabId: string): void {
+  if (!inTauri()) return
+  try {
+    void discardResults(tabId).catch(() => undefined)
+  } catch {
+    // ignore: backend not ready
+  }
+}
+
+/** Deletes a tab's session (tab closed): also drops its staged results. */
 export function deleteSession(tabId: string): void {
   const store = sessions.get(tabId)
   if (!store) return
   store.getState().commitParams()
   store.temporal.getState().clear()
   sessions.delete(tabId)
+  discardStagedResults(tabId)
+  for (const listener of deletedListeners) listener(tabId)
 }
 
 export function hasSession(tabId: string): boolean {

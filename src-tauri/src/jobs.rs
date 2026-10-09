@@ -19,9 +19,10 @@ use serde_json::Value;
 use texopt_core::error::codes;
 use texopt_core::ops::OpOutput;
 use texopt_core::output::{
-    OUTPUT_FORMAT_CHANGED, OutputFormat, OutputPlanner, keep_would_drop_alpha, save_image,
-    save_meta,
+    OUTPUT_FORMAT_CHANGED, OutputFormat, OutputPlanner, OutputSettings, keep_would_drop_alpha,
+    save_image, save_meta,
 };
+use texopt_core::staging::staging_settings;
 use texopt_core::{ImageBuf, OpError, OpResult};
 
 /// `cancel_job` was called with an unknown or already finished job. Params: `jobId`.
@@ -204,6 +205,14 @@ pub fn process_file(
         output: Some(target),
         meta: with_output_warning(out.meta, warning),
     })
+}
+
+/// Planner of a staged run (`run_op`): every result goes to `job_dir` (the
+/// job's staging folder), whatever destination the client asked for. Names
+/// are the source stem + the format's extension; duplicate stems are renamed
+/// (`hero.png`, `hero_1.png`).
+pub fn staged_planner(job_dir: &Path, client: &OutputSettings) -> OpResult<OutputPlanner> {
+    OutputPlanner::new(staging_settings(client, job_dir))
 }
 
 /// Attach an output warning to the op meta as `outputWarnings: [OpError]`
@@ -684,6 +693,209 @@ mod tests {
             Ok(out) => assert!(out.output.unwrap().exists()),
             Err(e) => assert!(!e.code.is_empty()),
         }
+    }
+
+    /// Every file below `dir` with its bytes (recursive, sorted).
+    fn snapshot(dir: &Path) -> Vec<(PathBuf, Vec<u8>)> {
+        let mut out = vec![];
+        for entry in std::fs::read_dir(dir).unwrap() {
+            let path = entry.unwrap().path();
+            if path.is_dir() {
+                out.extend(snapshot(&path));
+            } else {
+                let bytes = std::fs::read(&path).unwrap();
+                out.push((path, bytes));
+            }
+        }
+        out.sort();
+        out
+    }
+
+    struct StagedEnv {
+        _dir: tempfile::TempDir,
+        src: PathBuf,
+        staging: texopt_core::staging::StagingRoot,
+    }
+
+    fn staged_env() -> StagedEnv {
+        let dir = tempfile::tempdir().unwrap();
+        let base = dunce_like(dir.path());
+        let src = base.join("assets");
+        std::fs::create_dir_all(&src).unwrap();
+        StagedEnv {
+            staging: texopt_core::staging::StagingRoot::new(base.join("cache").join("staging")),
+            src,
+            _dir: dir,
+        }
+    }
+
+    fn dunce_like(p: &Path) -> PathBuf {
+        texopt_core::io::normalize_path(p).unwrap()
+    }
+
+    fn run_staged(
+        env: &StagedEnv,
+        job: &str,
+        inputs: &[PathBuf],
+        client: &texopt_core::output::OutputSettings,
+        op: impl Fn(&ImageBuf) -> OpResult<OpOutput> + Sync,
+    ) -> (PathBuf, BatchOutcome) {
+        let job_dir = env.staging.prepare_job("tab-1", job).unwrap();
+        let planner = staged_planner(&job_dir, client).unwrap();
+        let outcome = run_batch(
+            inputs,
+            |p| process_file(p, &planner, &op),
+            |_| {},
+            &AtomicBool::new(false),
+            Duration::ZERO,
+        );
+        (job_dir, outcome)
+    }
+
+    #[test]
+    fn staged_run_writes_only_into_the_staging_dir_whatever_the_client_mode() {
+        use texopt_core::fixtures;
+        use texopt_core::output::{ConflictPolicy, OutputFormat, OutputMode, OutputSettings};
+
+        let env = staged_env();
+        let a = env.src.join("a");
+        let b = env.src.join("b");
+        std::fs::create_dir_all(&a).unwrap();
+        std::fs::create_dir_all(&b).unwrap();
+        let inputs = vec![a.join("hero.png"), b.join("hero.png"), a.join("tree.png")];
+        fixtures::solid(8, 4, fixtures::RED)
+            .save(&inputs[0])
+            .unwrap();
+        fixtures::solid(6, 6, fixtures::BLUE)
+            .save(&inputs[1])
+            .unwrap();
+        fixtures::gradient(5, 5).save(&inputs[2]).unwrap();
+        let before = snapshot(&env.src);
+
+        // Even an in-place / overwrite client request must not touch the sources.
+        for mode in [
+            OutputMode::InPlace,
+            OutputMode::Suffix {
+                suffix: "_opt".into(),
+            },
+            OutputMode::Folder {
+                path: a.display().to_string(),
+            },
+        ] {
+            let client = OutputSettings {
+                mode,
+                format: OutputFormat::Keep,
+                conflict: ConflictPolicy::Overwrite,
+                ..OutputSettings::default()
+            };
+            let (job_dir, outcome) = run_staged(&env, "job-1", &inputs, &client, invert);
+            assert!(job_dir.starts_with(dunce_like(env.staging.path())));
+            assert_eq!(snapshot(&env.src), before, "sources untouched");
+            let mut names: Vec<String> = outcome
+                .results
+                .iter()
+                .map(|r| {
+                    assert!(r.error.is_none(), "{r:?}");
+                    let out = PathBuf::from(r.output.as_ref().unwrap());
+                    assert_eq!(out.parent().unwrap(), job_dir);
+                    out.file_name().unwrap().to_string_lossy().into_owned()
+                })
+                .collect();
+            names.sort();
+            assert_eq!(names, vec!["hero.png", "hero_1.png", "tree.png"]);
+            // Each staged duplicate holds the result of its own source.
+            for r in &outcome.results {
+                let mut expected = image::open(&r.input).unwrap().into_rgba8();
+                image::imageops::invert(&mut expected);
+                let out = image::open(r.output.as_ref().unwrap())
+                    .unwrap()
+                    .into_rgba8();
+                assert_eq!(expected, out);
+            }
+        }
+        // Format choice changes the staged extension, no suffix.
+        let client = OutputSettings {
+            format: OutputFormat::Tga,
+            ..OutputSettings::default()
+        };
+        let (job_dir, outcome) = run_staged(&env, "job-2", &inputs[2..], &client, invert);
+        assert_eq!(
+            outcome.results[0].output.as_deref(),
+            Some(job_dir.join("tree.tga").display().to_string().as_str())
+        );
+        assert!(
+            !env.staging.path().join("tab-1").join("job-1").exists(),
+            "a new run replaces the previous results"
+        );
+        assert_eq!(snapshot(&env.src), before);
+    }
+
+    #[test]
+    fn staged_run_keeps_the_jpeg_to_png_rule_and_stages_sidecars() {
+        use texopt_core::fixtures;
+        use texopt_core::output::{OUTPUT_FORMAT_CHANGED, OutputSettings};
+
+        let env = staged_env();
+        let jpg = env.src.join("photo.jpg");
+        image::DynamicImage::ImageRgba8(fixtures::rect_on(
+            16,
+            16,
+            fixtures::WHITE,
+            4,
+            4,
+            8,
+            8,
+            fixtures::RED,
+        ))
+        .into_rgb8()
+        .save(&jpg)
+        .unwrap();
+        let sprite = env.src.join("sprite.png");
+        fixtures::sprite(20, 10, 4, 2, 6, 3, fixtures::RED)
+            .save(&sprite)
+            .unwrap();
+        let before = snapshot(&env.src);
+
+        let bg: texopt_core::ops::OpRequest = serde_json::from_value(serde_json::json!({
+            "kind": "bgRemove", "params": { "mode": "white", "tolerance": 20 }
+        }))
+        .unwrap();
+        let (job_dir, outcome) = run_staged(
+            &env,
+            "job-1",
+            std::slice::from_ref(&jpg),
+            &OutputSettings::default(),
+            |img| texopt_core::ops::run(img, &bg),
+        );
+        let r = &outcome.results[0];
+        assert_eq!(
+            r.output.as_deref(),
+            Some(job_dir.join("photo.png").display().to_string().as_str())
+        );
+        let warnings = &r.meta.as_ref().unwrap()["outputWarnings"];
+        assert_eq!(warnings[0]["code"], OUTPUT_FORMAT_CHANGED);
+        assert_eq!(warnings[0]["params"]["to"], "png");
+
+        let trim: texopt_core::ops::OpRequest =
+            serde_json::from_value(serde_json::json!({ "kind": "trim", "params": {} })).unwrap();
+        let client = OutputSettings {
+            write_meta: true,
+            ..OutputSettings::default()
+        };
+        let (job_dir, outcome) = run_staged(
+            &env,
+            "job-2",
+            std::slice::from_ref(&sprite),
+            &client,
+            |img| texopt_core::ops::run(img, &trim),
+        );
+        assert!(outcome.results[0].error.is_none());
+        assert!(job_dir.join("sprite.png").is_file());
+        let sidecar: Value =
+            serde_json::from_slice(&std::fs::read(job_dir.join("sprite.png.json")).unwrap())
+                .unwrap();
+        assert_eq!(sidecar["trimRect"]["w"], 6);
+        assert_eq!(snapshot(&env.src), before, "no sidecar next to the source");
     }
 
     #[test]

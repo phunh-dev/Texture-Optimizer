@@ -1,4 +1,4 @@
-import { ImageIcon, XIcon } from 'lucide-react'
+import { ImageIcon, TriangleAlertIcon, XIcon } from 'lucide-react'
 import { memo, useState, type MouseEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -19,7 +19,10 @@ interface ImageCellProps {
   selected: boolean
   focused: boolean
   onSelect: (file: ImportedFile, e: MouseEvent) => void
-  onRemove: (file: ImportedFile) => void
+  /** Omitted for read-only cells (no remove button). */
+  onRemove?: (file: ImportedFile) => void
+  /** Optional warning (already translated), shown as a badge with a tooltip. */
+  note?: string | null
 }
 
 function Thumbnail({ file, size }: { file: ImportedFile; size: ViewSize }) {
@@ -45,7 +48,7 @@ function Thumbnail({ file, size }: { file: ImportedFile; size: ViewSize }) {
   )
 }
 
-export const ImageCell = memo(function ImageCell({ file, domId, size, selected, focused, onSelect, onRemove }: ImageCellProps) {
+export const ImageCell = memo(function ImageCell({ file, domId, size, selected, focused, onSelect, onRemove, note }: ImageCellProps) {
   const { t } = useTranslation('common')
   const metrics = GRID_SIZES[size]
   const warnings = dimensionWarnings(file.width, file.height)
@@ -89,6 +92,16 @@ export const ImageCell = memo(function ImageCell({ file, domId, size, selected, 
           </div>
         )}
 
+        {note ? (
+          <div className="pointer-events-auto absolute left-1 top-1">
+            <Tooltip content={note}>
+              <Badge variant="warning" data-testid="badge-note" aria-label={note}>
+                <TriangleAlertIcon className="size-3" />
+              </Badge>
+            </Tooltip>
+          </div>
+        ) : null}
+
         {selected && <div className="pointer-events-none absolute inset-0 bg-primary/10" />}
       </div>
 
@@ -103,22 +116,24 @@ export const ImageCell = memo(function ImageCell({ file, domId, size, selected, 
         )}
       </div>
 
-      <button
-        type="button"
-        aria-label={t('grid.removeImage', { name: file.name })}
-        data-testid="remove-badge"
-        onClick={(e) => {
-          e.stopPropagation()
-          onRemove(file)
-        }}
-        className={cn(
-          'absolute right-1 top-1 flex items-center justify-center rounded-full bg-foreground/75 text-background shadow-sm backdrop-blur-sm transition-[opacity,transform,background-color] outline-none',
-          'hover:scale-110 hover:bg-destructive focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ring',
-          small ? 'size-4 opacity-100' : 'size-6 opacity-0 group-hover/cell:opacity-100 group-focus-within/cell:opacity-100',
-        )}
-      >
-        <XIcon className={small ? 'size-2.5' : 'size-3.5'} strokeWidth={2.5} />
-      </button>
+      {onRemove ? (
+        <button
+          type="button"
+          aria-label={t('grid.removeImage', { name: file.name })}
+          data-testid="remove-badge"
+          onClick={(e) => {
+            e.stopPropagation()
+            onRemove(file)
+          }}
+          className={cn(
+            'absolute right-1 top-1 flex items-center justify-center rounded-full bg-foreground/75 text-background shadow-sm backdrop-blur-sm transition-[opacity,transform,background-color] outline-none',
+            'hover:scale-110 hover:bg-destructive focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ring',
+            small ? 'size-4 opacity-100' : 'size-6 opacity-0 group-hover/cell:opacity-100 group-focus-within/cell:opacity-100',
+          )}
+        >
+          <XIcon className={small ? 'size-2.5' : 'size-3.5'} strokeWidth={2.5} />
+        </button>
+      ) : null}
     </div>
   )
 })

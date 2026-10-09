@@ -175,6 +175,8 @@ describe('TrimTab', () => {
       [files[0].path],
       { ...defaultOutputSettings(), writeMeta: true },
     )
+    // The offsets JSON is staged with the result; the tab offers Original / Result once it is back.
+    expect(within(screen.getByTestId('results-toggle')).getByRole('radio', { name: 'Result' })).toBeDisabled()
   })
 
   it('Run without offsets keeps writeMeta off', async () => {

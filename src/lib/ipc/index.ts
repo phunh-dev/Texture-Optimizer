@@ -3,12 +3,16 @@
 import { convertFileSrc, invoke } from '@tauri-apps/api/core'
 
 import type {
+  ConflictPolicy,
   ImportedFile,
   OpRequest,
   OutputSettings,
   PreviewResult,
+  SaveReport,
+  SaveTarget,
   ScanOptions,
   ScanResult,
+  StagedResult,
   ThumbSize,
 } from './types'
 
@@ -64,9 +68,44 @@ export async function previewOp(tabId: string, path: string, request: OpRequest)
   return decodePreviewPayload(payload)
 }
 
-/** Start a batch job; progress arrives via JOB_PROGRESS_EVENT / JOB_FINISHED_EVENT. Returns the job id. */
+/** Encoding settings only: a legacy destination `mode` (in place / suffix / folder) is never sent. */
+export function encodingSettings(output: OutputSettings): OutputSettings {
+  const settings = { ...output } as OutputSettings & { mode?: unknown }
+  delete settings.mode
+  return settings
+}
+
+/**
+ * Start a batch job; progress arrives via JOB_PROGRESS_EVENT / JOB_FINISHED_EVENT. Returns the job id.
+ * Results are only staged (`<appCacheDir>/staging/<tabId>/<jobId>/`), never written next to the
+ * sources: the user saves them with `saveResults`.
+ */
 export function runOp(tabId: string, request: OpRequest, paths: string[], output: OutputSettings): Promise<string> {
-  return invoke('run_op', { tabId, request, paths, output })
+  return invoke('run_op', { tabId, request, paths, output: encodingSettings(output) })
+}
+
+/** Header info of the staged results of a job (naturally sorted by name). */
+export function listResults(tabId: string, jobId: string): Promise<StagedResult[]> {
+  return invoke('list_results', { tabId, jobId })
+}
+
+/**
+ * Copy the staged results of a job (and their sidecars) to a folder, applying `conflict`, or the
+ * single result to an exact "Save As" path. `output` gives the encoding when Save As changes the format.
+ */
+export function saveResults(
+  tabId: string,
+  jobId: string,
+  target: SaveTarget,
+  conflict: ConflictPolicy,
+  output: OutputSettings,
+): Promise<SaveReport> {
+  return invoke('save_results', { tabId, jobId, target, conflict, output: encodingSettings(output) })
+}
+
+/** Delete the staged results of a tab (Discard, tab closed). */
+export function discardResults(tabId: string): Promise<void> {
+  return invoke('discard_results', { tabId })
 }
 
 export function cancelJob(jobId: string): Promise<void> {
