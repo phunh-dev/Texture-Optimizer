@@ -12,12 +12,21 @@ Mỗi công cụ là một tab; chỉ tab đang mở được nạp, các tab kh
 | Resolution Fixer | Snap kích thước về bội số 4, bội số N hoặc POT bằng resample / pad / crop, 9 vị trí neo |
 | Sprite Trimmer | Cắt pixel trong suốt thừa (ngưỡng alpha, margin, từng cạnh), xuất JSON offset để giữ pivot |
 | POT Padding | Thêm padding lên POT (next / square / cố định), nền trong suốt / màu / kéo dài mép |
-| Smart Atlas | Gom sprite thành atlas (MaxRects / Skyline), incremental (thêm ảnh thì cập nhật atlas cũ, giữ vị trí sprite cũ), xuất 1 trong 4 định dạng: Generic JSON, Unity (`.meta`, giữ GUID), Godot 3/4 (`.tres`), Unreal Paper2D |
+| Smart Atlas | Gom sprite thành atlas (MaxRects / Skyline), incremental (thêm ảnh thì cập nhật atlas cũ, giữ vị trí sprite cũ), xuất 1 trong 5 chế độ: Generic JSON, Unity (`.meta`, giữ GUID), Godot 3/4 (`.tres`), Unreal Paper2D, hoặc **Chỉ ảnh atlas** (1 file PNG chứa các ảnh con, không metadata) |
 | Pattern Renamer | Đổi tên theo template (`{name}`, `{index}`, `{type}`…), prefix/suffix, đánh số, đổi kiểu chữ, find/replace regex, quy ước tên theo engine; xem trước, phát hiện xung đột, hoàn tác (revert) |
 | Background Remover | Xóa nền trắng / caro / màu tùy chọn (có công cụ hút màu), flood fill hoặc toàn ảnh, feather, khử viền |
 | 3D Texture Packer | Gộp texture của nhiều model `.fbx/.obj/.dae` thành atlas POT (mọi kênh dùng chung layout), remap UV và ghi lại model; với FBX không ghi lại an toàn thì chuyển sang chế độ *UV Remap Data* (JSON + script Unity) |
 
 Dùng chung cho mọi tab: kéo-thả file/thư mục, lưới ảnh 3 kích thước có nút xóa trên từng ô, undo/redo (Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z), preset tham số, xem trước trước/sau, hai ngôn ngữ English / Tiếng Việt.
+
+## Lưu kết quả
+
+App **không bao giờ tự ghi file vào thư mục của bạn**; luôn hỏi nơi lưu trước.
+
+- **Resize / Resolution Fixer / Trimmer / POT Padding / Background Remover:** bấm *Run* chỉ xử lý vào vùng tạm. Xem lại bằng nút *Gốc / Kết quả* trên lưới, rồi bấm *Lưu…*: 1 ảnh thì mở hộp thoại Save As, nhiều ảnh thì mở hộp thoại chọn thư mục. *Bỏ kết quả* xóa vùng tạm. Vùng tạm cũng được dọn khi đóng tab hoặc mở lại app.
+- **Smart Atlas:** preview tự cập nhật; *Export…* mở hộp thoại Save As cho `<tên>.png` rồi mới ghi atlas và metadata vào đó. "Atlas đích" (tùy chọn) là atlas có sẵn cần cập nhật incremental.
+- **3D Texture Packer:** *Pack…* mở hộp thoại chọn thư mục rồi mới ghi atlas và model.
+- **Pattern Renamer:** đổi tên tại chỗ là thao tác của chính tab này; chế độ copy hỏi thư mục đích.
 
 ## Yêu cầu môi trường
 
