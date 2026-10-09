@@ -12,6 +12,10 @@ serde_json.workspace = true
 thiserror.workspace = true
 blake3.workspace = true
 rayon.workspace = true
+walkdir = "2"
+dunce = "1"
+tempfile = "3"
+oxipng = { version = "10", default-features = false, features = ["parallel"] }
 
 [dev-dependencies]
 proptest.workspace = true

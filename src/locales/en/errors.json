@@ -9,5 +9,9 @@
   "IMG_TOO_LARGE": "Image is larger than the maximum size {{max}}px",
   "IMG_EMPTY": "Image has no visible pixels",
   "CANCELLED": "Cancelled",
+  "SCAN_PATH_NOT_FOUND": "Path not found: {{path}}",
+  "THUMB_FAILED": "Cannot create thumbnail for {{path}}",
+  "JOB_NOT_FOUND": "Job not found or already finished: {{jobId}}",
+  "OUTPUT_EXISTS_SKIPPED": "Skipped: {{path}} already exists",
   "UNKNOWN": "Unexpected error"
 }

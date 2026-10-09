@@ -9,5 +9,9 @@
   "IMG_TOO_LARGE": "Ảnh lớn hơn kích thước tối đa {{max}}px",
   "IMG_EMPTY": "Ảnh không có pixel nào hiển thị",
   "CANCELLED": "Đã hủy",
+  "SCAN_PATH_NOT_FOUND": "Không tìm thấy đường dẫn: {{path}}",
+  "THUMB_FAILED": "Không tạo được ảnh thu nhỏ cho {{path}}",
+  "JOB_NOT_FOUND": "Không tìm thấy tác vụ hoặc tác vụ đã kết thúc: {{jobId}}",
+  "OUTPUT_EXISTS_SKIPPED": "Đã bỏ qua: {{path}} đã tồn tại",
   "UNKNOWN": "Lỗi không xác định"
 }

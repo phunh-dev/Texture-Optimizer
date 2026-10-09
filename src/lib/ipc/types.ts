@@ -26,7 +26,10 @@ export interface ImportedFile {
 export interface ScanOptions {
   /** Descend into sub-folders when a folder path is given. */
   recursive: boolean
-  /** Lowercase extensions to accept; defaults to every supported format. */
+  /**
+   * Extensions to accept when expanding folders (case-insensitive, leading dot optional);
+   * defaults to every supported format. Explicitly listed files are not filtered.
+   */
   extensions?: string[]
 }
 
@@ -56,11 +59,14 @@ export interface OutputSettings {
   format: OutputFormat
   /** PNG zlib effort. */
   pngCompression: 'fast' | 'default' | 'best'
-  /** 1-100, used for jpg/webp. */
+  /** 1-100, JPEG only (WebP output is always lossless; JPEG flattens alpha onto white). */
   jpgQuality: number
   /** Run a lossless PNG optimizer pass after encoding. */
   optimizePng: boolean
-  /** What to do when the target file already exists. */
+  /**
+   * What to do when the target file already exists. Never applied to the input itself, so
+   * inPlace + format 'keep' always overwrites the source. autoRename picks `name_1.ext`, `name_2.ext`, ...
+   */
   conflict: 'overwrite' | 'skip' | 'autoRename'
 }
 
