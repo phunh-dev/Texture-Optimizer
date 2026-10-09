@@ -1,0 +1,60 @@
+# Node / frontend
+node_modules/
+dist/
+dist-ssr/
+*.local
+.vite/
+coverage/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+*.tsbuildinfo
+
+# Rust / Cargo
+target/
+**/*.rs.bk
+*.pdb
+
+# Tauri
+src-tauri/target/
+src-tauri/gen/schemas/
+src-tauri/WixTools/
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Test & sample output
+/test-output/
+/samples/output/
+*.texatlas.cache
+
+# Logs
+logs/
+*.log
+
+# IDE / editor
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*.sublime-*
+
+# OS
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*~
+.directory
+
+# Git worktrees for parallel agents
+.worktrees/
