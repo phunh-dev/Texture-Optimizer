@@ -1,1 +1,204 @@
-{}
+{
+  "groups": {
+    "name": "Name",
+    "numbering": "Numbering & order",
+    "numberingDesc": "Files are sorted first, then {index} counts from the start number.",
+    "findReplace": "Find & replace",
+    "smart": "Smart naming",
+    "extension": "Extension & safety",
+    "destination": "Destination"
+  },
+  "params": {
+    "template": {
+      "label": "Template",
+      "desc": "Click a token to insert it at the cursor.",
+      "tokens": "Template tokens",
+      "insert": "Insert {{token}}",
+      "token": {
+        "name": "Original name (after find & replace)",
+        "index": "Running number",
+        "parent": "Parent folder name",
+        "width": "Image width in px",
+        "height": "Image height in px",
+        "ext": "Original extension",
+        "date": "File modified date",
+        "type": "Detected texture type suffix (smart naming)"
+      }
+    },
+    "prefix": { "label": "Prefix" },
+    "suffix": { "label": "Suffix" },
+    "dateFormat": {
+      "label": "Date format",
+      "desc": "strftime format for {date}, e.g. %Y-%m-%d."
+    },
+    "case": {
+      "label": "Case",
+      "keep": "Keep",
+      "lower": "lowercase",
+      "upper": "UPPERCASE",
+      "snake": "snake_case",
+      "kebab": "kebab-case",
+      "camel": "camelCase",
+      "pascal": "PascalCase"
+    },
+    "startNumber": { "label": "Start number" },
+    "step": { "label": "Step" },
+    "zeroPad": {
+      "label": "Digits",
+      "desc": "Minimum digits of {index} (3 → 001). 0 = no padding."
+    },
+    "sortBy": {
+      "label": "Sort before numbering",
+      "none": "Current order",
+      "name": "Name",
+      "naturalName": "Name (natural: 2 before 10)",
+      "modified": "Date modified",
+      "size": "File size",
+      "dimensions": "Dimensions"
+    },
+    "sortDesc": { "label": "Descending" },
+    "findReplace": {
+      "desc": "Applied in order to the original name before the template.",
+      "empty": "No rules yet.",
+      "find": "Find (rule {{n}})",
+      "replace": "Replace with (rule {{n}})",
+      "findPlaceholder": "Find",
+      "replacePlaceholder": "Replace with",
+      "regex": "Regular expression ($1 inserts a group)",
+      "caseSensitive": "Match case",
+      "moveUp": "Move rule {{n}} up",
+      "moveDown": "Move rule {{n}} down",
+      "remove": "Remove rule {{n}}",
+      "add": "Add rule",
+      "invalidRegex": "Invalid regular expression: {{detail}}"
+    },
+    "smart": {
+      "enabled": "Engine naming convention",
+      "desc": "Detects the texture type from the name (albedo, normal, roughness…) and applies the engine's prefix/suffix.",
+      "preset": "Engine",
+      "presets": {
+        "unreal": "Unreal",
+        "unity": "Unity",
+        "godot": "Godot",
+        "custom": "Custom"
+      },
+      "examples": {
+        "unreal": "rock_normal → T_rock_N",
+        "unity": "rock_normal → rock_Normal",
+        "godot": "Rock Normal → rock_normal",
+        "custom": "rock_normal → rock_<your suffix>"
+      },
+      "customMap": "Suffix per texture type",
+      "suffixFor": "Suffix for {{type}}",
+      "types": {
+        "baseColor": "Base color",
+        "normal": "Normal",
+        "roughness": "Roughness",
+        "metallic": "Metallic",
+        "ao": "Ambient occlusion",
+        "emissive": "Emissive",
+        "height": "Height",
+        "mask": "Mask",
+        "orm": "ORM",
+        "opacity": "Opacity"
+      }
+    },
+    "keepExtension": {
+      "label": "Keep extension",
+      "desc": "Turn off only if the template writes the extension itself."
+    },
+    "extensionCase": {
+      "label": "Extension case",
+      "keep": "Keep",
+      "lower": "lower",
+      "upper": "UPPER"
+    },
+    "sanitize": {
+      "label": "Fix invalid names",
+      "desc": "Replace characters that are not allowed on Windows/macOS/Linux instead of reporting a conflict."
+    },
+    "invalidCharReplacement": { "label": "Replace invalid characters with" },
+    "mode": {
+      "label": "Mode",
+      "inPlace": "Rename in place",
+      "copyTo": "Copy to folder"
+    },
+    "copyDir": {
+      "label": "Destination folder",
+      "desc": "Renamed copies are written here; the originals stay untouched.",
+      "none": "No folder selected",
+      "choose": "Choose…"
+    }
+  },
+  "validation": {
+    "unknownToken": "Unknown token {{params.tokens}}",
+    "invalidReplacement": "The replacement itself contains invalid characters"
+  },
+  "conflicts": {
+    "duplicateInBatch": "Same name as another file",
+    "existsOnDisk": "A file with this name already exists",
+    "invalidName": "Invalid file name"
+  },
+  "table": {
+    "label": "Rename preview",
+    "noFiles": "Add files to preview their new names",
+    "index": "#",
+    "current": "Current name",
+    "new": "New name",
+    "status": "Status",
+    "unchanged": "Unchanged",
+    "ok": "OK",
+    "updating": "Updating…",
+    "summary": {
+      "total_one": "{{count}} file",
+      "total_other": "{{count}} files",
+      "toRename_one": "{{count}} to rename",
+      "toRename_other": "{{count}} to rename",
+      "toCopy_one": "{{count}} to copy",
+      "toCopy_other": "{{count}} to copy",
+      "unchanged_one": "{{count}} unchanged",
+      "unchanged_other": "{{count}} unchanged",
+      "conflicts_one": "{{count}} conflict",
+      "conflicts_other": "{{count}} conflicts"
+    }
+  },
+  "run": {
+    "rename_one": "Rename {{count}} file",
+    "rename_other": "Rename {{count}} files",
+    "copy_one": "Copy {{count}} file",
+    "copy_other": "Copy {{count}} files",
+    "chooseFolder": "Choose a destination folder first",
+    "updating": "Updating the preview…",
+    "fixErrors": "Fix the error shown in the preview first",
+    "conflicts_one": "Resolve {{count}} conflict first",
+    "conflicts_other": "Resolve {{count}} conflicts first",
+    "nothing": "Nothing to rename: every name is already as planned"
+  },
+  "actions": {
+    "revert": "Revert",
+    "revertLast": "Revert last rename"
+  },
+  "confirm": {
+    "title": "Rename files?",
+    "titleCopy": "Copy files with new names?",
+    "desc": "The files will be renamed on disk.",
+    "descCopy": "Renamed copies will be written to {{dir}}. The originals stay untouched.",
+    "toRename_one": "{{count}} file will be renamed",
+    "toRename_other": "{{count}} files will be renamed",
+    "toCopy_one": "{{count}} file will be copied",
+    "toCopy_other": "{{count}} files will be copied",
+    "unchanged_one": "{{count}} file keeps its name",
+    "unchanged_other": "{{count}} files keep their names",
+    "revertHint": "You can undo this later with “Revert last rename”."
+  },
+  "toast": {
+    "renamed_one": "Renamed {{count}} file",
+    "renamed_other": "Renamed {{count}} files",
+    "copied_one": "Copied {{count}} file",
+    "copied_other": "Copied {{count}} files",
+    "reverted_one": "Restored the original name of {{count}} file",
+    "reverted_other": "Restored the original names of {{count}} files",
+    "copiesRemoved_one": "Removed {{count}} copy",
+    "copiesRemoved_other": "Removed {{count}} copies"
+  }
+}

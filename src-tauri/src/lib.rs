@@ -5,6 +5,7 @@
 
 pub mod commands;
 pub mod commands_atlas;
+pub mod commands_rename;
 pub mod error;
 pub mod jobs;
 pub mod preview;
@@ -47,6 +48,11 @@ pub fn run() {
             commands_atlas::atlas_preview,
             commands_atlas::atlas_export,
             commands_atlas::atlas_load_project,
+            commands_rename::rename_plan,
+            commands_rename::rename_execute,
+            commands_rename::rename_revert_last,
+            commands_rename::rename_revert,
+            commands_rename::rename_logs,
         ])
         .setup(|app| {
             if cfg!(debug_assertions) {

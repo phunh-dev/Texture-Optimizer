@@ -17,6 +17,13 @@ export interface CompareViewProps {
   defaultPixelated?: boolean
   /** Initial divider position 0..1. */
   defaultSplit?: number
+  /** Eyedropper mode: a click reports image pixel coordinates (via onPickBefore) instead of panning. */
+  pickMode?: boolean
+  /**
+   * Called in pickMode with integer pixel coordinates in the before image's
+   * natural size (zoom/pan/beforeSize already undone). Clicks outside it are ignored.
+   */
+  onPickBefore?: (x: number, y: number) => void
   /** Extra text shown in the Before / After pills (e.g. dimensions). */
   beforeLabel?: string
   afterLabel?: string
@@ -56,6 +63,8 @@ export function CompareView({
   className,
   defaultPixelated = false,
   defaultSplit = 0.5,
+  pickMode = false,
+  onPickBefore,
   beforeLabel,
   afterLabel,
   beforeSize,
@@ -124,6 +133,21 @@ export function CompareView({
   const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>, kind: 'pan' | 'split') => {
     if (e.button !== 0) return
     e.stopPropagation()
+    if (kind === 'pan' && pickMode && onPickBefore) {
+      const el = containerRef.current
+      if (!el) return
+      const rect = el.getBoundingClientRect()
+      // Position in displayed before-image pixels, then in its natural pixels.
+      let x = (e.clientX - rect.left - view.x) / view.zoom
+      let y = (e.clientY - rect.top - view.y) / view.zoom
+      if (x < 0 || y < 0 || (base && (x >= base.w || y >= base.h))) return
+      if (base && natural) {
+        x = (x * natural.w) / base.w
+        y = (y * natural.h) / base.h
+      }
+      onPickBefore(Math.floor(x), Math.floor(y))
+      return
+    }
     e.currentTarget.setPointerCapture?.(e.pointerId)
     drag.current = { kind, startX: e.clientX, startY: e.clientY, view }
   }
@@ -165,7 +189,11 @@ export function CompareView({
         ref={containerRef}
         role="img"
         aria-label={t('compare.label')}
-        className="bg-checker relative min-h-0 flex-1 cursor-grab touch-none overflow-hidden active:cursor-grabbing"
+        data-pick-mode={pickMode || undefined}
+        className={cn(
+          'bg-checker relative min-h-0 flex-1 touch-none overflow-hidden',
+          pickMode ? 'cursor-crosshair' : 'cursor-grab active:cursor-grabbing',
+        )}
         onPointerDown={(e) => onPointerDown(e, 'pan')}
         onPointerMove={onPointerMove}
         onPointerUp={endDrag}

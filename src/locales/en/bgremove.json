@@ -1,1 +1,77 @@
-{}
+{
+  "presets": {
+    "title": "Quick start",
+    "white": "White bg",
+    "checker": "Checker bg",
+    "auto": "Auto"
+  },
+  "groups": {
+    "background": "Background",
+    "matching": "Matching",
+    "edges": "Edges"
+  },
+  "params": {
+    "mode": {
+      "label": "Background type",
+      "desc": "Auto looks at the image border: a checkerboard if there is one, otherwise the most common color.",
+      "auto": "Auto",
+      "white": "White",
+      "checker": "Checker",
+      "color": "Color"
+    },
+    "color": {
+      "label": "Background color",
+      "swatch": "Choose background color",
+      "hex": "Background color (hex)",
+      "pick": "Pick color from image",
+      "picking": "Click the “Before” image in the preview to sample a color."
+    },
+    "checkerCellSize": {
+      "label": "Checker cell size",
+      "desc": "Size of one checkerboard square. Leave on auto unless detection fails.",
+      "auto": "Auto-detect"
+    },
+    "fill": {
+      "label": "Remove",
+      "desc": "From edges keeps background-colored areas inside the object (e.g. white eyes); Everywhere removes every matching pixel.",
+      "floodFromEdges": "From edges",
+      "global": "Everywhere"
+    },
+    "tolerance": {
+      "label": "Tolerance",
+      "desc": "How different a pixel may be from the background and still be removed."
+    },
+    "metric": {
+      "label": "Color distance",
+      "desc": "Lab matches colors the way the eye sees them; RGB is faster and stricter.",
+      "rgb": "RGB",
+      "lab": "Lab"
+    },
+    "feather": {
+      "label": "Feather",
+      "desc": "Soft alpha ramp along the cut edge (0 = hard edge)."
+    },
+    "defringe": {
+      "label": "Defringe",
+      "desc": "Removes the white/colored halo left on anti-aliased edges."
+    },
+    "defringeStrength": {
+      "label": "Defringe strength"
+    }
+  },
+  "preview": {
+    "noFile": "Add an image to see the preview",
+    "loading": "Rendering…",
+    "detected": "Detected:",
+    "detectedModes": {
+      "white": "White background",
+      "checker": "Checkerboard",
+      "color": "Solid color",
+      "none": "Nothing to remove"
+    },
+    "cell": "Cell {{size}} px",
+    "colors": "Background:",
+    "swatch": "Background color {{hex}}",
+    "removed": "{{percent}}% removed"
+  }
+}

@@ -250,4 +250,36 @@ describe('ParamForm', () => {
     expect(screen.getByRole('spinbutton', { name: 'Số lượng' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Khôi phục mặc định' })).toBeInTheDocument()
   })
+
+  it('renders custom fields bound to the session (labelled and bare), honouring visibleIf and errors', () => {
+    const custom = defineFields([
+      {
+        kind: 'custom',
+        key: 'count',
+        labelKey: 'testtool:count',
+        descKey: 'testtool:countDesc',
+        render: ({ id, value, invalid, onChange }) => (
+          <button id={id} aria-invalid={invalid} onClick={() => onChange((value as number) + 20)}>
+            {String(value)}
+          </button>
+        ),
+      },
+      {
+        kind: 'custom',
+        key: 'strength',
+        visibleIf: (p) => p.mode === 'fit',
+        render: ({ value, params: p, tabId }) => <output data-testid="bare">{`${String(value)}|${String(p.filter)}|${tabId}`}</output>,
+      },
+    ])
+    render(<ParamForm tabId={TAB} fields={custom} schema={schema} />)
+    expect(screen.getByTestId('bare')).toHaveTextContent(`50|lanczos|${TAB}`)
+    const button = screen.getByRole('button', { name: 'Count' })
+    expect(screen.getByText('How many')).toBeInTheDocument()
+    fireEvent.click(button)
+    expect(params().count).toBe(24)
+    expect(button).toHaveAttribute('aria-invalid', 'true')
+    expect(screen.getByRole('alert')).toHaveTextContent('Must be at most 10')
+    act(() => getSession(TAB)!.getState().setParams({ mode: 'exact' }))
+    expect(screen.queryByTestId('bare')).not.toBeInTheDocument()
+  })
 })
