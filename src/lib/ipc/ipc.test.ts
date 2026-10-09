@@ -7,7 +7,7 @@ vi.mock('@tauri-apps/api/core', () => ({
 
 import { invoke } from '@tauri-apps/api/core'
 
-import { decodePreviewPayload, previewOp, thumbnailUrl } from './index'
+import { decodePreviewPayload, originalImageUrl, previewOp, thumbnailUrl } from './index'
 
 function payload(width: number, height: number, meta: unknown, png: number[]): Uint8Array {
   const metaBytes = meta === null ? new Uint8Array() : new TextEncoder().encode(JSON.stringify(meta))
@@ -62,5 +62,9 @@ describe('ipc wrappers', () => {
     expect(thumbnailUrl({ path: '/x y/ä.png', mtimeMs: 42 }, 'small')).toBe(
       'thumb://localhost/%2Fx%20y%2F%C3%A4.png?size=small&m=42',
     )
+  })
+
+  it('originalImageUrl asks the thumb protocol for the full-size original', () => {
+    expect(originalImageUrl({ path: '/x y/ä.tga', mtimeMs: 7 })).toBe('thumb://localhost/%2Fx%20y%2F%C3%A4.tga?size=full&m=7')
   })
 })

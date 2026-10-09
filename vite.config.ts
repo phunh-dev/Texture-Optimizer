@@ -11,7 +11,7 @@ export default defineConfig({
   server: {
     port: 5173,
     strictPort: true,
-    watch: { ignored: ['**/src-tauri/**', '**/target/**'] },
+    watch: { ignored: ['**/src-tauri/**', '**/target/**', '**/.claude/**'] },
   },
   envPrefix: ['VITE_', 'TAURI_ENV_'],
   build: { target: 'es2022' },
@@ -20,6 +20,8 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
     css: false,
+    // UI tests drive jsdom with user-event; give headroom on loaded machines/CI.
+    testTimeout: 20000,
     exclude: ['**/node_modules/**', '**/dist/**', '.claude/**', 'src-tauri/**', 'target/**'],
   },
 })
