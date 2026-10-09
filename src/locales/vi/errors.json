@@ -31,5 +31,7 @@
   "ATLAS_DUPLICATE_NAME": "Trùng tên sprite \"{{name}}\": đã dùng ảnh sau cùng",
   "ATLAS_LAYOUT_RESET": "Không giữ được bố cục cũ ({{reason}}); atlas đã được xếp lại",
   "ATLAS_FEATURE_DISABLED": "Đã tắt {{feature}} vì {{exporter}} không hỗ trợ",
-  "ATLAS_META_UNREADABLE": "Không đọc được GUID từ {{path}}; đã tạo GUID mới"
+  "ATLAS_META_UNREADABLE": "Không đọc được GUID từ {{path}}; đã tạo GUID mới",
+  "ATLAS_SPRITE_NOT_RECOVERED": "Không khôi phục được sprite \"{{name}}\" từ {{path}} nên đã bỏ khỏi atlas",
+  "ATLAS_STALE_DELETE_FAILED": "Không xóa được file cũ {{path}}"
 }

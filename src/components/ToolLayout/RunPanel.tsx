@@ -11,10 +11,12 @@ interface RunPanelProps {
   /** Already translated reason why Run is disabled (shown under the button). */
   disabledReason: string | null
   onRun: () => void
+  /** Custom button label (default "Process N images"). */
+  label?: string
 }
 
 /** Run button, or progress + cancel while the tab's job is running. */
-export function RunPanel({ tabId, fileCount, disabledReason, onRun }: RunPanelProps) {
+export function RunPanel({ tabId, fileCount, disabledReason, onRun, label }: RunPanelProps) {
   const { t } = useTranslation('common')
   const job = useTabJob(tabId)
   const active = isJobActive(job)
@@ -44,7 +46,7 @@ export function RunPanel({ tabId, fileCount, disabledReason, onRun }: RunPanelPr
     <div className="space-y-2">
       <Button size="lg" className="w-full" disabled={disabledReason != null} onClick={onRun} data-testid="run-button">
         <PlayIcon className="fill-current" />
-        {fileCount > 0 ? t('run.runCount', { count: fileCount }) : t('run.label')}
+        {label ?? (fileCount > 0 ? t('run.runCount', { count: fileCount }) : t('run.label'))}
       </Button>
       {disabledReason ? <p className="text-center text-xs text-muted-foreground">{disabledReason}</p> : null}
     </div>

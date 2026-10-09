@@ -67,6 +67,19 @@ function matches(job: JobState | undefined, jobId: string): job is JobState {
   return !!job && (job.jobId === null || job.jobId === jobId)
 }
 
+// Custom finish handlers (replace the default toast summary), keyed by tab.
+const finishHandlers = new Map<string, (e: JobFinishedEvent) => void>()
+
+/**
+ * Replace the default toast summary for the next finished job of `tabId`
+ * (e.g. the atlas export reports its own outcome). Pass null to remove it.
+ * The handler runs once, then is removed.
+ */
+export function setJobFinishHandler(tabId: string, handler: ((e: JobFinishedEvent) => void) | null): void {
+  if (handler) finishHandlers.set(tabId, handler)
+  else finishHandlers.delete(tabId)
+}
+
 // Finished events received before the matching runOp call resolved.
 const earlyFinished = new Map<string, JobFinishedEvent>()
 function rememberEarly(e: JobFinishedEvent): void {
@@ -148,7 +161,11 @@ export const useJobs = create<JobsStore>()((set, get) => ({
         },
       },
     }))
-    summarize(e)
+    const custom = finishHandlers.get(e.tabId)
+    if (custom) {
+      finishHandlers.delete(e.tabId)
+      custom(e)
+    } else summarize(e)
   },
 
   forgetTab: (tabId, options) => {

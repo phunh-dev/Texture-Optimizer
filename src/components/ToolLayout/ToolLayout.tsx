@@ -53,6 +53,10 @@ export interface ToolLayoutProps {
   showOutput?: boolean
   /** Show the preset bar (default true when there are fields). */
   showPresets?: boolean
+  /** Custom Run button label (default "Process N images"). */
+  runLabel?: string
+  /** Extra tool-specific reason (already translated) that disables Run, checked after files/params. */
+  runDisabledReason?: string | null
 }
 
 type View = 'grid' | 'preview'
@@ -69,6 +73,8 @@ export function ToolLayout({
   sidePanelBottom,
   showOutput = true,
   showPresets,
+  runLabel,
+  runDisabledReason,
 }: ToolLayoutProps) {
   const { t } = useTranslation('common')
   const toolId = getTabInfo(tabId)?.toolId ?? 'unknown'
@@ -92,6 +98,7 @@ export function ToolLayout({
   else if (files.length === 0) disabledReason = t('run.noFiles')
   else if (Object.keys(errors).length > 0) disabledReason = t('run.invalidParams')
   else if (showOutput && problem) disabledReason = t(problem)
+  else if (runDisabledReason) disabledReason = runDisabledReason
 
   const onRun = () => {
     const c = ctx()
@@ -195,7 +202,7 @@ export function ToolLayout({
           ) : null}
         </div>
         <div className="shrink-0 border-t border-border bg-card/80 p-4 backdrop-blur">
-          <RunPanel tabId={tabId} fileCount={files.length} disabledReason={disabledReason} onRun={onRun} />
+          <RunPanel tabId={tabId} fileCount={files.length} disabledReason={disabledReason} onRun={onRun} label={runLabel} />
         </div>
       </aside>
     </div>
