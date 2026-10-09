@@ -60,6 +60,9 @@
   "MESH_FALLBACK_REMAP_DATA": "{{model}} was written as UV remap data instead of a rewritten model",
   "MESH_TEXTURES_DOWNSCALED": "Textures were scaled to {{percent}}% to fit one atlas page",
   "MESH_MODEL_SKIPPED": "{{model}} has nothing to pack and was not written",
-  "OUTPUT_FORMAT_CHANGED": "Saved as PNG to keep transparency (JPEG cannot store it): {{path}}",
-  "ATLAS_SPRITE_EMPTY": "Sprite \"{{name}}\" is empty (0 pixels wide or high)"
+  "OUTPUT_FORMAT_CHANGED": "Kept as PNG to preserve transparency (JPEG cannot store it)",
+  "ATLAS_SPRITE_EMPTY": "Sprite \"{{name}}\" is empty (0 pixels wide or high)",
+  "STAGING_NOT_FOUND": "These results are no longer available. Process the images again.",
+  "STAGING_PATH_REFUSED": "This location cannot be used for results: {{path}}",
+  "SAVE_NEEDS_SINGLE_FILE": "Save As needs exactly one result, but there are {{count}}"
 }

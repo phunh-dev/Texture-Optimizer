@@ -1,5 +1,6 @@
 export { ToolLayout, type ToolLayoutProps, type ToolContext } from './ToolLayout'
 export { CompareView, type CompareViewProps, type CompareRect } from './CompareView'
-export { OutputSettingsPanel, outputProblem } from './OutputSettingsPanel'
+export { OutputSettingsPanel } from './OutputSettingsPanel'
+export { ResultsPanel, useResultsStale } from './ResultsPanel'
 export { HistoryButtons } from './HistoryButtons'
 export { RunPanel } from './RunPanel'

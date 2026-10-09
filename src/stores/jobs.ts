@@ -44,14 +44,22 @@ export const isJobActive = (job: JobState | undefined): boolean =>
   !!job && (job.status === 'starting' || job.status === 'running')
 
 /** Non-fatal output warnings the backend attaches to a file's meta (`outputWarnings`). */
-function outputWarnings(meta: unknown): AppError[] {
+export function outputWarnings(meta: unknown): AppError[] {
   if (!meta || typeof meta !== 'object') return []
   const list = (meta as { outputWarnings?: unknown }).outputWarnings
   return Array.isArray(list) ? (list as AppError[]) : []
 }
 
-function summarize(e: JobFinishedEvent): void {
+export interface SummaryOptions {
+  /** Extra line under the toast title when files were processed (e.g. "not saved yet"). */
+  hint?: string
+}
+
+/** Toast summary of a finished job (the default finish handler). */
+export function summarizeJob(e: JobFinishedEvent, options: SummaryOptions = {}): void {
   const t = i18n.t
+  const hint = options.hint
+  const withHint = (text?: string) => [text, hint].filter(Boolean).join('\n') || undefined
   if (e.cancelled) {
     toast.info(t('common:jobs.cancelled'))
     return
@@ -64,11 +72,11 @@ function summarize(e: JobFinishedEvent): void {
       .slice(0, 3)
       .map(({ input, w }) => `${input.split(/[\\/]/).pop()}: ${translateError(w)}`)
       .join('\n')
-    toast.warning(t('common:jobs.finishedWithWarnings', { ok, count: warnings.length }), { description: details })
+    toast.warning(t('common:jobs.finishedWithWarnings', { ok, count: warnings.length }), { description: withHint(details) })
     return
   }
   if (failed.length === 0) {
-    toast.success(t('common:jobs.finished', { count: ok }))
+    toast.success(t('common:jobs.finished', { count: ok }), { description: withHint() })
     return
   }
   const details = failed
@@ -76,7 +84,7 @@ function summarize(e: JobFinishedEvent): void {
     .map((r) => `${r.input.split(/[\\/]/).pop()}: ${translateError(r.error)}`)
     .join('\n')
   const more = failed.length > 3 ? `\n${t('common:jobs.moreErrors', { count: failed.length - 3 })}` : ''
-  toast.error(t('common:jobs.finishedWithErrors', { ok, failed: failed.length }), { description: details + more })
+  toast.error(t('common:jobs.finishedWithErrors', { ok, failed: failed.length }), { description: ok > 0 ? withHint(details + more) : details + more })
 }
 
 /** A job state accepts events of its own job, or of any job while its id is still unknown. */
@@ -182,7 +190,7 @@ export const useJobs = create<JobsStore>()((set, get) => ({
     if (custom) {
       finishHandlers.delete(e.tabId)
       custom(e)
-    } else summarize(e)
+    } else summarizeJob(e)
   },
 
   forgetTab: (tabId, options) => {

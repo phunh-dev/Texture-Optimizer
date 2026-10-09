@@ -98,6 +98,6 @@ describe('jobs store', () => {
     expect(toast.warning).toHaveBeenCalledTimes(1)
     const [title, opts] = vi.mocked(toast.warning).mock.calls[0]
     expect(title).toBe('2 processed, 1 warning')
-    expect((opts as { description: string }).description).toContain('1.png: Saved as PNG')
+    expect((opts as { description: string }).description).toContain('1.png: Kept as PNG to preserve transparency')
   })
 })

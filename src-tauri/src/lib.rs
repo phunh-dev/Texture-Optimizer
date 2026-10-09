@@ -7,6 +7,7 @@ pub mod commands;
 pub mod commands_atlas;
 pub mod commands_mesh;
 pub mod commands_rename;
+pub mod commands_staging;
 pub mod error;
 pub mod jobs;
 pub mod mesh_worker;
@@ -25,6 +26,7 @@ pub fn run() {
         .plugin(tauri_plugin_store::Builder::new().build())
         .manage(commands::AppState::default())
         .manage(commands_mesh::MeshState::default())
+        .manage(commands_staging::Staging::default())
         .manage(ThumbService::new())
         .register_asynchronous_uri_scheme_protocol(
             thumb_protocol::SCHEME,
@@ -48,6 +50,9 @@ pub fn run() {
             commands::run_op,
             commands::cancel_job,
             commands::release_session,
+            commands_staging::list_results,
+            commands_staging::save_results,
+            commands_staging::discard_results,
             commands_atlas::atlas_preview,
             commands_atlas::atlas_export,
             commands_atlas::atlas_load_project,
@@ -61,6 +66,13 @@ pub fn run() {
             commands_rename::rename_logs,
         ])
         .setup(|app| {
+            // Results of a previous session are never kept: wipe the staging area.
+            let staging_root = app
+                .path()
+                .app_cache_dir()
+                .unwrap_or_else(|_| std::env::temp_dir().join("texture-optimizer"))
+                .join(commands_staging::STAGING_DIR);
+            app.state::<commands_staging::Staging>().init(staging_root);
             if cfg!(debug_assertions) {
                 app.handle().plugin(
                     tauri_plugin_log::Builder::default()

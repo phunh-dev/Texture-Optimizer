@@ -1,4 +1,4 @@
-import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { TooltipProvider } from '@/components/ui/tooltip'
@@ -66,8 +66,10 @@ describe('ToolLayout', () => {
       tabId,
       { kind: 'resize', params: { percent: 50 } },
       ['C:/textures/tex_0.png', 'C:/textures/tex_1.png'],
-      expect.objectContaining({ mode: { kind: 'suffix', suffix: '_opt' }, format: 'keep', jpgQuality: 90 }),
+      expect.objectContaining({ format: 'keep', jpgQuality: 90, conflict: 'autoRename' }),
     )
+    // No destination is sent: runs are staged, the user saves afterwards.
+    expect(vi.mocked(runOp).mock.calls[0][3]).not.toHaveProperty('mode')
     expect(await screen.findByTestId('job-progress')).toBeInTheDocument()
     act(() => useJobs.getState().handleProgress({ jobId: 'job-1', tabId, done: 1, total: 2, currentPath: 'C:/textures/tex_0.png' }))
     expect(screen.getByText('1 / 2')).toBeInTheDocument()
@@ -77,21 +79,48 @@ describe('ToolLayout', () => {
 
   it('output settings are bound to the session and undoable; quality only for JPEG', () => {
     renderLayout({ tabId })
-    fireEvent.click(screen.getByRole('radio', { name: 'Overwrite' }))
-    expect(getSession(tabId)!.getState().output.mode).toEqual({ kind: 'inPlace' })
-    expect(screen.getByText('Original files will be overwritten.')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('radio', { name: 'Smallest' }))
+    expect(getSession(tabId)!.getState().output.pngCompression).toBe('best')
     act(() => getSession(tabId)!.getState().undo())
-    expect(getSession(tabId)!.getState().output.mode).toEqual({ kind: 'suffix', suffix: '_opt' })
+    expect(getSession(tabId)!.getState().output.pngCompression).toBe('default')
 
     expect(screen.queryByRole('slider', { name: 'Quality' })).not.toBeInTheDocument()
     act(() => getSession(tabId)!.getState().setOutput({ format: 'jpg' }))
     expect(screen.getByRole('slider', { name: 'Quality' })).toBeInTheDocument()
     act(() => getSession(tabId)!.getState().setOutput({ format: 'webp' }))
     expect(screen.queryByRole('slider', { name: 'Quality' })).not.toBeInTheDocument()
+  })
 
-    fireEvent.click(screen.getByRole('radio', { name: 'Folder' }))
-    expect(getSession(tabId)!.getState().output.mode).toEqual({ kind: 'folder', path: '' })
-    expect(screen.getAllByText('No folder selected').length).toBeGreaterThan(0)
+  it('the output panel no longer offers destination modes; the conflict rule applies when saving', () => {
+    renderLayout({ tabId, buildRequest: () => ({ kind: 'resize', params: {} }) })
+    const panel = screen.getByTestId('output-settings')
+    for (const name of ['Destination', 'Overwrite', 'Folder', 'Suffix', 'File name suffix', 'Original files will be overwritten.']) {
+      expect(within(panel).queryByRole('radio', { name })).not.toBeInTheDocument()
+      expect(within(panel).queryByText(name)).not.toBeInTheDocument()
+    }
+    expect(within(panel).queryByRole('button', { name: 'Choose folder' })).not.toBeInTheDocument()
+    expect(within(panel).getByText('If the file exists')).toBeInTheDocument()
+    expect(within(panel).getByTestId('output-save-hint')).toHaveTextContent('Nothing is written until you click Save…')
+    expect(getSession(tabId)!.getState().output).not.toHaveProperty('mode')
+  })
+
+  it('Run is labelled as processing only, with a "not saved" hint', () => {
+    getSession(tabId)!.getState().addFiles(makeFiles(3))
+    renderLayout({ tabId, buildRequest: () => ({ kind: 'resize', params: {} }) })
+    const run = screen.getByTestId('run-button')
+    expect(run).toHaveTextContent('Process 3 images')
+    expect(run).toHaveAttribute('title', 'Processes into a temporary area. Nothing is saved until you click Save…')
+  })
+
+  it('tools with their own output (showOutput=false) keep the plain Run: no Original / Result toggle', async () => {
+    getSession(tabId)!.getState().addFiles(makeFiles(1))
+    const run = vi.fn(() => Promise.resolve('job-x'))
+    renderLayout({ tabId, run, showOutput: false })
+    expect(screen.queryByTestId('results-toggle')).not.toBeInTheDocument()
+    expect(screen.getByTestId('run-button')).not.toHaveAttribute('title')
+    fireEvent.click(screen.getByTestId('run-button'))
+    await waitFor(() => expect(run).toHaveBeenCalled())
+    expect(runOp).not.toHaveBeenCalled()
   })
 
   it('shows the preview slot behind an Images / Preview switch', () => {

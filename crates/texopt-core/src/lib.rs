@@ -13,6 +13,7 @@ pub mod mesh;
 pub mod ops;
 pub mod output;
 pub mod rename;
+pub mod staging;
 pub mod thumbs;
 
 pub use error::{OpError, OpResult};
