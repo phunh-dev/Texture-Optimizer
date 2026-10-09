@@ -44,6 +44,7 @@ export default function MeshPackTab({ tabId }: ToolTabProps) {
       countLabel={t('list.count', { count })}
       runLabel={t('run.label', { count })}
       runDisabledReason={reason}
+      noFilesReason={t('run.noModels')}
     />
   )
 }

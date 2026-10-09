@@ -47,6 +47,11 @@ describe('ToolLayout', () => {
     cleanup()
     renderLayout({ tabId, buildRequest: () => ({ kind: 'resize', params: {} }) })
     expect(screen.getByText('Add images first')).toBeInTheDocument()
+    cleanup()
+    // Tools whose inputs are not images (e.g. 3D models) can say so.
+    renderLayout({ tabId, run: () => Promise.resolve('job-x'), noFilesReason: 'Add models first' })
+    expect(screen.getByText('Add models first')).toBeInTheDocument()
+    expect(screen.queryByText('Add images first')).not.toBeInTheDocument()
   })
 
   it('Run calls runOp with the built request, paths and output; progress + cancel are shown', async () => {

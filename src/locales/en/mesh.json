@@ -37,13 +37,33 @@
       "label": "Channels to pack",
       "desc": "One atlas per channel, all with the same layout. Maps a model samples through its remapped UVs are always packed, even if unchecked."
     },
-    "maxSize": { "label": "Max atlas size", "desc": "Pages are always a power of two, never larger than this." },
-    "forceSquare": { "label": "Square pages" },
-    "padding": { "label": "Padding", "desc": "Empty pixels between textures." },
-    "extrude": { "label": "Extrude", "desc": "Edge pixels repeated around each texture so mipmaps and filtering do not bleed. 4–8 px recommended." },
-    "textureScale": { "label": "Texture scale", "desc": "Resize every texture before packing (e.g. 50% to fit more in one atlas)." },
-    "scaleToFit": { "label": "Shrink to fit one page", "desc": "Halve the scale (down to 1/8) until everything fits in one atlas." },
-    "multiPage": { "label": "Allow several pages", "desc": "Extra atlas sets when one page is not enough. A model is kept on one page whenever possible." },
+    "maxSize": {
+      "label": "Max atlas size",
+      "desc": "Pages are always a power of two, never larger than this."
+    },
+    "forceSquare": {
+      "label": "Square pages"
+    },
+    "padding": {
+      "label": "Padding",
+      "desc": "Empty pixels between textures."
+    },
+    "extrude": {
+      "label": "Extrude",
+      "desc": "Edge pixels repeated around each texture so mipmaps and filtering do not bleed. 4–8 px recommended."
+    },
+    "textureScale": {
+      "label": "Texture scale",
+      "desc": "Resize every texture before packing (e.g. 50% to fit more in one atlas)."
+    },
+    "scaleToFit": {
+      "label": "Shrink to fit one page",
+      "desc": "Halve the scale (down to 1/8) until everything fits in one atlas."
+    },
+    "multiPage": {
+      "label": "Allow several pages",
+      "desc": "Extra atlas sets when one page is not enough. A model is kept on one page whenever possible."
+    },
     "inset": {
       "label": "UV inset",
       "desc": "How far inside its rectangle UV 0 and 1 land. Half a texel avoids sampling the neighbour.",
@@ -51,7 +71,9 @@
       "none": "None",
       "pixels": "Custom"
     },
-    "insetPixels": { "label": "Inset (pixels)" },
+    "insetPixels": {
+      "label": "Inset (pixels)"
+    },
     "outOfRange": {
       "label": "UVs outside 0–1",
       "desc": "Tiling textures cannot be atlased as is.",
@@ -60,7 +82,10 @@
       "wrapIntoTile": "Wrap into tile",
       "bakeRepeat": "Bake repeats"
     },
-    "maxTiles": { "label": "Max repeats per axis", "desc": "Bake repeats stores the texture N×M times in the atlas." },
+    "maxTiles": {
+      "label": "Max repeats per axis",
+      "desc": "Bake repeats stores the texture N×M times in the atlas."
+    },
     "outputMode": {
       "label": "Output",
       "rewriteModels": "Rewrite models",
@@ -76,8 +101,13 @@
       "fbx": "FBX (binary)",
       "fbxAscii": "FBX (ASCII)"
     },
-    "mergeMaterials": { "label": "Merge materials", "desc": "Atlased materials of a model become one material (fewer draw calls)." },
-    "mergedMaterialName": { "label": "Merged material name" },
+    "mergeMaterials": {
+      "label": "Merge materials",
+      "desc": "Atlased materials of a model become one material (fewer draw calls)."
+    },
+    "mergedMaterialName": {
+      "label": "Merged material name"
+    },
     "verifyGeometry": {
       "label": "Verify geometry",
       "desc": "Re-imports each written model and compares it with the source. Always on for FBX unless allowed under Advanced."
@@ -86,9 +116,17 @@
       "label": "Fall back to UV remap data",
       "desc": "If a rewritten model fails the check (or needs several atlas pages), write UV remap data for it instead."
     },
-    "copySourceModels": { "label": "Copy source models", "desc": "Copy the untouched model next to its .uvremap.json." },
-    "allowUnverifiedFbx": { "label": "Allow unverified FBX", "desc": "Lets you turn the geometry check off for FBX output. Not recommended." },
-    "defaultColor": { "label": "{{channel}}" }
+    "copySourceModels": {
+      "label": "Copy source models",
+      "desc": "Copy the untouched model next to its .uvremap.json."
+    },
+    "allowUnverifiedFbx": {
+      "label": "Allow unverified FBX",
+      "desc": "Lets you turn the geometry check off for FBX output. Not recommended."
+    },
+    "defaultColor": {
+      "label": "{{channel}}"
+    }
   },
   "output": {
     "title": "Destination",
@@ -155,7 +193,8 @@
     "label_one": "Pack {{count}} model",
     "label_other": "Pack {{count}} models",
     "noFolder": "Choose an output folder first",
-    "badBaseName": "Fix the base name first"
+    "badBaseName": "Fix the base name first",
+    "noModels": "Add 3D models first"
   },
   "lastRun": {
     "title": "Last run",

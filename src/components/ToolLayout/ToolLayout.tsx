@@ -57,6 +57,8 @@ export interface ToolLayoutProps {
   runLabel?: string
   /** Extra tool-specific reason (already translated) that disables Run, checked after files/params. */
   runDisabledReason?: string | null
+  /** Shown instead of "Add images first" when the tool's inputs are not images. */
+  noFilesReason?: string
   /** Replaces the image grid in the main area (tools whose items are not images, e.g. 3D models). */
   content?: (ctx: ToolContext) => ReactNode
   /** Replaces the "N images" toolbar counter (already translated). */
@@ -86,6 +88,7 @@ export function ToolLayout({
   showPresets,
   runLabel,
   runDisabledReason,
+  noFilesReason,
   content,
   countLabel,
   showGridSize,
@@ -110,7 +113,7 @@ export function ToolLayout({
   const problem = outputProblem(output)
   let disabledReason: string | null = null
   if (!run && !buildRequest) disabledReason = t('run.notAvailable')
-  else if (files.length === 0) disabledReason = t('run.noFiles')
+  else if (files.length === 0) disabledReason = noFilesReason ?? t('run.noFiles')
   else if (Object.keys(errors).length > 0) disabledReason = t('run.invalidParams')
   else if (showOutput && problem) disabledReason = t(problem)
   else if (runDisabledReason) disabledReason = runDisabledReason
