@@ -1,1 +1,58 @@
-{}
+{
+  "tools": {
+    "resize": {
+      "title": "Resize",
+      "description": "Scale by percent, exact size, fit or longest side with quality filters."
+    },
+    "resolution": {
+      "title": "Resolution Fixer",
+      "description": "Make sizes a multiple of 4, of N or a power of two by resampling, padding or cropping."
+    },
+    "trim": {
+      "title": "Sprite Trimmer",
+      "description": "Cut away transparent borders and export offsets to keep the original pivot."
+    },
+    "potPad": {
+      "title": "POT Padding",
+      "description": "Pad textures up to a power-of-two canvas with transparent, color or edge fill."
+    },
+    "atlas": {
+      "title": "Smart Atlas",
+      "description": "Pack sprites into atlases with incremental updates and Unity, Godot, Unreal exporters."
+    },
+    "rename": {
+      "title": "Pattern Renamer",
+      "description": "Batch rename with templates, numbering, case styles and engine naming conventions."
+    },
+    "bgRemove": {
+      "title": "Background Remover",
+      "description": "Remove white, checkerboard or custom-color backgrounds with clean, defringed edges."
+    },
+    "meshPack": {
+      "title": "3D Texture Packer",
+      "description": "Pack the textures of FBX, OBJ and DAE models into one POT atlas and remap UVs."
+    }
+  },
+  "bar": {
+    "label": "Open tools",
+    "newTab": "New tab",
+    "closeTab": "Close {{title}}",
+    "tabTitle": "{{title}} {{n}}",
+    "percent": "{{percent}}%",
+    "busy": "Processing {{percent}}%",
+    "settings": "Settings"
+  },
+  "picker": {
+    "title": "Open a tool",
+    "description": "Each tool opens in its own tab. You can open the same tool several times."
+  },
+  "home": {
+    "title": "What do you want to optimize today?",
+    "subtitle": "Pick a tool to start. Every tab keeps its own images, parameters and undo history.",
+    "shortcutsTitle": "Shortcuts",
+    "shortcutNewTab": "New tab",
+    "shortcutCloseTab": "Close tab",
+    "shortcutNextTab": "Next tab",
+    "shortcutUndo": "Undo / Redo"
+  }
+}

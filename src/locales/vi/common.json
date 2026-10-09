@@ -1,12 +1,202 @@
 {
   "app": {
-    "title": "Texture Optimizer"
+    "title": "Texture Optimizer",
+    "tagline": "Texture sẵn sàng cho Unity, Unreal và Godot"
   },
   "actions": {
     "undo": "Hoàn tác",
     "redo": "Làm lại",
     "cancel": "Hủy",
     "apply": "Áp dụng",
-    "reset": "Khôi phục mặc định"
+    "reset": "Khôi phục mặc định",
+    "close": "Đóng",
+    "save": "Lưu",
+    "delete": "Xóa",
+    "run": "Chạy",
+    "clearAll": "Xóa tất cả",
+    "addFiles": "Thêm tệp",
+    "addFolder": "Thêm thư mục",
+    "browse": "Chọn…",
+    "more": "Thao tác khác"
+  },
+  "loading": "Đang tải…",
+  "history": {
+    "undoLabel": "Hoàn tác: {{action}}",
+    "redoLabel": "Làm lại: {{action}}",
+    "nothingToUndo": "Không có gì để hoàn tác",
+    "nothingToRedo": "Không có gì để làm lại",
+    "addFiles_one": "Thêm {{count}} ảnh",
+    "addFiles_other": "Thêm {{count}} ảnh",
+    "removeFiles_one": "Gỡ {{count}} ảnh",
+    "removeFiles_other": "Gỡ {{count}} ảnh",
+    "clearFiles_one": "Xóa danh sách {{count}} ảnh",
+    "clearFiles_other": "Xóa danh sách {{count}} ảnh",
+    "reorderFiles": "Sắp xếp lại ảnh",
+    "changeParams": "Đổi tham số",
+    "resetParams": "Khôi phục tham số",
+    "applyPreset": "Áp dụng preset",
+    "changeOutput": "Đổi thiết lập đầu ra",
+    "removedToast_one": "Đã gỡ {{count}} ảnh khỏi danh sách",
+    "removedToast_other": "Đã gỡ {{count}} ảnh khỏi danh sách",
+    "clearedToast_one": "Đã xóa {{count}} ảnh khỏi danh sách",
+    "clearedToast_other": "Đã xóa {{count}} ảnh khỏi danh sách"
+  },
+  "import": {
+    "added_one": "Đã thêm {{count}} ảnh",
+    "added_other": "Đã thêm {{count}} ảnh",
+    "addedWithSkipped_one": "Đã thêm {{count}} ảnh, bỏ qua {{skipped}} tệp không hỗ trợ",
+    "addedWithSkipped_other": "Đã thêm {{count}} ảnh, bỏ qua {{skipped}} tệp không hỗ trợ",
+    "allDuplicates_one": "Ảnh này đã có trong danh sách",
+    "allDuplicates_other": "Cả {{count}} ảnh đều đã có trong danh sách",
+    "nothingFound": "Không tìm thấy ảnh được hỗ trợ",
+    "desktopOnly": "Chỉ truy cập được tệp trong ứng dụng desktop",
+    "imagesFilter": "Hình ảnh",
+    "dropTitle": "Kéo thả ảnh hoặc thư mục vào đây",
+    "dropHint": "PNG, JPG, TGA, BMP, WebP, TIFF — tệp gốc không bị thay đổi cho tới khi bạn chạy công cụ",
+    "dropActive": "Thả ra để thêm tệp",
+    "or": "hoặc"
+  },
+  "grid": {
+    "label": "Danh sách ảnh",
+    "viewSize": "Kích thước ảnh thu nhỏ",
+    "sizeSmall": "Nhỏ",
+    "sizeMedium": "Vừa",
+    "sizeLarge": "Lớn",
+    "addTile": "Thêm ảnh",
+    "removeImage": "Gỡ {{name}} khỏi danh sách",
+    "count_one": "{{count}} ảnh",
+    "count_other": "{{count}} ảnh",
+    "selected_one": "Đã chọn {{count}}",
+    "selected_other": "Đã chọn {{count}}",
+    "dimensions": "{{width}} × {{height}}",
+    "nonPot": "Không phải lũy thừa của 2",
+    "nonPotShort": "NPOT",
+    "notMultipleOf4": "Không chia hết cho 4",
+    "notMultipleOf4Short": "÷4",
+    "selectAll": "Chọn tất cả",
+    "clearSelection": "Bỏ chọn",
+    "removeSelected": "Gỡ ảnh đã chọn"
+  },
+  "views": {
+    "label": "Chế độ xem",
+    "grid": "Danh sách ảnh",
+    "preview": "Xem trước"
+  },
+  "jobs": {
+    "finished_one": "Đã xử lý {{count}} ảnh",
+    "finished_other": "Đã xử lý {{count}} ảnh",
+    "finishedWithErrors": "{{ok}} thành công, {{failed}} lỗi",
+    "cancelled": "Đã hủy tác vụ",
+    "moreErrors_one": "…và {{count}} lỗi khác",
+    "moreErrors_other": "…và {{count}} lỗi khác",
+    "progress": "{{done}} / {{total}}",
+    "starting": "Đang khởi động…",
+    "busy": "Đang xử lý {{percent}}%"
+  },
+  "run": {
+    "label": "Chạy",
+    "runCount_one": "Xử lý {{count}} ảnh",
+    "runCount_other": "Xử lý {{count}} ảnh",
+    "noFiles": "Hãy thêm ảnh trước",
+    "invalidParams": "Hãy sửa các tham số đang báo lỗi",
+    "notAvailable": "Công cụ này chưa sẵn sàng",
+    "cancel": "Hủy tác vụ"
+  },
+  "output": {
+    "title": "Đầu ra",
+    "mode": "Nơi lưu",
+    "modeInPlace": "Ghi đè",
+    "modeFolder": "Thư mục",
+    "modeSuffix": "Hậu tố",
+    "inPlaceWarning": "Tệp gốc sẽ bị ghi đè.",
+    "folder": "Thư mục đầu ra",
+    "chooseFolder": "Chọn thư mục",
+    "noFolder": "Chưa chọn thư mục",
+    "suffix": "Hậu tố tên tệp",
+    "format": "Định dạng",
+    "formats": {
+      "keep": "Giữ nguyên",
+      "png": "PNG",
+      "tga": "TGA",
+      "jpg": "JPG",
+      "webp": "WebP"
+    },
+    "pngCompression": "Mức nén PNG",
+    "compression": {
+      "fast": "Nhanh",
+      "default": "Cân bằng",
+      "best": "Nhỏ nhất"
+    },
+    "jpgQuality": "Chất lượng",
+    "optimizePng": "Tối ưu PNG",
+    "optimizePngDesc": "Thêm một lượt nén không mất dữ liệu, chậm hơn nhưng tệp nhỏ hơn",
+    "conflict": "Nếu tệp đã tồn tại",
+    "conflicts": {
+      "overwrite": "Ghi đè",
+      "skip": "Bỏ qua",
+      "autoRename": "Đổi tên"
+    }
+  },
+  "params": {
+    "title": "Tham số",
+    "empty": "Công cụ này chưa có tham số.",
+    "width": "Rộng",
+    "height": "Cao",
+    "linkSize": "Liên kết chiều rộng và chiều cao",
+    "hex": "Mã màu hex",
+    "alpha": "Độ mờ đục",
+    "pickColor": "Chọn màu",
+    "anchor": {
+      "topLeft": "Trên trái",
+      "top": "Trên",
+      "topRight": "Trên phải",
+      "left": "Trái",
+      "center": "Giữa",
+      "right": "Phải",
+      "bottomLeft": "Dưới trái",
+      "bottom": "Dưới",
+      "bottomRight": "Dưới phải"
+    }
+  },
+  "presets": {
+    "label": "Preset",
+    "saveAs": "Lưu thành preset…",
+    "saveTitle": "Lưu preset",
+    "saveDescription": "Lưu bộ tham số hiện tại để dùng lại ở mọi tab của công cụ này.",
+    "name": "Tên preset",
+    "namePlaceholder": "vd: UI cho mobile",
+    "replaceHint": "Đã có preset trùng tên, preset cũ sẽ bị thay thế.",
+    "empty": "Chưa có preset nào",
+    "delete": "Xóa preset {{name}}",
+    "saved": "Đã lưu preset “{{name}}”",
+    "applied": "Đã áp dụng preset “{{name}}”",
+    "deleted": "Đã xóa preset “{{name}}”"
+  },
+  "validation": {
+    "tooSmall": "Phải lớn hơn hoặc bằng {{minimum}}",
+    "tooBig": "Phải nhỏ hơn hoặc bằng {{maximum}}",
+    "invalidType": "Hãy nhập giá trị hợp lệ",
+    "invalidFormat": "Sai định dạng",
+    "notInteger": "Phải là số nguyên",
+    "invalid": "Giá trị không hợp lệ"
+  },
+  "units": {
+    "px": "px",
+    "percent": "%",
+    "degrees": "°",
+    "times": "×"
+  },
+  "compare": {
+    "label": "So sánh trước / sau",
+    "before": "Trước",
+    "after": "Sau",
+    "divider": "Thanh so sánh",
+    "zoomIn": "Phóng to",
+    "zoomOut": "Thu nhỏ",
+    "fit": "Vừa khung nhìn",
+    "actualSize": "Kích thước thật",
+    "zoom": "{{value}}%",
+    "pixelated": "Điểm ảnh",
+    "smooth": "Mượt"
   }
 }
