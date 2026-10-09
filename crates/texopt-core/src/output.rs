@@ -19,6 +19,10 @@
 //!   smaller of the two encodings, so it never makes a file larger.
 //! - Writes are atomic: data goes to a temp file in the target folder that is
 //!   then renamed over the target.
+//! - **Metadata sidecar** (`writeMeta`, default off): when an operation
+//!   returns metadata (e.g. trim offsets), it is written as pretty JSON to
+//!   `<output>.json` (`hero_opt.png` → `hero_opt.png.json`, see [`meta_path`]),
+//!   overwriting an older sidecar of the same output.
 
 use std::collections::HashSet;
 use std::io::Write;
@@ -85,6 +89,14 @@ pub struct OutputSettings {
     pub jpg_quality: u8,
     pub optimize_png: bool,
     pub conflict: ConflictPolicy,
+    /// Write the op metadata (when there is any) to `<output>.json`.
+    /// Omitted from the serialized form when false (backwards compatible).
+    #[serde(skip_serializing_if = "is_false")]
+    pub write_meta: bool,
+}
+
+fn is_false(v: &bool) -> bool {
+    !*v
 }
 
 impl Default for OutputSettings {
@@ -98,6 +110,7 @@ impl Default for OutputSettings {
             jpg_quality: 90,
             optimize_png: false,
             conflict: ConflictPolicy::AutoRename,
+            write_meta: false,
         }
     }
 }
@@ -396,6 +409,31 @@ pub fn save_image(img: &ImageBuf, path: &Path, settings: &OutputSettings) -> OpR
     })?;
     let data = encode_image(img, format, settings).map_err(|e| encode_error(path, &e))?;
     write_atomic(path, &data)
+}
+
+/// Sidecar path of an output image's metadata: `<output>.json`.
+pub fn meta_path(output: &Path) -> PathBuf {
+    let mut name = output.as_os_str().to_os_string();
+    name.push(".json");
+    PathBuf::from(name)
+}
+
+/// Write `meta` as pretty JSON next to `output` (see [`meta_path`]) when
+/// `settings.write_meta` is on and there is metadata. Returns the sidecar path
+/// when one was written.
+pub fn save_meta(
+    output: &Path,
+    meta: Option<&serde_json::Value>,
+    settings: &OutputSettings,
+) -> OpResult<Option<PathBuf>> {
+    let Some(meta) = meta.filter(|_| settings.write_meta) else {
+        return Ok(None);
+    };
+    let path = meta_path(output);
+    let mut data = serde_json::to_vec_pretty(meta).map_err(|e| encode_error(&path, &e))?;
+    data.push(b'\n');
+    write_atomic(&path, &data)?;
+    Ok(Some(path))
 }
 
 #[cfg(test)]
@@ -766,5 +804,60 @@ mod tests {
         )
         .unwrap_err();
         assert_eq!(err.code, codes::IMG_UNSUPPORTED_FORMAT);
+    }
+
+    #[test]
+    fn write_meta_is_optional_and_backwards_compatible() {
+        let s: OutputSettings = serde_json::from_str(r#"{"mode":{"kind":"inPlace"}}"#).unwrap();
+        assert!(!s.write_meta, "defaults to false");
+        assert!(
+            serde_json::to_value(&s).unwrap().get("writeMeta").is_none(),
+            "false is not serialized"
+        );
+        let on: OutputSettings = serde_json::from_str(r#"{"writeMeta":true}"#).unwrap();
+        assert!(on.write_meta);
+        assert_eq!(
+            serde_json::to_value(&on).unwrap()["writeMeta"],
+            serde_json::json!(true)
+        );
+    }
+
+    #[test]
+    fn meta_sidecar_path_and_contents() {
+        assert_eq!(
+            meta_path(Path::new("out").join("hero_opt.png").as_path()),
+            Path::new("out").join("hero_opt.png.json")
+        );
+        let dir = tempfile::tempdir().unwrap();
+        let out = dir.path().join("ảnh_opt.png");
+        let meta = serde_json::json!({ "sourceSize": { "w": 20, "h": 10 }, "trimRect": { "x": -2, "y": 2, "w": 8, "h": 4 } });
+
+        let off = OutputSettings::default();
+        assert_eq!(save_meta(&out, Some(&meta), &off).unwrap(), None);
+        assert!(!meta_path(&out).exists(), "off by default");
+
+        let on = OutputSettings {
+            write_meta: true,
+            ..OutputSettings::default()
+        };
+        assert_eq!(
+            save_meta(&out, None, &on).unwrap(),
+            None,
+            "no meta, no file"
+        );
+        assert!(!meta_path(&out).exists());
+
+        let written = save_meta(&out, Some(&meta), &on).unwrap();
+        assert_eq!(written, Some(dir.path().join("ảnh_opt.png.json")));
+        let back: serde_json::Value =
+            serde_json::from_slice(&std::fs::read(meta_path(&out)).unwrap()).unwrap();
+        assert_eq!(back, meta);
+
+        // A newer run overwrites the sidecar.
+        let newer = serde_json::json!({ "n": 2 });
+        save_meta(&out, Some(&newer), &on).unwrap();
+        let back: serde_json::Value =
+            serde_json::from_slice(&std::fs::read(meta_path(&out)).unwrap()).unwrap();
+        assert_eq!(back, newer);
     }
 }

@@ -25,6 +25,15 @@ export function thumbnailUrl(file: Pick<ImportedFile, 'path' | 'mtimeMs'>, size:
 }
 
 /**
+ * URL of the full-resolution original served by the `thumb` protocol
+ * (`size=full`): displayable formats byte-for-byte, others (TGA) as PNG.
+ * Used as the "before" image of previews.
+ */
+export function originalImageUrl(file: Pick<ImportedFile, 'path' | 'mtimeMs'>): string {
+  return `${convertFileSrc(file.path, 'thumb')}?size=full&m=${file.mtimeMs}`
+}
+
+/**
  * Decode the binary `preview_op` payload (see `src-tauri/src/preview.rs`):
  * little-endian u32 `width | height | metaLen`, then `metaLen` bytes of UTF-8
  * JSON (0 = null), then the PNG bytes.

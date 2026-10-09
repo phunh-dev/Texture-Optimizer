@@ -1,1 +1,50 @@
-{}
+{
+  "groups": {
+    "target": "Target size",
+    "canvas": "Canvas"
+  },
+  "params": {
+    "target": {
+      "label": "Pad to",
+      "desc": "The image is never resampled: its pixels are copied 1:1 onto a larger canvas.",
+      "options": {
+        "nextPot": "Next POT",
+        "squarePot": "Square POT",
+        "fixed": "Fixed size"
+      }
+    },
+    "width": {
+      "label": "Width",
+      "desc": "Canvas width. Images wider than this cannot be padded."
+    },
+    "height": {
+      "label": "Height",
+      "desc": "Canvas height. Images taller than this cannot be padded."
+    },
+    "minSize": {
+      "label": "Minimum size",
+      "desc": "Each side is at least this many pixels before rounding up to a power of two. 0 = none."
+    },
+    "maxSize": {
+      "label": "Maximum size",
+      "desc": "Images that would need a larger canvas are reported as errors. 0 = unlimited."
+    },
+    "anchor": {
+      "label": "Anchor",
+      "desc": "Where the original image sits on the new canvas."
+    },
+    "fill": {
+      "label": "Fill",
+      "desc": "Edge extend repeats the border pixels outward, which avoids seams with texture filtering and mipmaps.",
+      "options": {
+        "transparent": "Transparent",
+        "color": "Color",
+        "edgeExtend": "Edge extend"
+      }
+    },
+    "color": {
+      "label": "Fill color",
+      "desc": "Color of the added area."
+    }
+  }
+}

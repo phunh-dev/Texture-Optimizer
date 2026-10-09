@@ -18,7 +18,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use texopt_core::error::codes;
 use texopt_core::ops::OpOutput;
-use texopt_core::output::{OutputPlanner, save_image};
+use texopt_core::output::{OutputPlanner, save_image, save_meta};
 use texopt_core::{ImageBuf, OpError, OpResult};
 
 /// `cancel_job` was called with an unknown or already finished job. Params: `jobId`.
@@ -174,7 +174,8 @@ where
 }
 
 /// The standard per-file pipeline of `run_op`: plan the output path (so a
-/// `skip` conflict costs no decoding), decode, run `op`, encode + write.
+/// `skip` conflict costs no decoding), decode, run `op`, encode + write, then
+/// write the op metadata to `<output>.json` when `writeMeta` is on.
 pub fn process_file(
     input: &Path,
     planner: &OutputPlanner,
@@ -184,6 +185,7 @@ pub fn process_file(
     let img = texopt_core::io::load_image(input)?;
     let out = op(&img)?;
     save_image(&out.image, &target, planner.settings())?;
+    save_meta(&target, out.meta.as_ref(), planner.settings())?;
     Ok(FileOutput {
         output: Some(target),
         meta: out.meta,
@@ -537,6 +539,53 @@ mod tests {
             image::imageops::invert(&mut expected);
             assert_eq!(written, expected);
         }
+    }
+
+    #[test]
+    fn write_meta_saves_trim_offsets_next_to_each_output() {
+        use texopt_core::fixtures;
+        use texopt_core::output::{OutputSettings, meta_path};
+
+        let dir = tempfile::tempdir().unwrap();
+        let p = dir.path().join("sprite.png");
+        fixtures::sprite(20, 10, 4, 2, 6, 3, fixtures::RED)
+            .save(&p)
+            .unwrap();
+        let req: texopt_core::ops::OpRequest =
+            serde_json::from_value(serde_json::json!({ "kind": "trim", "params": {} })).unwrap();
+
+        let off = OutputPlanner::new(OutputSettings::default()).unwrap();
+        let out = process_file(&p, &off, |img| texopt_core::ops::run(img, &req)).unwrap();
+        assert!(
+            !meta_path(out.output.as_ref().unwrap()).exists(),
+            "off by default"
+        );
+
+        let settings: OutputSettings = serde_json::from_value(serde_json::json!({
+            "mode": { "kind": "suffix", "suffix": "_t" },
+            "writeMeta": true
+        }))
+        .unwrap();
+        let on = OutputPlanner::new(settings).unwrap();
+        let out = process_file(&p, &on, |img| texopt_core::ops::run(img, &req)).unwrap();
+        let image_path = out.output.unwrap();
+        assert_eq!(image_path, dir.path().join("sprite_t.png"));
+        let sidecar = dir.path().join("sprite_t.png.json");
+        let written: Value = serde_json::from_slice(&std::fs::read(&sidecar).unwrap()).unwrap();
+        let expected = serde_json::json!({
+            "sourceSize": { "w": 20, "h": 10 },
+            "trimRect": { "x": 4, "y": 2, "w": 6, "h": 3 }
+        });
+        assert_eq!(written, expected);
+        assert_eq!(out.meta, Some(expected));
+
+        // Ops without metadata never write a sidecar.
+        let resize: texopt_core::ops::OpRequest =
+            serde_json::from_value(serde_json::json!({ "kind": "resize", "params": {} })).unwrap();
+        let q = dir.path().join("plain.png");
+        fixtures::gradient(8, 8).save(&q).unwrap();
+        let out = process_file(&q, &on, |img| texopt_core::ops::run(img, &resize)).unwrap();
+        assert!(!meta_path(out.output.as_ref().unwrap()).exists());
     }
 
     #[test]
