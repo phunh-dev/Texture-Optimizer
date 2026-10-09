@@ -34,5 +34,16 @@
   "ATLAS_DUPLICATE_NAME": "Trùng tên sprite \"{{name}}\": đã dùng ảnh sau cùng",
   "ATLAS_LAYOUT_RESET": "Không giữ được bố cục cũ ({{reason}}); atlas đã được xếp lại",
   "ATLAS_FEATURE_DISABLED": "Đã tắt {{feature}} vì {{exporter}} không hỗ trợ",
-  "ATLAS_META_UNREADABLE": "Không đọc được GUID từ {{path}}; đã tạo GUID mới"
+  "ATLAS_META_UNREADABLE": "Không đọc được GUID từ {{path}}; đã tạo GUID mới",
+  "MESH_IMPORT_FAILED": "Không thể đọc mô hình 3D {{path}}: {{detail}}",
+  "MESH_EXPORT_FAILED": "Không thể ghi mô hình 3D {{path}} ({{format}}): {{detail}}",
+  "MESH_FORMAT_UNSUPPORTED": "Định dạng mô hình 3D không được hỗ trợ: {{path}} (chỉ FBX, OBJ, DAE)",
+  "MESH_NO_UVS": "Vật liệu {{material}} không có kênh UV {{uvChannel}}",
+  "MESH_UV_OUT_OF_RANGE": "UV của {{material}} nằm ngoài 0–1 (lặp texture); vật liệu này không được đưa vào atlas",
+  "MESH_UV_TOO_MANY_TILES": "{{material}} lặp {{tilesU}}×{{tilesV}} lần, vượt quá giới hạn {{maxTiles}}",
+  "MESH_UV_WRAP_STRADDLE": "{{faces}} mặt của {{mesh}} vượt qua biên ô UV; texture có thể bị sai ở đó",
+  "MESH_ATLAS_CHANNEL_MISSING": "{{material}} dùng texture {{channel}} nhưng chưa có atlas {{channel}}",
+  "MESH_TEXTURE_NOT_FOUND": "Không tìm thấy texture của {{material}} ({{channel}}): {{path}}",
+  "MESH_EXPORT_GEOMETRY_CHANGED": "File {{format}} xuất ra làm thay đổi hình học của mô hình nên đã bị huỷ. Hãy thử định dạng khác hoặc chế độ UV Remap Data",
+  "MESH_BACKEND_UNAVAILABLE": "Bản dựng này không có hỗ trợ 3D"
 }

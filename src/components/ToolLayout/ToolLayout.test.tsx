@@ -52,7 +52,7 @@ describe('ToolLayout', () => {
   it('Run calls runOp with the built request, paths and output; progress + cancel are shown', async () => {
     getSession(tabId)!.getState().addFiles(makeFiles(2))
     getSession(tabId)!.getState().setParams({ percent: 50 })
-    renderLayout({ tabId, buildRequest: (ctx) => ({ kind: 'resize', params: { ...ctx.params } }) })
+    renderLayout({ tabId, buildRequest: (ctx) => ({ kind: 'resize', params: { percent: ctx.params.percent } }) })
     const run = screen.getByTestId('run-button')
     expect(run).toHaveTextContent('Process 2 images')
     fireEvent.click(run)

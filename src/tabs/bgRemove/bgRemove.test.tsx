@@ -149,8 +149,9 @@ describe('Background Remover tab', () => {
     session().addFiles(makeFiles(1))
     session().setUiFlag('preview', true)
     renderTab()
-    await act(async () => {}) // original image request resolves
-    expect(previewOp).toHaveBeenCalledWith(tabId, 'C:/textures/tex_0.png', ORIGINAL_REQUEST)
+    await act(async () => {})
+    // The full-res original is only fetched over IPC while the eyedropper is armed.
+    expect(previewOp).not.toHaveBeenCalledWith(tabId, 'C:/textures/tex_0.png', ORIGINAL_REQUEST)
 
     act(() => session().setParams({ tolerance: 20 }))
     act(() => session().setParams({ tolerance: 30 }))
@@ -213,6 +214,7 @@ describe('Background Remover tab', () => {
     fireEvent.pointerDown(view, { button: 0, clientX: 100, clientY: 50, pointerId: 1 })
 
     await waitFor(() => expect(session().params.color).toEqual([12, 34, 56, 255]))
+    expect(previewOp).toHaveBeenCalledWith(tabId, 'C:/textures/tex_0.png', ORIGINAL_REQUEST)
     expect(createImageBitmap).toHaveBeenCalledWith(expect.any(Blob))
     expect(drawImage).toHaveBeenCalledWith(bitmap, 0, 0)
     // (100 + 125) / 1.25 = 180, (50 + 100) / 1.25 = 120

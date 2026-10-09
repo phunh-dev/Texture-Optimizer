@@ -8,7 +8,7 @@ import { Spinner } from '@/components/ui/misc'
 import { useLooseT } from '@/i18n/loose'
 import { inTauri } from '@/lib/env'
 import { translateError } from '@/lib/errors'
-import { previewOp, thumbnailUrl } from '@/lib/ipc'
+import { originalImageUrl, previewOp } from '@/lib/ipc'
 import type { ImportedFile, OpRequest } from '@/lib/ipc/types'
 import { requireSession, useSession } from '@/stores/session'
 
@@ -20,9 +20,8 @@ export const PREVIEW_DEBOUNCE_MS = 250
 
 /**
  * Identity request: the Resolution Fixer targeting a multiple of 1 returns the
- * input unchanged. Used to get the full-resolution original as PNG (the webview
- * cannot show TGA/BMP/... directly, and thumbnails are downscaled), both for
- * the "before" layer and for eyedropper sampling.
+ * input unchanged. Used to get the full-resolution original as PNG bytes over
+ * IPC for eyedropper sampling (a same-origin Blob keeps the canvas readable).
  */
 export const ORIGINAL_REQUEST: OpRequest = { kind: 'resolution', params: { target: 'multipleOfN', n: 1, maxSize: 0 } }
 
@@ -41,6 +40,8 @@ interface Rendered {
 }
 
 interface Original {
+  /** `${path}|${mtime}` of the file it was loaded from. */
+  key: string
   url: string
   blob: Blob
 }
@@ -70,24 +71,27 @@ export function BgRemovePreview({ tabId, file }: { tabId: string; file: Imported
   useObjectUrlCleanup(original?.url)
   useObjectUrlCleanup(result?.url)
 
-  // Full-resolution original (once per file).
+  // Full-resolution original as a same-origin Blob, fetched only while the
+  // eyedropper is armed (a canvas fed from the thumb:// URL would be tainted).
+  const wantOriginal = picking && params.mode === 'color'
+  const originalKey = `${path}|${mtime}`
+  const haveOriginal = original?.key === originalKey
   useEffect(() => {
-    if (!path) return
+    if (!path || !wantOriginal || haveOriginal) return
     let cancelled = false
     previewOp(tabId, path, ORIGINAL_REQUEST)
       .then((r) => {
         if (cancelled) return
         const blob = new Blob([r.png], { type: 'image/png' })
-        setOriginal({ url: URL.createObjectURL(blob), blob })
+        setOriginal({ key: originalKey, url: URL.createObjectURL(blob), blob })
       })
-      .catch(() => {
-        // The processed preview reports load errors; the thumbnail stays as "before".
-        if (!cancelled) setOriginal(null)
+      .catch((err: unknown) => {
+        if (!cancelled) toast.error(translateError(err))
       })
     return () => {
       cancelled = true
     }
-  }, [tabId, path, mtime])
+  }, [tabId, path, originalKey, wantOriginal, haveOriginal])
 
   // Processed image, debounced on every param change.
   useEffect(() => {
@@ -135,10 +139,10 @@ export function BgRemovePreview({ tabId, file }: { tabId: string; file: Imported
     )
   }
 
-  const pickEnabled = picking && params.mode === 'color' && original !== null
+  const pickEnabled = wantOriginal && haveOriginal
 
   const onPick = async (x: number, y: number) => {
-    if (!original) return
+    if (!original || !haveOriginal) return
     try {
       if (!sampler.current || sampler.current.url !== original.url) {
         sampler.current?.sampler.dispose()
@@ -154,7 +158,9 @@ export function BgRemovePreview({ tabId, file }: { tabId: string; file: Imported
     }
   }
 
-  const before = original?.url ?? (inTauri() ? thumbnailUrl(file, 'large') : null)
+  // Full-resolution original served by the thumb protocol (same pixel grid as the
+  // sampled Blob); outside the desktop app only the IPC Blob is available.
+  const before = inTauri() ? originalImageUrl(file) : haveOriginal ? original.url : null
   return (
     <div className="flex size-full flex-col gap-2" data-testid="bgremove-preview">
       <div className="relative min-h-0 flex-1">

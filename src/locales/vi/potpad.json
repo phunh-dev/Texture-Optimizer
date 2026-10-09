@@ -1,1 +1,50 @@
-{}
+{
+  "groups": {
+    "target": "Kích thước đích",
+    "canvas": "Khung ảnh"
+  },
+  "params": {
+    "target": {
+      "label": "Thêm viền đến",
+      "desc": "Ảnh không bao giờ bị lấy mẫu lại: các pixel được sao chép nguyên vẹn lên một khung lớn hơn.",
+      "options": {
+        "nextPot": "POT kế tiếp",
+        "squarePot": "POT vuông",
+        "fixed": "Kích thước cố định"
+      }
+    },
+    "width": {
+      "label": "Chiều rộng",
+      "desc": "Chiều rộng khung. Ảnh rộng hơn giá trị này sẽ không thể thêm viền."
+    },
+    "height": {
+      "label": "Chiều cao",
+      "desc": "Chiều cao khung. Ảnh cao hơn giá trị này sẽ không thể thêm viền."
+    },
+    "minSize": {
+      "label": "Kích thước tối thiểu",
+      "desc": "Mỗi cạnh có ít nhất số pixel này trước khi làm tròn lên lũy thừa của 2. 0 = không áp dụng."
+    },
+    "maxSize": {
+      "label": "Kích thước tối đa",
+      "desc": "Ảnh cần khung lớn hơn giá trị này sẽ được báo lỗi. 0 = không giới hạn."
+    },
+    "anchor": {
+      "label": "Điểm neo",
+      "desc": "Vị trí của ảnh gốc trên khung mới."
+    },
+    "fill": {
+      "label": "Tô viền",
+      "desc": "Kéo dài mép lặp lại các pixel ở biên ra ngoài, giúp tránh đường nối khi lọc texture và tạo mipmap.",
+      "options": {
+        "transparent": "Trong suốt",
+        "color": "Màu",
+        "edgeExtend": "Kéo dài mép"
+      }
+    },
+    "color": {
+      "label": "Màu tô",
+      "desc": "Màu của vùng được thêm vào."
+    }
+  }
+}

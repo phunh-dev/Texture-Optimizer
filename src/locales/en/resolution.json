@@ -1,1 +1,58 @@
-{}
+{
+  "groups": {
+    "target": "Target size",
+    "method": "Method"
+  },
+  "params": {
+    "target": {
+      "label": "Make sides",
+      "desc": "Block-compressed formats (DXT/BC, ETC, ASTC) need multiples of 4; mipmaps and older GPUs prefer powers of two.",
+      "options": {
+        "multipleOf4": "×4",
+        "multipleOfN": "×N",
+        "pot": "POT"
+      }
+    },
+    "n": {
+      "label": "Multiple of",
+      "desc": "Every side becomes a multiple of this value."
+    },
+    "allowNonSquare": {
+      "label": "Allow non-square POT",
+      "desc": "Off: both sides become the larger power of two (square texture)."
+    },
+    "maxSize": {
+      "label": "Maximum size",
+      "desc": "Caps each side to the largest valid size not above this value. 0 = unlimited."
+    },
+    "method": {
+      "label": "Method",
+      "desc": "Resample scales the image, Pad adds canvas around it (never loses pixels), Crop cuts the edges (never adds pixels).",
+      "options": {
+        "resample": "Resample",
+        "pad": "Pad",
+        "crop": "Crop"
+      }
+    },
+    "round": {
+      "label": "Rounding",
+      "desc": "Direction to the nearest valid size. Only for Resample: Pad always rounds up and Crop always rounds down."
+    },
+    "filter": {
+      "label": "Filter",
+      "desc": "Resampling filter; Nearest keeps pixel art crisp."
+    },
+    "keepAspect": {
+      "label": "Keep aspect ratio",
+      "desc": "Scales uniformly to fit inside the new size, then fills the rest with the pad color."
+    },
+    "anchor": {
+      "label": "Anchor",
+      "desc": "Where the original content sits in the new canvas (or which part is kept when cropping)."
+    },
+    "padColor": {
+      "label": "Pad color",
+      "desc": "Color of the added area. Fully transparent by default."
+    }
+  }
+}

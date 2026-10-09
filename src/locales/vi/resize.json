@@ -1,1 +1,97 @@
-{}
+{
+  "groups": {
+    "size": "Kích thước",
+    "quality": "Chất lượng"
+  },
+  "params": {
+    "mode": {
+      "label": "Đổi kích thước theo",
+      "desc": "Cách tính kích thước mới cho từng ảnh.",
+      "options": {
+        "percent": "Phần trăm",
+        "exact": "Kích thước chính xác",
+        "fitWidth": "Vừa chiều rộng",
+        "fitHeight": "Vừa chiều cao",
+        "longestSide": "Cạnh dài nhất"
+      }
+    },
+    "percent": {
+      "label": "Tỷ lệ",
+      "desc": "Cả hai cạnh được co giãn theo phần trăm này; tỷ lệ khung hình luôn được giữ nguyên."
+    },
+    "width": {
+      "label": "Chiều rộng",
+      "desc": "Chiều rộng đích tính bằng pixel."
+    },
+    "height": {
+      "label": "Chiều cao",
+      "desc": "Chiều cao đích tính bằng pixel."
+    },
+    "longestSide": {
+      "label": "Cạnh dài nhất",
+      "desc": "Cạnh dài hơn của mỗi ảnh sẽ có đúng số pixel này."
+    },
+    "keepAspect": {
+      "label": "Giữ tỷ lệ khung hình",
+      "desc": "Bật: cạnh còn lại co giãn theo tỷ lệ (kích thước chính xác sẽ nằm gọn trong khung). Tắt: ảnh bị kéo giãn hoặc cạnh đó giữ nguyên."
+    },
+    "snap": {
+      "label": "Làm tròn sau khi đổi kích thước",
+      "desc": "Làm tròn mỗi cạnh về bội số của 4 hoặc lũy thừa của 2 gần nhất (ảnh được lấy mẫu lại theo kích thước đó, không thêm viền)."
+    },
+    "filter": {
+      "label": "Bộ lọc",
+      "desc": "Nearest giữ pixel art sắc nét; Lanczos3 cho ảnh chụp và texture vẽ tay sắc nét nhất."
+    },
+    "linearSpace": {
+      "label": "Đổi kích thước trong không gian tuyến tính",
+      "desc": "Trộn màu trong không gian tuyến tính để độ sáng chính xác hơn. Nên tắt với ảnh dữ liệu (normal, roughness, mask)."
+    },
+    "premultiplyAlpha": {
+      "label": "Alpha nhân trước",
+      "desc": "Tránh viền tối hoặc viền màu quanh vùng trong suốt."
+    }
+  },
+  "imageOps": {
+    "noFile": "Thêm ảnh để xem trước trực tiếp.",
+    "invalidParams": "Hãy sửa các tham số được đánh dấu để xem trước.",
+    "previewFailed": "Không thể xem trước",
+    "rendering": "Đang tạo bản xem trước…",
+    "updating": "Đang cập nhật…",
+    "dimensions": "{{width}}×{{height}}",
+    "filters": {
+      "nearest": "Nearest (pixel art)",
+      "bilinear": "Bilinear",
+      "catmullRom": "Catmull-Rom (sắc nét)",
+      "mitchell": "Mitchell (cân bằng)",
+      "lanczos3": "Lanczos3 (sắc nét nhất)"
+    },
+    "snaps": {
+      "none": "Không",
+      "multipleOf4": "×4",
+      "pot": "POT"
+    },
+    "rounds": {
+      "nearest": "Gần nhất",
+      "up": "Lên",
+      "down": "Xuống"
+    },
+    "sizes": {
+      "title": "Kích thước đầu ra",
+      "empty": "Thêm ảnh để xem kích thước đầu ra.",
+      "changed_one": "{{count}} ảnh sẽ thay đổi",
+      "changed_other": "{{count}} ảnh sẽ thay đổi",
+      "unchanged_one": "{{count}} ảnh giữ nguyên",
+      "unchanged_other": "{{count}} ảnh giữ nguyên",
+      "errors_one": "{{count}} lỗi",
+      "errors_other": "{{count}} lỗi",
+      "unknown_one": "{{count}} ảnh chưa đo",
+      "unknown_other": "{{count}} ảnh chưa đo",
+      "unknownSize": "?",
+      "errorLabel": "Không thể xử lý",
+      "unchangedLabel": "Giữ nguyên",
+      "more_one": "…và {{count}} ảnh khác",
+      "more_other": "…và {{count}} ảnh khác"
+    }
+  }
+}

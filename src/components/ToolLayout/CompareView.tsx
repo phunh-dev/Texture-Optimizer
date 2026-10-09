@@ -20,10 +20,28 @@ export interface CompareViewProps {
   /** Eyedropper mode: a click reports image pixel coordinates (via onPickBefore) instead of panning. */
   pickMode?: boolean
   /**
-   * Called in pickMode with integer pixel coordinates in the image's natural
-   * size (zoom/pan already undone). Clicks outside the image are ignored.
+   * Called in pickMode with integer pixel coordinates in the before image's
+   * natural size (zoom/pan/beforeSize already undone). Clicks outside it are ignored.
    */
   onPickBefore?: (x: number, y: number) => void
+  /** Extra text shown in the Before / After pills (e.g. dimensions). */
+  beforeLabel?: string
+  afterLabel?: string
+  /** Display size of the before image in image pixels (defaults to its natural size). */
+  beforeSize?: { width: number; height: number }
+  /**
+   * Where the after image is drawn, in before-image pixel coordinates (defaults to its
+   * natural size at the origin). Lets resized / padded / cropped / trimmed results line up
+   * with the original; may extend past the before image.
+   */
+  afterRect?: CompareRect
+}
+
+export interface CompareRect {
+  x: number
+  y: number
+  width: number
+  height: number
 }
 
 const MIN_ZOOM = 0.05
@@ -47,6 +65,10 @@ export function CompareView({
   defaultSplit = 0.5,
   pickMode = false,
   onPickBefore,
+  beforeLabel,
+  afterLabel,
+  beforeSize,
+  afterRect,
 }: CompareViewProps) {
   const { t } = useTranslation('common')
   const containerRef = useRef<HTMLDivElement>(null)
@@ -56,14 +78,26 @@ export function CompareView({
   const [pixelated, setPixelated] = useState(defaultPixelated)
   const drag = useRef<{ kind: 'pan' | 'split'; startX: number; startY: number; view: View } | null>(null)
 
-  const fitTo = useCallback((size: { w: number; h: number } | null) => {
+  // Before image size in image pixels, and the box covering both layers.
+  const base = beforeSize ? { w: beforeSize.width, h: beforeSize.height } : natural
+  const boundsOf = (size: { w: number; h: number } | null): CompareRect | null => {
+    if (!size) return null
+    const r = afterRect
+    if (!r) return { x: 0, y: 0, width: size.w, height: size.h }
+    const x = Math.min(0, r.x)
+    const y = Math.min(0, r.y)
+    return { x, y, width: Math.max(size.w, r.x + r.width) - x, height: Math.max(size.h, r.y + r.height) - y }
+  }
+
+  const fitTo = (size: { w: number; h: number } | null) => {
     const el = containerRef.current
-    if (!el || !size) return
+    const b = boundsOf(size)
+    if (!el || !b) return
     const pad = 24
-    const zoom = clamp(Math.min((el.clientWidth - pad * 2) / size.w, (el.clientHeight - pad * 2) / size.h), MIN_ZOOM, MAX_ZOOM) || 1
-    setView({ zoom, x: (el.clientWidth - size.w * zoom) / 2, y: (el.clientHeight - size.h * zoom) / 2 })
-  }, [])
-  const fit = () => fitTo(natural)
+    const zoom = clamp(Math.min((el.clientWidth - pad * 2) / b.width, (el.clientHeight - pad * 2) / b.height), MIN_ZOOM, MAX_ZOOM) || 1
+    setView({ zoom, x: (el.clientWidth - b.width * zoom) / 2 - b.x * zoom, y: (el.clientHeight - b.height * zoom) / 2 - b.y * zoom })
+  }
+  const fit = () => fitTo(base)
 
   const zoomAt = useCallback((factor: number, cx?: number, cy?: number) => {
     const el = containerRef.current
@@ -78,8 +112,9 @@ export function CompareView({
 
   const actualSize = () => {
     const el = containerRef.current
-    if (!el || !natural) return
-    setView({ zoom: 1, x: (el.clientWidth - natural.w) / 2, y: (el.clientHeight - natural.h) / 2 })
+    const b = boundsOf(base)
+    if (!el || !b) return
+    setView({ zoom: 1, x: (el.clientWidth - b.width) / 2 - b.x, y: (el.clientHeight - b.height) / 2 - b.y })
   }
 
   // Non-passive wheel listener so the page does not scroll while zooming.
@@ -102,10 +137,15 @@ export function CompareView({
       const el = containerRef.current
       if (!el) return
       const rect = el.getBoundingClientRect()
-      const x = Math.floor((e.clientX - rect.left - view.x) / view.zoom)
-      const y = Math.floor((e.clientY - rect.top - view.y) / view.zoom)
-      if (x < 0 || y < 0 || (natural && (x >= natural.w || y >= natural.h))) return
-      onPickBefore(x, y)
+      // Position in displayed before-image pixels, then in its natural pixels.
+      let x = (e.clientX - rect.left - view.x) / view.zoom
+      let y = (e.clientY - rect.top - view.y) / view.zoom
+      if (x < 0 || y < 0 || (base && (x >= base.w || y >= base.h))) return
+      if (base && natural) {
+        x = (x * natural.w) / base.w
+        y = (y * natural.h) / base.h
+      }
+      onPickBefore(Math.floor(x), Math.floor(y))
       return
     }
     e.currentTarget.setPointerCapture?.(e.pointerId)
@@ -133,6 +173,15 @@ export function CompareView({
     transformOrigin: '0 0',
     imageRendering: pixelated ? ('pixelated' as const) : ('auto' as const),
   }
+  const beforeStyle = beforeSize ? { ...layerStyle, width: beforeSize.width, height: beforeSize.height } : layerStyle
+  const afterStyle = afterRect
+    ? {
+        ...layerStyle,
+        transform: `${layerStyle.transform} translate(${afterRect.x}px, ${afterRect.y}px)`,
+        width: afterRect.width,
+        height: afterRect.height,
+      }
+    : layerStyle
 
   return (
     <div className={cn('flex size-full flex-col overflow-hidden rounded-lg border border-border bg-card', className)} data-testid="compare-view">
@@ -157,23 +206,25 @@ export function CompareView({
             alt=""
             draggable={false}
             className="absolute left-0 top-0 max-w-none"
-            style={layerStyle}
+            style={beforeStyle}
             onLoad={(e) => {
               const size = { w: e.currentTarget.naturalWidth || 1, h: e.currentTarget.naturalHeight || 1 }
               setNatural(size)
-              fitTo(size)
+              fitTo(beforeSize ? { w: beforeSize.width, h: beforeSize.height } : size)
             }}
           />
         </div>
         <div className="pointer-events-none absolute inset-0" style={{ clipPath: `inset(0 0 0 ${split * 100}%)` }}>
-          <img src={after} alt="" draggable={false} className="absolute left-0 top-0 max-w-none" style={layerStyle} />
+          <img src={after} alt="" draggable={false} className="absolute left-0 top-0 max-w-none" style={afterStyle} />
         </div>
 
         <span className="pointer-events-none absolute left-3 top-3 rounded-full bg-black/55 px-2 py-0.5 text-[11px] font-medium text-white backdrop-blur">
           {t('compare.before')}
+          {beforeLabel ? <span className="ml-1.5 tabular-nums opacity-80" data-testid="compare-before-label">{beforeLabel}</span> : null}
         </span>
         <span className="pointer-events-none absolute right-3 top-3 rounded-full bg-black/55 px-2 py-0.5 text-[11px] font-medium text-white backdrop-blur">
           {t('compare.after')}
+          {afterLabel ? <span className="ml-1.5 tabular-nums opacity-80" data-testid="compare-after-label">{afterLabel}</span> : null}
         </span>
 
         <div

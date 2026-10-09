@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 import type { ComponentType } from 'react'
 
+import { imageOpDefaults } from './_imageOps/defaults'
 import { defaultBgRemoveParams } from './bgRemove/defaults'
 import { defaultRenameParams } from './rename/defaults'
 
@@ -39,10 +40,10 @@ const placeholder = () => import('./_placeholder')
 const noParams = () => ({})
 
 export const tools: ToolDefinition[] = [
-  { id: 'resize', titleKey: 'tools.resize.title', descriptionKey: 'tools.resize.description', icon: ScalingIcon, load: placeholder, defaultParams: noParams },
-  { id: 'resolution', titleKey: 'tools.resolution.title', descriptionKey: 'tools.resolution.description', icon: Grid2x2CheckIcon, load: placeholder, defaultParams: noParams },
-  { id: 'trim', titleKey: 'tools.trim.title', descriptionKey: 'tools.trim.description', icon: CropIcon, load: placeholder, defaultParams: noParams },
-  { id: 'potPad', titleKey: 'tools.potPad.title', descriptionKey: 'tools.potPad.description', icon: MaximizeIcon, load: placeholder, defaultParams: noParams },
+  { id: 'resize', titleKey: 'tools.resize.title', descriptionKey: 'tools.resize.description', icon: ScalingIcon, load: () => import('./resize'), defaultParams: imageOpDefaults.resize },
+  { id: 'resolution', titleKey: 'tools.resolution.title', descriptionKey: 'tools.resolution.description', icon: Grid2x2CheckIcon, load: () => import('./resolution'), defaultParams: imageOpDefaults.resolution },
+  { id: 'trim', titleKey: 'tools.trim.title', descriptionKey: 'tools.trim.description', icon: CropIcon, load: () => import('./trim'), defaultParams: imageOpDefaults.trim },
+  { id: 'potPad', titleKey: 'tools.potPad.title', descriptionKey: 'tools.potPad.description', icon: MaximizeIcon, load: () => import('./potPad'), defaultParams: imageOpDefaults.potPad },
   { id: 'atlas', titleKey: 'tools.atlas.title', descriptionKey: 'tools.atlas.description', icon: LayoutDashboardIcon, load: placeholder, defaultParams: noParams },
   { id: 'rename', titleKey: 'tools.rename.title', descriptionKey: 'tools.rename.description', icon: TextCursorInputIcon, load: () => import('./rename'), defaultParams: defaultRenameParams },
   { id: 'bgRemove', titleKey: 'tools.bgRemove.title', descriptionKey: 'tools.bgRemove.description', icon: EraserIcon, load: () => import('./bgRemove'), defaultParams: defaultBgRemoveParams },

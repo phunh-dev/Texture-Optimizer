@@ -1,1 +1,97 @@
-{}
+{
+  "groups": {
+    "size": "Size",
+    "quality": "Quality"
+  },
+  "params": {
+    "mode": {
+      "label": "Resize by",
+      "desc": "How the new size is computed for each image.",
+      "options": {
+        "percent": "Percentage",
+        "exact": "Exact size",
+        "fitWidth": "Fit width",
+        "fitHeight": "Fit height",
+        "longestSide": "Longest side"
+      }
+    },
+    "percent": {
+      "label": "Scale",
+      "desc": "Both sides are scaled by this percentage; the aspect ratio is always kept."
+    },
+    "width": {
+      "label": "Width",
+      "desc": "Target width in pixels."
+    },
+    "height": {
+      "label": "Height",
+      "desc": "Target height in pixels."
+    },
+    "longestSide": {
+      "label": "Longest side",
+      "desc": "The longer side of each image becomes this many pixels."
+    },
+    "keepAspect": {
+      "label": "Keep aspect ratio",
+      "desc": "On: the other side follows proportionally (exact size fits inside the box). Off: it is stretched or left unchanged."
+    },
+    "snap": {
+      "label": "Snap after resize",
+      "desc": "Rounds each side to the nearest multiple of 4 or power of two (the image is resampled to that size, not padded)."
+    },
+    "filter": {
+      "label": "Filter",
+      "desc": "Nearest keeps pixel art crisp; Lanczos3 is the sharpest for photos and painted textures."
+    },
+    "linearSpace": {
+      "label": "Resize in linear light",
+      "desc": "Blends colors in linear space for more accurate brightness. Leave off for data maps (normal, roughness, masks)."
+    },
+    "premultiplyAlpha": {
+      "label": "Premultiplied alpha",
+      "desc": "Prevents dark or colored fringes around transparent edges."
+    }
+  },
+  "imageOps": {
+    "noFile": "Add images to see a live preview.",
+    "invalidParams": "Fix the highlighted parameters to see a preview.",
+    "previewFailed": "Preview failed",
+    "rendering": "Rendering preview…",
+    "updating": "Updating…",
+    "dimensions": "{{width}}×{{height}}",
+    "filters": {
+      "nearest": "Nearest (pixel art)",
+      "bilinear": "Bilinear",
+      "catmullRom": "Catmull-Rom (sharp)",
+      "mitchell": "Mitchell (balanced)",
+      "lanczos3": "Lanczos3 (sharpest)"
+    },
+    "snaps": {
+      "none": "None",
+      "multipleOf4": "×4",
+      "pot": "POT"
+    },
+    "rounds": {
+      "nearest": "Nearest",
+      "up": "Up",
+      "down": "Down"
+    },
+    "sizes": {
+      "title": "Output sizes",
+      "empty": "Add images to see their output sizes.",
+      "changed_one": "{{count}} will change",
+      "changed_other": "{{count}} will change",
+      "unchanged_one": "{{count}} unchanged",
+      "unchanged_other": "{{count}} unchanged",
+      "errors_one": "{{count}} error",
+      "errors_other": "{{count}} errors",
+      "unknown_one": "{{count}} not measured",
+      "unknown_other": "{{count}} not measured",
+      "unknownSize": "?",
+      "errorLabel": "Cannot be processed",
+      "unchangedLabel": "Unchanged",
+      "more_one": "…and {{count}} more image",
+      "more_other": "…and {{count}} more images"
+    }
+  }
+}
