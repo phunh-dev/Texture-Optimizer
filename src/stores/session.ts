@@ -51,6 +51,12 @@ export interface SessionUi {
   uiFlags: Record<string, boolean>
 }
 
+/** A file that now lives at `file.path` instead of `from`. */
+export interface FileReplacement {
+  from: string
+  file: ImportedFile
+}
+
 export interface SetOptions {
   /** Merge consecutive changes (slider drag, typing) into ONE history step. */
   coalesce?: boolean
@@ -64,6 +70,14 @@ export interface SessionActions {
   clearFiles: () => number
   /** Moves the file at `from` to index `to`. */
   reorderFiles: (from: number, to: number) => void
+  /**
+   * Swaps in files whose path changed on disk (e.g. after a rename), matched by
+   * their old path. This is NOT an undo step: the disk change is not undoable
+   * here, so the new paths are also written into the undo/redo history (undo
+   * never brings back paths that no longer exist). Selection follows the files.
+   * Returns how many files of the current list were replaced.
+   */
+  replaceFiles: (updates: FileReplacement[]) => number
   setParams: (patch: Params, options?: SetOptions) => void
   /** Closes an open coalescing group (call on pointer-up / blur). */
   commitParams: () => void
@@ -211,6 +225,47 @@ export function createSessionStore(tabId: string, init: SessionInit = {}): Sessi
             const [moved] = files.splice(from, 1)
             files.splice(Math.max(0, Math.min(to, files.length)), 0, moved)
             set({ files, lastAction: { key: 'reorderFiles', count: 1 } })
+          },
+
+          replaceFiles: (updates) => {
+            commit()
+            if (updates.length === 0) return 0
+            const byPath = new Map(updates.map((u) => [u.from, u.file]))
+            const remap = (files: ImportedFile[]) => {
+              let changed = false
+              const out = files.map((f) => {
+                const next = byPath.get(f.path)
+                if (!next) return f
+                changed = true
+                return next
+              })
+              return changed ? out : files
+            }
+            const { files, selectedIds, anchorId } = get()
+            const next = remap(files)
+            const ids = new Map<string, string>()
+            files.forEach((f, i) => {
+              if (next[i] !== f) ids.set(f.id, next[i].id)
+            })
+            if (ids.size === 0) return 0
+            const temporalApi = (api as unknown as SessionStore).temporal
+            const h = temporalApi.getState()
+            const tracking = h.isTracking
+            h.pause()
+            set({
+              files: next,
+              selectedIds: selectedIds.map((id) => ids.get(id) ?? id),
+              anchorId: anchorId ? (ids.get(anchorId) ?? anchorId) : null,
+            })
+            if (tracking) h.resume()
+            const rewrite = (states: Partial<SessionData>[]) =>
+              states.map((s) => {
+                if (!s.files) return s
+                const f = remap(s.files)
+                return f === s.files ? s : { ...s, files: f }
+              })
+            temporalApi.setState({ pastStates: rewrite(h.pastStates), futureStates: rewrite(h.futureStates) })
+            return ids.size
           },
 
           setParams: (patch, options) => {

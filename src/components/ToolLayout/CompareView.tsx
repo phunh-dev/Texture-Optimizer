@@ -17,6 +17,13 @@ export interface CompareViewProps {
   defaultPixelated?: boolean
   /** Initial divider position 0..1. */
   defaultSplit?: number
+  /** Eyedropper mode: a click reports image pixel coordinates (via onPickBefore) instead of panning. */
+  pickMode?: boolean
+  /**
+   * Called in pickMode with integer pixel coordinates in the image's natural
+   * size (zoom/pan already undone). Clicks outside the image are ignored.
+   */
+  onPickBefore?: (x: number, y: number) => void
 }
 
 const MIN_ZOOM = 0.05
@@ -32,7 +39,15 @@ interface View {
  * Before/after comparison: draggable divider, wheel zoom around the cursor,
  * drag to pan, checkerboard background and a pixelated rendering toggle.
  */
-export function CompareView({ before, after, className, defaultPixelated = false, defaultSplit = 0.5 }: CompareViewProps) {
+export function CompareView({
+  before,
+  after,
+  className,
+  defaultPixelated = false,
+  defaultSplit = 0.5,
+  pickMode = false,
+  onPickBefore,
+}: CompareViewProps) {
   const { t } = useTranslation('common')
   const containerRef = useRef<HTMLDivElement>(null)
   const [natural, setNatural] = useState<{ w: number; h: number } | null>(null)
@@ -83,6 +98,16 @@ export function CompareView({ before, after, className, defaultPixelated = false
   const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>, kind: 'pan' | 'split') => {
     if (e.button !== 0) return
     e.stopPropagation()
+    if (kind === 'pan' && pickMode && onPickBefore) {
+      const el = containerRef.current
+      if (!el) return
+      const rect = el.getBoundingClientRect()
+      const x = Math.floor((e.clientX - rect.left - view.x) / view.zoom)
+      const y = Math.floor((e.clientY - rect.top - view.y) / view.zoom)
+      if (x < 0 || y < 0 || (natural && (x >= natural.w || y >= natural.h))) return
+      onPickBefore(x, y)
+      return
+    }
     e.currentTarget.setPointerCapture?.(e.pointerId)
     drag.current = { kind, startX: e.clientX, startY: e.clientY, view }
   }
@@ -115,7 +140,11 @@ export function CompareView({ before, after, className, defaultPixelated = false
         ref={containerRef}
         role="img"
         aria-label={t('compare.label')}
-        className="bg-checker relative min-h-0 flex-1 cursor-grab touch-none overflow-hidden active:cursor-grabbing"
+        data-pick-mode={pickMode || undefined}
+        className={cn(
+          'bg-checker relative min-h-0 flex-1 touch-none overflow-hidden',
+          pickMode ? 'cursor-crosshair' : 'cursor-grab active:cursor-grabbing',
+        )}
         onPointerDown={(e) => onPointerDown(e, 'pan')}
         onPointerMove={onPointerMove}
         onPointerUp={endDrag}

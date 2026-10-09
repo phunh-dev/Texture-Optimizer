@@ -98,6 +98,12 @@ describe('ToolLayout', () => {
     fireEvent.click(screen.getByRole('radio', { name: 'Images' }))
     expect(screen.getByRole('grid')).toBeInTheDocument()
   })
+
+  it('runPanel replaces the Run button area', () => {
+    renderLayout({ tabId, runPanel: <div data-testid="custom-run" /> })
+    expect(screen.getByTestId('custom-run')).toBeInTheDocument()
+    expect(screen.queryByTestId('run-button')).not.toBeInTheDocument()
+  })
 })
 
 describe('CompareView', () => {
@@ -120,5 +126,31 @@ describe('CompareView', () => {
     expect(imgs[0].style.imageRendering).toBe('pixelated')
     fireEvent.click(screen.getByRole('button', { name: 'Zoom in' }))
     expect(screen.getByText('125%')).toBeInTheDocument()
+  })
+
+  it('pickMode reports image pixel coordinates through zoom/pan instead of panning', () => {
+    const onPick = vi.fn()
+    const { container, rerender } = render(
+      <TooltipProvider>
+        <CompareView before="blob:before" after="blob:after" onPickBefore={onPick} />
+      </TooltipProvider>,
+    )
+    const view = screen.getByRole('img', { name: 'Before / after comparison' })
+    fireEvent.pointerDown(view, { button: 0, clientX: 10, clientY: 10 })
+    expect(onPick).not.toHaveBeenCalled()
+
+    rerender(
+      <TooltipProvider>
+        <CompareView before="blob:before" after="blob:after" pickMode onPickBefore={onPick} />
+      </TooltipProvider>,
+    )
+    expect(view).toHaveAttribute('data-pick-mode', 'true')
+    // Natural size 1×1 in jsdom after load: clicks outside the image are ignored.
+    fireEvent.load(container.querySelector('img')!)
+    fireEvent.pointerDown(view, { button: 0, clientX: 990, clientY: 790 })
+    expect(onPick).not.toHaveBeenCalled()
+    // Fit zooms the 1×1 image to the 64× maximum, centred at (500, 400): it covers 468..532 × 368..432.
+    fireEvent.pointerDown(view, { button: 0, clientX: 500, clientY: 400 })
+    expect(onPick).toHaveBeenCalledWith(0, 0)
   })
 })

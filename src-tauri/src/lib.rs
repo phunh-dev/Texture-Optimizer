@@ -4,6 +4,7 @@
 //! tested without a running app.
 
 pub mod commands;
+pub mod commands_rename;
 pub mod error;
 pub mod jobs;
 pub mod preview;
@@ -43,6 +44,11 @@ pub fn run() {
             commands::run_op,
             commands::cancel_job,
             commands::release_session,
+            commands_rename::rename_plan,
+            commands_rename::rename_execute,
+            commands_rename::rename_revert_last,
+            commands_rename::rename_revert,
+            commands_rename::rename_logs,
         ])
         .setup(|app| {
             if cfg!(debug_assertions) {

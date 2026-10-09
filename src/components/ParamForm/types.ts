@@ -1,6 +1,7 @@
 // Declarative field descriptors for ParamForm. Every visible string is an
 // i18n key (e.g. 'resize:params.width.label'), never text.
 import type { LucideIcon } from 'lucide-react'
+import type { ReactNode } from 'react'
 
 import type { Params } from '@/stores/session'
 
@@ -89,6 +90,31 @@ export interface SizeField extends FieldBase {
   linkKey?: string
 }
 
+/** Props handed to a custom field renderer (same binding as built-in controls). */
+export interface CustomFieldProps {
+  tabId: string
+  /** DOM id for the control (the label's htmlFor points at it). */
+  id: string
+  value: unknown
+  params: Params
+  disabled: boolean
+  invalid: boolean
+  describedBy?: string
+  /** `coalesce` merges continuous edits into one undo step. */
+  onChange: (value: unknown, options?: { coalesce?: boolean }) => void
+  onCommit: () => void
+}
+
+/**
+ * Tool-specific control rendered by the tool itself (e.g. a rule list or an
+ * eyedropper). Without `labelKey` it is rendered bare (no label / description shell).
+ */
+export interface CustomField extends Omit<FieldBase, 'labelKey'> {
+  kind: 'custom'
+  labelKey?: I18nKey
+  render: (props: CustomFieldProps) => ReactNode
+}
+
 export interface GroupField {
   kind: 'group'
   /** Stable id (used for the collapsed state). */
@@ -111,6 +137,7 @@ export type FieldDescriptor =
   | TextField
   | AnchorField
   | SizeField
+  | CustomField
   | GroupField
 
 export interface SizeValue {

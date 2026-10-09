@@ -53,6 +53,11 @@ export interface ToolLayoutProps {
   showOutput?: boolean
   /** Show the preset bar (default true when there are fields). */
   showPresets?: boolean
+  /**
+   * Replaces the bottom Run button / job progress area (tools whose action is
+   * not a background job, e.g. the renamer's synchronous Rename + confirm).
+   */
+  runPanel?: ReactNode
 }
 
 type View = 'grid' | 'preview'
@@ -69,6 +74,7 @@ export function ToolLayout({
   sidePanelBottom,
   showOutput = true,
   showPresets,
+  runPanel,
 }: ToolLayoutProps) {
   const { t } = useTranslation('common')
   const toolId = getTabInfo(tabId)?.toolId ?? 'unknown'
@@ -195,7 +201,7 @@ export function ToolLayout({
           ) : null}
         </div>
         <div className="shrink-0 border-t border-border bg-card/80 p-4 backdrop-blur">
-          <RunPanel tabId={tabId} fileCount={files.length} disabledReason={disabledReason} onRun={onRun} />
+          {runPanel ?? <RunPanel tabId={tabId} fileCount={files.length} disabledReason={disabledReason} onRun={onRun} />}
         </div>
       </aside>
     </div>
