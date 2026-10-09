@@ -239,15 +239,20 @@ pub fn project_summary(
 }
 
 /// `job://finished` results of a successful export: one entry per written
-/// file, the project file first carrying the export summary as `meta`
-/// (`{ kind: "atlasExport", outputDir, projectPath, written, deleted,
-/// warnings, stats, plan }`).
+/// file, the project file (image only: the first page) first carrying the
+/// export summary as `meta` (`{ kind: "atlasExport", outputDir, projectPath
+/// (null for image only), written, deleted, warnings, stats, plan }`).
 pub fn export_results(dir: &Path, report: &ExportReport) -> Vec<JobFileResult> {
-    let project = report.project_path.display().to_string();
+    let head = report
+        .project_path
+        .as_ref()
+        .or_else(|| report.written.first())
+        .map(|p| p.display().to_string())
+        .unwrap_or_else(|| dir.display().to_string());
     let summary = json!({
         "kind": "atlasExport",
         "outputDir": dir.display().to_string(),
-        "projectPath": project,
+        "projectPath": report.project_path.as_ref().map(|p| p.display().to_string()),
         "written": report.written.iter().map(|p| p.display().to_string()).collect::<Vec<_>>(),
         "deleted": report.deleted.iter().map(|p| p.display().to_string()).collect::<Vec<_>>(),
         "warnings": report.warnings,
@@ -255,8 +260,8 @@ pub fn export_results(dir: &Path, report: &ExportReport) -> Vec<JobFileResult> {
         "plan": report.plan,
     });
     let mut results = vec![JobFileResult {
-        input: project.clone(),
-        output: Some(project.clone()),
+        input: head.clone(),
+        output: Some(head.clone()),
         error: None,
         meta: Some(summary),
     }];
@@ -264,15 +269,25 @@ pub fn export_results(dir: &Path, report: &ExportReport) -> Vec<JobFileResult> {
         report
             .written
             .iter()
-            .filter(|p| **p != report.project_path)
+            .filter(|p| p.display().to_string() != head)
             .map(|p| JobFileResult {
-                input: project.clone(),
+                input: head.clone(),
                 output: Some(p.display().to_string()),
                 error: None,
                 meta: None,
             }),
     );
     results
+}
+
+/// `input` of the single result reported when an export fails: the project
+/// file, or for the image-only exporter (which writes none) the main page.
+pub fn failure_input(dir: &Path, base_name: &str, exporter: &ExporterConfig) -> String {
+    if exporter.writes_metadata() {
+        project_path(dir, base_name).display().to_string()
+    } else {
+        dir.join(format!("{base_name}.png")).display().to_string()
+    }
 }
 
 /// Progress of an export job: `total = inputs + 3` (pack, encode, write).
@@ -440,7 +455,7 @@ pub fn atlas_export(
             Err(e) => (
                 false,
                 vec![JobFileResult {
-                    input: project_path(&dir, &base_name).display().to_string(),
+                    input: failure_input(&dir, &base_name, &exporter),
                     output: None,
                     error: Some(e),
                     meta: None,
@@ -519,7 +534,7 @@ mod tests {
 
     use texopt_core::atlas::IncrementalMode;
     use texopt_core::atlas::exporters::{
-        GenericJsonOptions, GodotOptions, UnityOptions, UnrealOptions,
+        GenericJsonOptions, GodotOptions, ImageOnlyOptions, UnityOptions, UnrealOptions,
     };
     use texopt_core::fixtures;
 
@@ -682,6 +697,58 @@ mod tests {
     }
 
     #[test]
+    fn image_only_export_reports_the_page_and_no_project() {
+        let dir = tempfile::tempdir().unwrap();
+        let paths = write_inputs(dir.path());
+        let out = dir.path().join("out");
+        let cache = SessionCache::default();
+        let progress = ExportProgress::new(paths.len(), |_, _, _| {});
+        let report = run_export(
+            &cache,
+            "tab",
+            &paths,
+            &AtlasParams::default(),
+            &ExporterConfig::ImageOnly(ImageOnlyOptions::default()),
+            IncrementalOptions::default(),
+            &out,
+            "sheet",
+            &progress,
+            &AtomicBool::new(false),
+        )
+        .unwrap();
+        let mut files: Vec<String> = std::fs::read_dir(&out)
+            .unwrap()
+            .map(|e| e.unwrap().file_name().to_string_lossy().into_owned())
+            .collect();
+        files.sort();
+        assert_eq!(files, ["sheet.png"]);
+
+        let results = export_results(&out, &report);
+        let page = out.join("sheet.png").display().to_string();
+        assert_eq!(results.len(), 1);
+        assert_eq!(results[0].output.as_deref(), Some(page.as_str()));
+        assert_eq!(results[0].input, page);
+        let meta = results[0].meta.as_ref().unwrap();
+        assert_eq!(meta["kind"], "atlasExport");
+        assert_eq!(meta["projectPath"], Value::Null);
+        assert_eq!(meta["outputDir"], out.display().to_string());
+        assert_eq!(meta["written"], json!([page]));
+        assert_eq!(meta["deleted"], json!([]));
+        assert_eq!(
+            failure_input(
+                &out,
+                "sheet",
+                &ExporterConfig::ImageOnly(ImageOnlyOptions::default())
+            ),
+            page
+        );
+        assert_eq!(
+            failure_input(&out, "sheet", &generic()),
+            out.join("sheet.texatlas.json").display().to_string()
+        );
+    }
+
+    #[test]
     fn project_summary_lists_merge_plan() {
         let dir = tempfile::tempdir().unwrap();
         let paths = write_inputs(dir.path());
@@ -767,6 +834,7 @@ mod tests {
                 "unity": UnityOptions::default(),
                 "godot": GodotOptions::default(),
                 "unreal": UnrealOptions::default(),
+                "imageOnly": ImageOnlyOptions::default(),
             },
             "incremental": IncrementalOptions::default(),
         });
@@ -782,7 +850,7 @@ mod tests {
             serde_json::to_string_pretty(&actual).unwrap()
         );
         // Every exporter config round-trips through the tagged JSON shape.
-        for kind in ["genericJson", "unity", "godot", "unreal"] {
+        for kind in ["genericJson", "unity", "godot", "unreal", "imageOnly"] {
             let cfg: ExporterConfig = serde_json::from_value(
                 json!({ "kind": kind, "options": expected["exporters"][kind] }),
             )

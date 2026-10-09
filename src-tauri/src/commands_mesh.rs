@@ -8,7 +8,8 @@
 //!   (`{ report, channel, images: [{ width, height, png (base64) }] }`)
 //! * `mesh_pack(tabId, models, options, outputDir, baseName)` → job id;
 //!   `job://finished` results: one entry per model (`meta.kind = "model"`)
-//!   plus a final summary entry (`meta.kind = "summary"`).
+//!   plus a final summary entry (`meta.kind = "summary"`, with the
+//!   `outputDir` the user picked in the folder dialog).
 
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -185,6 +186,7 @@ pub fn job_results(output_dir: &str, report: &PackReport) -> Vec<JobFileResult> 
         error: None,
         meta: Some(serde_json::json!({
             "kind": "summary",
+            "outputDir": output_dir,
             "rewritten": report.count(ModelOutcome::Rewritten),
             "fallback": report.count(ModelOutcome::Fallback),
             "remapData": report.count(ModelOutcome::RemapData),
@@ -204,7 +206,7 @@ pub fn failed_results(output_dir: &str, error: OpError) -> Vec<JobFileResult> {
         input: output_dir.to_string(),
         output: None,
         error: Some(error),
-        meta: Some(serde_json::json!({ "kind": "summary" })),
+        meta: Some(serde_json::json!({ "kind": "summary", "outputDir": output_dir })),
     }]
 }
 
@@ -396,8 +398,13 @@ mod tests {
         assert_eq!(summary["rewritten"], 1);
         assert_eq!(summary["fallback"], 1);
         assert_eq!(summary["failed"], 1);
+        assert_eq!(summary["outputDir"], "out");
         assert_eq!(r[3].output.as_deref(), Some("out/atlas.report.json"));
         let f = failed_results("out", OpError::new("MESH_WORKER_CRASHED"));
         assert_eq!(f[0].error.as_ref().unwrap().code, "MESH_WORKER_CRASHED");
+        assert_eq!(
+            f[0].meta,
+            Some(serde_json::json!({ "kind": "summary", "outputDir": "out" }))
+        );
     }
 }

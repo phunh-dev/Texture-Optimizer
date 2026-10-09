@@ -1,5 +1,6 @@
 //! Smart atlas generation: packing, incremental project files and
-//! engine-specific exporters (generic JSON, Unity, Godot, Unreal Paper2D).
+//! engine-specific exporters (generic JSON, Unity, Godot, Unreal Paper2D,
+//! or the page image only).
 //!
 //! Flow used by the app:
 //! 1. optionally [`exporters::adapt_params`] to auto-disable features the
@@ -59,6 +60,10 @@ pub mod codes {
     pub const ATLAS_STALE_DELETE_FAILED: &str = "ATLAS_STALE_DELETE_FAILED";
     /// A sprite has zero width or height. Params: `name`.
     pub const ATLAS_SPRITE_EMPTY: &str = "ATLAS_SPRITE_EMPTY";
+    /// Warning from the workflow with the image-only exporter: an atlas
+    /// project exists at the target but is neither merged nor updated (and
+    /// none of its files is deleted). Params: `path` (project file).
+    pub const ATLAS_PROJECT_IGNORED: &str = "ATLAS_PROJECT_IGNORED";
 }
 
 /// One input image. `name` is the sprite name used by exporters (usually the

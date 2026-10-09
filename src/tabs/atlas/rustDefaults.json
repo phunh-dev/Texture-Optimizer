@@ -46,7 +46,8 @@
     "unreal": {
       "pivot": { "x": 0.5, "y": 0.5 },
       "fileExtension": "paper2dsprites"
-    }
+    },
+    "imageOnly": {}
   },
   "incremental": {
     "mode": "keepPositions",

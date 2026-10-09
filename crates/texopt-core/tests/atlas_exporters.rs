@@ -8,8 +8,9 @@ use texopt_core::ImageBuf;
 use texopt_core::atlas::codes::*;
 use texopt_core::atlas::exporters::unity::parse_meta;
 use texopt_core::atlas::exporters::{
-    GenericJsonOptions, GodotOptions, GodotVersion, JsonFormat, Paper2dExtension, UnityOptions,
-    UnityPivot, UnityVersion, UnrealOptions, adapt_params, files_to_read, page_file_name,
+    GenericJsonOptions, GodotOptions, GodotVersion, ImageOnlyOptions, JsonFormat, Paper2dExtension,
+    UnityOptions, UnityPivot, UnityVersion, UnrealOptions, adapt_params, files_to_read,
+    page_file_name,
 };
 use texopt_core::atlas::{
     AtlasParams, AtlasProject, AtlasResult, ExistingFiles, ExporterConfig, Frame, IncrementalMode,
@@ -1003,4 +1004,93 @@ fn export_rejects_bad_base_name_and_writes_valid_png() {
     let out = export(&sample(Value::Null), "sheet", &cfg, &ExistingFiles::new()).unwrap();
     let png = image::load_from_memory(&out.files[0].1).unwrap();
     assert_eq!((png.width(), png.height()), (64, 32));
+}
+
+// ------------------------------------------------------------ Image only
+
+fn image_only() -> ExporterConfig {
+    ExporterConfig::ImageOnly(ImageOnlyOptions::default())
+}
+
+#[test]
+fn image_only_writes_exactly_the_page_png() {
+    let state = json!({ "unity": { "keep": 1 } });
+    let out = export(
+        &sample(state.clone()),
+        "sheet",
+        &image_only(),
+        &ExistingFiles::new(),
+    )
+    .unwrap();
+    assert_eq!(paths(&out), ["sheet.png"]);
+    let png = image::load_from_memory(&out.files[0].1).unwrap();
+    assert_eq!((png.width(), png.height()), (64, 32));
+    assert!(out.warnings.is_empty());
+    // No metadata, so nothing to carry over or read back.
+    assert_eq!(out.exporter_state, state);
+    assert!(files_to_read("sheet", 1, &image_only()).is_empty());
+    assert!(files_to_read("sheet", 3, &image_only()).is_empty());
+    assert_eq!(image_only().id(), "imageOnly");
+}
+
+#[test]
+fn image_only_multi_page_names_every_page() {
+    let mut r = sample(Value::Null);
+    r.project.pages.push(PageInfo {
+        width: 32,
+        height: 32,
+    });
+    r.project.sprites[1].page = 1;
+    r.project.sprites[1].frame = Frame {
+        x: 0,
+        y: 0,
+        w: 16,
+        h: 24,
+    };
+    r.project.validate().unwrap();
+    r.pages.push(ImageBuf::new(32, 32));
+    let out = export(&r, "ui", &image_only(), &ExistingFiles::new()).unwrap();
+    assert_eq!(paths(&out), ["ui_0.png", "ui_1.png"]);
+    let sizes: Vec<(u32, u32)> = out
+        .files
+        .iter()
+        .map(|(_, b)| {
+            let img = image::load_from_memory(b).unwrap();
+            (img.width(), img.height())
+        })
+        .collect();
+    assert_eq!(sizes, [(64, 32), (32, 32)]);
+}
+
+#[test]
+fn image_only_cannot_carry_rotation() {
+    let cfg = image_only();
+    assert!(!cfg.supports_rotation());
+    assert!(cfg.supports_multipage() && cfg.supports_trim());
+    let err = export(&rotated_sample(), "s", &cfg, &ExistingFiles::new()).unwrap_err();
+    assert_eq!(err.code, ATLAS_EXPORTER_UNSUPPORTED);
+    assert_eq!(err.params["feature"], "rotation");
+    assert_eq!(err.params["exporter"], "imageOnly");
+
+    let params = AtlasParams {
+        allow_rotation: true,
+        ..AtlasParams::default()
+    };
+    let (p, warnings) = adapt_params(&params, &cfg);
+    assert!(!p.allow_rotation);
+    assert_eq!(warnings.len(), 1);
+    assert_eq!(warnings[0].code, ATLAS_FEATURE_DISABLED);
+    assert_eq!(warnings[0].params["feature"], "rotation");
+    assert_eq!(warnings[0].params["exporter"], "imageOnly");
+}
+
+#[test]
+fn image_only_json_shape() {
+    let cfg: ExporterConfig =
+        serde_json::from_value(json!({ "kind": "imageOnly", "options": {} })).unwrap();
+    assert_eq!(cfg, image_only());
+    assert_eq!(
+        serde_json::to_value(image_only()).unwrap(),
+        json!({ "kind": "imageOnly", "options": {} })
+    );
 }

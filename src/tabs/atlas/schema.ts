@@ -15,7 +15,7 @@ export const MAXRECTS_HEURISTICS = ['bestShortSideFit', 'bestLongSideFit', 'best
 export const SKYLINE_HEURISTICS = ['bottomLeft', 'minWaste'] as const
 export const SORT_BY = ['area', 'maxSide', 'height', 'width', 'name', 'none'] as const
 export const SIZE_MODES = ['shrinkToFit', 'fixed'] as const
-export const EXPORTERS = ['genericJson', 'unity', 'godot', 'unreal'] as const
+export const EXPORTERS = ['genericJson', 'unity', 'godot', 'unreal', 'imageOnly'] as const
 export const JSON_FORMATS = ['hash', 'array'] as const
 export const UNITY_VERSIONS = ['unity2021', 'unity2022', 'unity6'] as const
 export const UNITY_FILTERS = ['point', 'bilinear', 'trilinear'] as const
@@ -49,9 +49,20 @@ export function heuristicsFor(algorithm: Algorithm): readonly string[] {
   return algorithm === 'skyline' ? SKYLINE_HEURISTICS : MAXRECTS_HEURISTICS
 }
 
-/** Mirrors ExporterConfig::supports_rotation: Unity sprite rects and Godot regions cannot rotate. */
+/**
+ * Mirrors ExporterConfig::supports_rotation: Unity sprite rects and Godot
+ * regions cannot rotate, and without metadata (image only) nobody could tell.
+ */
 export function supportsRotation(kind: ExporterKind): boolean {
   return kind === 'genericJson' || kind === 'unreal'
+}
+
+/**
+ * Mirrors ExporterConfig::writes_metadata: false for 'imageOnly', which writes
+ * only the page PNG(s) (no project file, so no incremental update).
+ */
+export function writesMetadata(kind: ExporterKind): boolean {
+  return kind !== 'imageOnly'
 }
 
 const RESERVED = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/i
@@ -125,7 +136,8 @@ export const atlasSchema = z.object({
   'unreal.pivotX': z.number().default(0.5),
   'unreal.pivotY': z.number().default(0.5),
   'unreal.fileExtension': z.enum(PAPER2D_EXTENSIONS).default('paper2dsprites'),
-  // Output (own panel)
+  // Target atlas (own panel): folder + base name of the atlas to update. Empty
+  // folder = no target. Set by the target picker and after each export.
   outputDir: z.string().default(''),
   baseName: z
     .string()
@@ -196,6 +208,7 @@ export type ExporterConfigJson =
     }
   | { kind: 'godot'; options: { version: string; resPath: string; outputSubfolder: string; filterClip: boolean } }
   | { kind: 'unreal'; options: { pivot: PivotJson; fileExtension: string } }
+  | { kind: 'imageOnly'; options: Record<string, never> }
 
 export interface IncrementalOptionsJson {
   mode: IncrementalMode
@@ -247,6 +260,8 @@ export function exporterConfig(p: AtlasFormParams): ExporterConfigJson {
         kind: 'unreal',
         options: { pivot: { x: p['unreal.pivotX'], y: p['unreal.pivotY'] }, fileExtension: p['unreal.fileExtension'] },
       }
+    case 'imageOnly':
+      return { kind: 'imageOnly', options: {} }
     default:
       return {
         kind: 'genericJson',
@@ -291,9 +306,28 @@ export function buildAtlasRequest(params: Params): AtlasRequest {
   }
 }
 
-/** `<dir>/<base>.texatlas.json` (keeps the folder's own separator style). */
-export function projectFilePath(dir: string, base: string): string {
+/** `<dir>/<file>` (keeps the folder's own separator style). */
+export function joinPath(dir: string, file: string): string {
   const d = dir.trim()
   const sep = d.includes('\\') && !d.includes('/') ? '\\' : '/'
-  return `${d.replace(/[\\/]+$/, '')}${sep}${base}.texatlas.json`
+  return `${d.replace(/[\\/]+$/, '')}${sep}${file}`
+}
+
+/** `<dir>/<base>.texatlas.json` (keeps the folder's own separator style). */
+export function projectFilePath(dir: string, base: string): string {
+  return joinPath(dir, `${base}.texatlas.json`)
+}
+
+/** Folder and file name of a path (either separator; the folder keeps a root slash). */
+export function splitPath(path: string): { dir: string; file: string } {
+  const i = Math.max(path.lastIndexOf('/'), path.lastIndexOf('\\'))
+  if (i < 0) return { dir: '', file: path }
+  return { dir: i === 0 ? path.slice(0, 1) : path.slice(0, i), file: path.slice(i + 1) }
+}
+
+/** Main page file of the atlas `<dir>/<base>.png`, or '' when no target is set. */
+export function targetPagePath(params: Params): string {
+  const p = resolveParams(params)
+  const dir = p.outputDir.trim()
+  return dir && !baseNameProblem(p.baseName) ? joinPath(dir, `${p.baseName}.png`) : ''
 }

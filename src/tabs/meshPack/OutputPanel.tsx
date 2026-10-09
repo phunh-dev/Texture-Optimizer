@@ -1,17 +1,14 @@
-import { FolderOpenIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/misc'
-import { pickOutputFolder } from '@/lib/import'
 import { requireSession, useSession, type Params } from '@/stores/session'
 import { isJobActive, useTabJob } from '@/stores/jobs'
 
 import { isModelMeta, isSummaryMeta, type ModelOutcome } from './ipc'
 import { atlasFileName, isValidBaseName, resolveParams } from './schema'
 
-/** Output folder + base name of the atlas files. */
+/** Base name of the atlas files (the folder is asked for by Pack…). */
 export function MeshOutputPanel({ tabId }: { tabId: string }) {
   const { t } = useTranslation('mesh')
   const params = useSession(tabId, (s) => s.params)
@@ -20,32 +17,10 @@ export function MeshOutputPanel({ tabId }: { tabId: string }) {
   const set = (patch: Params, coalesce = false) => requireSession(tabId).getState().setParams(patch, { coalesce })
   const valid = isValidBaseName(p.baseName)
 
-  const chooseFolder = async () => {
-    const path = await pickOutputFolder()
-    if (path) set({ outputDir: path })
-  }
-
   return (
     <section className="space-y-3" data-testid="mesh-output">
       <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t('output.title')}</h2>
       <div className="space-y-4 rounded-lg border border-border bg-card/60 p-3">
-        <div className="space-y-1.5">
-          <Label htmlFor={id('folder')}>{t('output.folder')}</Label>
-          <div className="flex items-center gap-1.5">
-            <Input
-              id={id('folder')}
-              value={p.outputDir}
-              placeholder={t('output.noFolder')}
-              title={p.outputDir || undefined}
-              className="flex-1 truncate font-mono text-xs"
-              onChange={(e) => set({ outputDir: e.target.value }, true)}
-              onBlur={() => requireSession(tabId).getState().commitParams()}
-            />
-            <Button variant="outline" size="sm" onClick={() => void chooseFolder()} aria-label={t('output.chooseFolder')}>
-              <FolderOpenIcon />
-            </Button>
-          </div>
-        </div>
         <div className="space-y-1.5">
           <Label htmlFor={id('base')}>{t('output.baseName')}</Label>
           <Input
@@ -80,7 +55,9 @@ export function LastRunPanel({ tabId }: { tabId: string }) {
   if (!job || isJobActive(job) || job.status !== 'done' || job.results.length === 0) return null
   const counts = Object.fromEntries(OUTCOMES.map((o) => [o, 0])) as Record<ModelOutcome, number>
   for (const r of job.results) if (isModelMeta(r.meta)) counts[r.meta.outcome]++
-  const summary = job.results.map((r) => r.meta).find(isSummaryMeta)
+  const summaryEntry = job.results.find((r) => isSummaryMeta(r.meta))
+  const summary = isSummaryMeta(summaryEntry?.meta) ? summaryEntry.meta : undefined
+  const savedTo = summary?.outputDir ?? summaryEntry?.input
   return (
     <section className="space-y-2" data-testid="mesh-last-run">
       <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t('lastRun.title')}</h2>
@@ -92,6 +69,11 @@ export function LastRunPanel({ tabId }: { tabId: string }) {
         ))}
       </div>
       {summary?.files ? <p className="text-xs text-muted-foreground">{t('lastRun.files', { count: summary.files.length })}</p> : null}
+      {savedTo ? (
+        <p className="truncate text-xs text-muted-foreground" title={savedTo} data-testid="mesh-last-run-folder">
+          {t('lastRun.savedTo', { dir: savedTo })}
+        </p>
+      ) : null}
     </section>
   )
 }
