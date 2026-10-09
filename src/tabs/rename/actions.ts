@@ -54,7 +54,9 @@ async function runRevert(tabId: string, op: () => Promise<RevertOutcome>): Promi
     applyUpdates(tabId, out.updates)
     const count = out.log.entries.length
     toast.success(out.log.mode.kind === 'copyTo' ? t('rename:toast.copiesRemoved', { count }) : t('rename:toast.reverted', { count }), {
-      id: `rename-${tabId}`,
+      // Not the rename toast's id: clicking its "Revert" action dismisses it,
+      // and an update to a dismissing toast may never be shown.
+      id: `rename-revert-${tabId}`,
     })
     return true
   } catch (err) {

@@ -91,7 +91,9 @@
     "moreErrors_other": "…and {{count}} more errors",
     "progress": "{{done}} / {{total}}",
     "starting": "Starting…",
-    "busy": "Processing {{percent}}%"
+    "busy": "Processing {{percent}}%",
+    "finishedWithWarnings_one": "{{ok}} processed, {{count}} warning",
+    "finishedWithWarnings_other": "{{ok}} processed, {{count}} warnings"
   },
   "run": {
     "label": "Run",

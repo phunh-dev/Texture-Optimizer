@@ -1,9 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import ioRs from '../../crates/texopt-core/src/io.rs?raw'
+
 import { scanPaths } from '@/lib/ipc'
 import { resetSessions } from '@/stores/session'
 
-import { getTabImporter, importPaths, registerTabImporter, type TabImporter } from './import'
+import { getTabImporter, IMAGE_EXTENSIONS, importPaths, registerTabImporter, type TabImporter } from './import'
 
 vi.mock('@/lib/ipc', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/lib/ipc')>()),
@@ -44,5 +46,14 @@ describe('tab importers', () => {
     registerTabImporter('t3', b)
     offA()
     expect(getTabImporter('t3')).toBe(b)
+  })
+})
+
+describe('IMAGE_EXTENSIONS', () => {
+  it('matches the formats the Rust backend can decode', () => {
+    const rust = /SUPPORTED_EXTENSIONS: &\[&str\] = &\[([^\]]*)\]/.exec(ioRs)?.[1]
+    expect(rust).toBeDefined()
+    const list = [...rust!.matchAll(/"([a-z0-9]+)"/g)].map((m) => m[1])
+    expect([...IMAGE_EXTENSIONS]).toEqual(list)
   })
 })

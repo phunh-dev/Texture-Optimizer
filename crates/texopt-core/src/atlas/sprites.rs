@@ -9,7 +9,6 @@ use rayon::prelude::*;
 use super::packer::Rect;
 use super::params::{AtlasParams, SortBy};
 use super::{SpriteInput, codes};
-use crate::error::codes as core_codes;
 use crate::{ImageBuf, OpError, OpResult};
 
 /// A unique sprite ready for packing.
@@ -84,7 +83,7 @@ pub(crate) fn prepare(
             return Err(OpError::invalid_param("name", "empty"));
         }
         if s.image.width() == 0 || s.image.height() == 0 {
-            return Err(OpError::new(core_codes::IMG_EMPTY).with("name", s.name.clone()));
+            return Err(OpError::new(super::codes::ATLAS_SPRITE_EMPTY).with("name", s.name.clone()));
         }
         match pos.get(&s.name) {
             Some(&i) => {

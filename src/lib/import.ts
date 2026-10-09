@@ -11,7 +11,8 @@ import { useSettings } from '@/stores/settings'
 import { inTauri } from './env'
 import { translateError } from './errors'
 
-export const IMAGE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'tga', 'bmp', 'webp', 'gif', 'tif', 'tiff'] as const
+// Must match texopt_core::io::SUPPORTED_EXTENSIONS.
+export const IMAGE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'tga', 'bmp', 'webp'] as const
 
 export interface ImportOptions {
   recursive?: boolean

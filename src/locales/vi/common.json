@@ -91,7 +91,9 @@
     "moreErrors_other": "…và {{count}} lỗi khác",
     "progress": "{{done}} / {{total}}",
     "starting": "Đang khởi động…",
-    "busy": "Đang xử lý {{percent}}%"
+    "busy": "Đang xử lý {{percent}}%",
+    "finishedWithWarnings_one": "Đã xử lý {{ok}}, {{count}} cảnh báo",
+    "finishedWithWarnings_other": "Đã xử lý {{ok}}, {{count}} cảnh báo"
   },
   "run": {
     "label": "Chạy",

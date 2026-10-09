@@ -38,6 +38,19 @@ use crate::{ImageBuf, OpError, OpResult};
 /// The target exists and the conflict policy is `skip`. Params: `path`.
 pub const OUTPUT_EXISTS_SKIPPED: &str = "OUTPUT_EXISTS_SKIPPED";
 
+/// Warning: the output was written in another format than "keep" implied.
+/// Params: `path` (written file), `from`, `to` (extensions).
+pub const OUTPUT_FORMAT_CHANGED: &str = "OUTPUT_FORMAT_CHANGED";
+
+/// True when `keep` would write a JPEG for `input` but `img` has transparent
+/// pixels, which JPEG would flatten onto white (e.g. after background
+/// removal). An explicit `jpg` choice is respected and never reported here.
+pub fn keep_would_drop_alpha(input: &Path, settings: &OutputSettings, img: &ImageBuf) -> bool {
+    settings.format == OutputFormat::Keep
+        && matches!(crate::io::extension_of(input).as_str(), "jpg" | "jpeg")
+        && img.pixels().any(|p| p[3] < 255)
+}
+
 /// Highest `_N` suffix tried by `autoRename` before giving up.
 const MAX_AUTO_RENAME: u32 = 99_999;
 
@@ -245,7 +258,25 @@ impl OutputPlanner {
     /// Final output path for `input`, or `OUTPUT_EXISTS_SKIPPED` when the
     /// policy is `skip` and the target is taken.
     pub fn plan(&self, input: &Path) -> OpResult<PathBuf> {
-        let target = resolve_output_path(input, &self.settings)?;
+        self.plan_with(input, &self.settings)
+    }
+
+    /// Release `previous` (a path returned by [`plan`](Self::plan)) and plan
+    /// `input` again as if the format were `format`.
+    pub fn replan(&self, input: &Path, previous: &Path, format: OutputFormat) -> OpResult<PathBuf> {
+        self.reserved
+            .lock()
+            .unwrap_or_else(|e| e.into_inner())
+            .remove(previous);
+        let settings = OutputSettings {
+            format,
+            ..self.settings.clone()
+        };
+        self.plan_with(input, &settings)
+    }
+
+    fn plan_with(&self, input: &Path, settings: &OutputSettings) -> OpResult<PathBuf> {
+        let target = resolve_output_path(input, settings)?;
         let mut reserved = self.reserved.lock().unwrap_or_else(|e| e.into_inner());
         let taken = |p: &Path, reserved: &HashSet<PathBuf>| {
             reserved.contains(p) || (p.exists() && !same_file(p, input))

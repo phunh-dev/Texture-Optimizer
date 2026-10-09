@@ -205,7 +205,7 @@ export function CompareView({
             src={before}
             alt=""
             draggable={false}
-            className="absolute left-0 top-0 max-w-none"
+            className="absolute left-0 top-0 max-w-none [image-orientation:none]"
             style={beforeStyle}
             onLoad={(e) => {
               const size = { w: e.currentTarget.naturalWidth || 1, h: e.currentTarget.naturalHeight || 1 }
@@ -215,7 +215,7 @@ export function CompareView({
           />
         </div>
         <div className="pointer-events-none absolute inset-0" style={{ clipPath: `inset(0 0 0 ${split * 100}%)` }}>
-          <img src={after} alt="" draggable={false} className="absolute left-0 top-0 max-w-none" style={afterStyle} />
+          <img src={after} alt="" draggable={false} className="absolute left-0 top-0 max-w-none [image-orientation:none]" style={afterStyle} />
         </div>
 
         <span className="pointer-events-none absolute left-3 top-3 rounded-full bg-black/55 px-2 py-0.5 text-[11px] font-medium text-white backdrop-blur">

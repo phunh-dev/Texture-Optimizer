@@ -18,7 +18,9 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use texopt_core::error::codes;
 use texopt_core::ops::OpOutput;
-use texopt_core::output::{OutputPlanner, save_image, save_meta};
+use texopt_core::output::{
+    OUTPUT_FORMAT_CHANGED, OutputFormat, OutputPlanner, keep_would_drop_alpha, save_image, save_meta,
+};
 use texopt_core::{ImageBuf, OpError, OpResult};
 
 /// `cancel_job` was called with an unknown or already finished job. Params: `jobId`.
@@ -181,15 +183,41 @@ pub fn process_file(
     planner: &OutputPlanner,
     op: impl Fn(&ImageBuf) -> OpResult<OpOutput>,
 ) -> Result<FileOutput, OpError> {
-    let target = planner.plan(input)?;
+    let mut target = planner.plan(input)?;
     let img = texopt_core::io::load_image(input)?;
     let out = op(&img)?;
+    // "keep" on a JPEG would flatten new transparency onto white: write PNG.
+    let mut warning = None;
+    if keep_would_drop_alpha(input, planner.settings(), &out.image) {
+        target = planner.replan(input, &target, OutputFormat::Png)?;
+        warning = Some(
+            OpError::new(OUTPUT_FORMAT_CHANGED)
+                .with("path", target.display().to_string())
+                .with("from", texopt_core::io::extension_of(input))
+                .with("to", "png"),
+        );
+    }
     save_image(&out.image, &target, planner.settings())?;
     save_meta(&target, out.meta.as_ref(), planner.settings())?;
     Ok(FileOutput {
         output: Some(target),
-        meta: out.meta,
+        meta: with_output_warning(out.meta, warning),
     })
+}
+
+/// Attach an output warning to the op meta as `outputWarnings: [OpError]`
+/// (the sidecar written by `save_meta` keeps only the op's own meta).
+fn with_output_warning(meta: Option<Value>, warning: Option<OpError>) -> Option<Value> {
+    let Some(warning) = warning else { return meta };
+    let warning = serde_json::to_value(warning).unwrap_or(Value::Null);
+    match meta {
+        Some(Value::Object(mut map)) => {
+            map.insert("outputWarnings".into(), Value::Array(vec![warning]));
+            Some(Value::Object(map))
+        }
+        Some(other) => Some(serde_json::json!({ "op": other, "outputWarnings": [warning] })),
+        None => Some(serde_json::json!({ "outputWarnings": [warning] })),
+    }
 }
 
 /// Live jobs and their cancellation flags.
@@ -586,6 +614,60 @@ mod tests {
         fixtures::gradient(8, 8).save(&q).unwrap();
         let out = process_file(&q, &on, |img| texopt_core::ops::run(img, &resize)).unwrap();
         assert!(!meta_path(out.output.as_ref().unwrap()).exists());
+    }
+
+    #[test]
+    fn keep_format_switches_jpeg_to_png_when_the_result_has_transparency() {
+        use texopt_core::fixtures;
+        use texopt_core::output::{OUTPUT_FORMAT_CHANGED, OutputFormat, OutputSettings};
+
+        let dir = tempfile::tempdir().unwrap();
+        let jpg = dir.path().join("photo.jpg");
+        image::DynamicImage::ImageRgba8(fixtures::rect_on(
+            16,
+            16,
+            fixtures::WHITE,
+            4,
+            4,
+            8,
+            8,
+            fixtures::RED,
+        ))
+        .into_rgb8()
+        .save(&jpg)
+        .unwrap();
+        let bg: texopt_core::ops::OpRequest = serde_json::from_value(serde_json::json!({
+            "kind": "bgRemove", "params": { "mode": "white", "tolerance": 20 }
+        }))
+        .unwrap();
+
+        // keep + transparent result -> PNG with a warning, never a flattened JPEG.
+        let keep = OutputPlanner::new(OutputSettings::default()).unwrap();
+        let out = process_file(&jpg, &keep, |img| texopt_core::ops::run(img, &bg)).unwrap();
+        let written = out.output.unwrap();
+        assert_eq!(written, dir.path().join("photo_opt.png"));
+        assert!(!dir.path().join("photo_opt.jpg").exists());
+        let img = image::open(&written).unwrap().into_rgba8();
+        assert_eq!(img.get_pixel(0, 0)[3], 0, "background stays transparent");
+        let warnings = &out.meta.as_ref().unwrap()["outputWarnings"];
+        assert_eq!(warnings[0]["code"], OUTPUT_FORMAT_CHANGED);
+        assert_eq!(warnings[0]["params"]["to"], "png");
+
+        // keep + fully opaque result -> stays JPEG, no warning.
+        let resize: texopt_core::ops::OpRequest =
+            serde_json::from_value(serde_json::json!({ "kind": "resize", "params": {} })).unwrap();
+        let out = process_file(&jpg, &keep, |img| texopt_core::ops::run(img, &resize)).unwrap();
+        assert_eq!(out.output.unwrap().extension().unwrap(), "jpg");
+        assert!(out.meta.is_none());
+
+        // An explicit JPG choice is respected (alpha is flattened as documented).
+        let explicit = OutputPlanner::new(OutputSettings {
+            format: OutputFormat::Jpg,
+            ..OutputSettings::default()
+        })
+        .unwrap();
+        let out = process_file(&jpg, &explicit, |img| texopt_core::ops::run(img, &bg)).unwrap();
+        assert_eq!(out.output.unwrap().extension().unwrap(), "jpg");
     }
 
     #[test]

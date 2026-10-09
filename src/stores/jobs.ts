@@ -9,6 +9,7 @@ import { inTauri } from '@/lib/env'
 import { translateError } from '@/lib/errors'
 import { cancelJob } from '@/lib/ipc'
 import {
+  type AppError,
   JOB_FINISHED_EVENT,
   JOB_PROGRESS_EVENT,
   type JobFileResult,
@@ -42,6 +43,13 @@ interface JobsStore {
 export const isJobActive = (job: JobState | undefined): boolean =>
   !!job && (job.status === 'starting' || job.status === 'running')
 
+/** Non-fatal output warnings the backend attaches to a file's meta (`outputWarnings`). */
+function outputWarnings(meta: unknown): AppError[] {
+  if (!meta || typeof meta !== 'object') return []
+  const list = (meta as { outputWarnings?: unknown }).outputWarnings
+  return Array.isArray(list) ? (list as AppError[]) : []
+}
+
 function summarize(e: JobFinishedEvent): void {
   const t = i18n.t
   if (e.cancelled) {
@@ -50,6 +58,15 @@ function summarize(e: JobFinishedEvent): void {
   }
   const failed = e.results.filter((r) => r.error)
   const ok = e.results.length - failed.length
+  const warnings = e.results.flatMap((r) => outputWarnings(r.meta).map((w) => ({ input: r.input, w })))
+  if (failed.length === 0 && warnings.length > 0) {
+    const details = warnings
+      .slice(0, 3)
+      .map(({ input, w }) => `${input.split(/[\\/]/).pop()}: ${translateError(w)}`)
+      .join('\n')
+    toast.warning(t('common:jobs.finishedWithWarnings', { ok, count: warnings.length }), { description: details })
+    return
+  }
   if (failed.length === 0) {
     toast.success(t('common:jobs.finished', { count: ok }))
     return

@@ -57,6 +57,8 @@ pub mod codes {
     /// Warning from the incremental workflow: a stale file of the previous
     /// export could not be deleted. Params: `path`, `detail`.
     pub const ATLAS_STALE_DELETE_FAILED: &str = "ATLAS_STALE_DELETE_FAILED";
+    /// A sprite has zero width or height. Params: `name`.
+    pub const ATLAS_SPRITE_EMPTY: &str = "ATLAS_SPRITE_EMPTY";
 }
 
 /// One input image. `name` is the sprite name used by exporters (usually the
@@ -198,7 +200,7 @@ pub fn layout_sizes(sizes: &[(u32, u32)], params: &AtlasParams) -> OpResult<Vec<
     let mut prepared: Vec<sprites::Prepared> = Vec::with_capacity(sizes.len());
     for (i, &(w, h)) in sizes.iter().enumerate() {
         if w == 0 || h == 0 {
-            return Err(OpError::new(crate::error::codes::IMG_EMPTY).with("name", i.to_string()));
+            return Err(OpError::new(codes::ATLAS_SPRITE_EMPTY).with("name", i.to_string()));
         }
         prepared.push(sprites::Prepared {
             name: i.to_string(),

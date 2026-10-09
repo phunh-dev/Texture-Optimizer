@@ -1,9 +1,12 @@
+import { toast } from 'sonner'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { cancelJob } from '@/lib/ipc'
 import type { JobFinishedEvent } from '@/lib/ipc/types'
 
 import { setJobFinishHandler, useJobs } from './jobs'
+
+vi.mock('sonner', () => ({ toast: Object.assign(vi.fn(), { success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() }) }))
 
 vi.mock('@/lib/ipc', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/lib/ipc')>()),
@@ -79,5 +82,22 @@ describe('jobs store', () => {
     await useJobs.getState().start('tab-a', 2, () => Promise.resolve('job-2'))
     useJobs.getState().handleFinished(finished('job-2', 'tab-a'))
     expect(handler).toHaveBeenCalledTimes(1)
+  })
+
+  it('reports output warnings (e.g. JPEG saved as PNG) in a warning toast', async () => {
+    vi.mocked(toast.warning).mockClear()
+    vi.mocked(toast.success).mockClear()
+    await useJobs.getState().start('tab-w', 2, () => Promise.resolve('job-w'))
+    const e = finished('job-w', 'tab-w')
+    e.results[1].meta = {
+      removedPixels: 3,
+      outputWarnings: [{ code: 'OUTPUT_FORMAT_CHANGED', params: { path: 'C:/1_opt.png', from: 'jpg', to: 'png' } }],
+    }
+    useJobs.getState().handleFinished(e)
+    expect(toast.success).not.toHaveBeenCalled()
+    expect(toast.warning).toHaveBeenCalledTimes(1)
+    const [title, opts] = vi.mocked(toast.warning).mock.calls[0]
+    expect(title).toBe('2 processed, 1 warning')
+    expect((opts as { description: string }).description).toContain('1.png: Saved as PNG')
   })
 })
