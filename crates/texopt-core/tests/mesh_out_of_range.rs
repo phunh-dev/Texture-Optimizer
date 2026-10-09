@@ -277,7 +277,7 @@ fn bake_repeat_tile_counts_and_limit() {
     );
     let err = mesh::analyze_materials(&l.model, OutOfRangePolicy::BakeRepeat { max_tiles: 1 })
         .unwrap_err();
-    assert_eq!(err.code, codes::MESH_UV_OUT_OF_RANGE);
+    assert_eq!(err.code, codes::MESH_UV_TOO_MANY_TILES);
     assert_eq!(err.params["material"], "MatA");
     assert_eq!(err.params["tilesU"], 2);
 }

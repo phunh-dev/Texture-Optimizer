@@ -305,4 +305,10 @@ fn export_validation_errors() {
     };
     let err = mesh::export(&loaded, &bad, &options, &dir.join("y.obj")).unwrap_err();
     assert_eq!(err.code, mesh::codes::MESH_NO_UVS);
+    assert_eq!(err.params["uvChannel"], 3);
+    assert!(
+        err.params["material"]
+            .as_str()
+            .is_some_and(|m| m.starts_with("Mat"))
+    );
 }

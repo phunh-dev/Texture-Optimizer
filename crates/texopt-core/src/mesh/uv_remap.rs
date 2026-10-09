@@ -286,7 +286,7 @@ pub fn plan_material(report: &UvRangeReport, policy: OutOfRangePolicy) -> OpResu
         OutOfRangePolicy::BakeRepeat { max_tiles } => {
             let (origin, tiles) = repeat_tiles(report);
             if tiles[0] > max_tiles || tiles[1] > max_tiles {
-                return Err(OpError::new(codes::MESH_UV_OUT_OF_RANGE)
+                return Err(OpError::new(codes::MESH_UV_TOO_MANY_TILES)
                     .with("tilesU", tiles[0])
                     .with("tilesV", tiles[1])
                     .with("maxTiles", max_tiles));
@@ -719,7 +719,7 @@ mod tests {
         assert!(close(remap.apply([1.5, 1.0]), [0.5, 0.5]));
 
         let err = plan_material(&r, OutOfRangePolicy::BakeRepeat { max_tiles: 2 }).unwrap_err();
-        assert_eq!(err.code, codes::MESH_UV_OUT_OF_RANGE);
+        assert_eq!(err.code, codes::MESH_UV_TOO_MANY_TILES);
         assert_eq!(err.params["tilesU"], 3);
         assert_eq!(err.params["maxTiles"], 2);
     }

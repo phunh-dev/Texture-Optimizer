@@ -50,11 +50,15 @@ pub mod codes {
     pub const MESH_EXPORT_FAILED: &str = "MESH_EXPORT_FAILED";
     /// Extension/format not supported. Params: `path` or `format`.
     pub const MESH_FORMAT_UNSUPPORTED: &str = "MESH_FORMAT_UNSUPPORTED";
-    /// A mesh lacks the UV channel a remap needs. Params: `mesh`, `uvChannel`.
+    /// A material's meshes lack the UV channel its textures use. Params:
+    /// `material`, `uvChannel` (+ `mesh` when raised by `export`).
     pub const MESH_NO_UVS: &str = "MESH_NO_UVS";
-    /// UVs outside [0,1] (warning when skipping; error when bakeRepeat needs
-    /// too many tiles). Params: `material` and/or `tilesU`, `tilesV`, `maxTiles`.
+    /// Warning: UVs outside [0,1], material left out of the atlas
+    /// (skipMaterial policy). Params: `material`, `min`, `max` ([u, v] arrays).
     pub const MESH_UV_OUT_OF_RANGE: &str = "MESH_UV_OUT_OF_RANGE";
+    /// bakeRepeat needs more tiles than allowed. Params: `material`, `tilesU`,
+    /// `tilesV`, `maxTiles`.
+    pub const MESH_UV_TOO_MANY_TILES: &str = "MESH_UV_TOO_MANY_TILES";
     /// Warning for wrapIntoTile: faces cross tile borders. Params: `mesh`,
     /// `faces`, `vertices`.
     pub const MESH_UV_WRAP_STRADDLE: &str = "MESH_UV_WRAP_STRADDLE";
@@ -219,10 +223,10 @@ pub struct MaterialAnalysis {
 }
 
 /// Analyse every textured material that is used by at least one mesh.
-/// Out-of-range materials skipped by the policy, and materials whose meshes
-/// lack the UV channel, are reported as warnings (`MESH_UV_OUT_OF_RANGE`,
-/// `MESH_NO_UVS`) and get `MaterialPlan::Skip`. A `bakeRepeat` overflow is a
-/// hard error.
+/// Out-of-range materials skipped by the policy get `MaterialPlan::Skip` and a
+/// `MESH_UV_OUT_OF_RANGE` warning; materials whose meshes lack the UV channel
+/// are left out of the result with a `MESH_NO_UVS` warning. A `bakeRepeat`
+/// overflow is a hard error (`MESH_UV_TOO_MANY_TILES`).
 pub fn analyze_materials(
     model: &Model,
     policy: OutOfRangePolicy,
@@ -288,8 +292,13 @@ pub fn remap_model_uvs(model: &Model, remaps: &ModelRemaps) -> OpResult<(MeshUvs
             .get(r.uv_channel as usize)
             .filter(|c| !c.is_empty() || mesh.vertex_count == 0)
             .ok_or_else(|| {
+                let material = model
+                    .materials
+                    .get(mesh.material_index)
+                    .map(|m| m.name.clone());
                 OpError::new(codes::MESH_NO_UVS)
                     .with("mesh", mesh.name.clone())
+                    .with("material", material.unwrap_or_default())
                     .with("uvChannel", r.uv_channel)
             })?;
         let res = r.remap.apply_mesh(uvs, &mesh.faces);
