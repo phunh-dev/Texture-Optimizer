@@ -18,6 +18,7 @@ walkdir = "2"
 dunce = "1"
 tempfile = "3"
 oxipng = { version = "10", default-features = false, features = ["parallel"] }
+uuid = { version = "1", features = ["v4"] }
 
 [dev-dependencies]
 proptest.workspace = true

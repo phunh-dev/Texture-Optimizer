@@ -23,5 +23,13 @@
   "RENAME_SOURCE_MISSING": "Không tìm thấy tệp: {{path}}",
   "RENAME_TARGET_EXISTS": "Đã có tệp tại {{path}}; không có thay đổi nào được thực hiện",
   "RENAME_IO_FAILED": "Không thể đổi tên {{from}} thành {{to}}: {{detail}}. Mọi thay đổi đã được hoàn tác",
-  "RENAME_ROLLBACK_FAILED": "Đổi tên thất bại và không thể khôi phục một số tệp: {{paths}}"
+  "RENAME_ROLLBACK_FAILED": "Đổi tên thất bại và không thể khôi phục một số tệp: {{paths}}",
+  "ATLAS_DOES_NOT_FIT": "Sprite \"{{name}}\" ({{width}}×{{height}}) không vừa atlas tối đa {{maxWidth}}×{{maxHeight}}",
+  "ATLAS_EMPTY": "Atlas chưa có sprite nào",
+  "ATLAS_EXPORTER_UNSUPPORTED": "Exporter {{exporter}} không hỗ trợ {{feature}}",
+  "ATLAS_PROJECT_INVALID": "File project atlas không hợp lệ ({{reason}})",
+  "ATLAS_DUPLICATE_NAME": "Trùng tên sprite \"{{name}}\": đã dùng ảnh sau cùng",
+  "ATLAS_LAYOUT_RESET": "Không giữ được bố cục cũ ({{reason}}); atlas đã được xếp lại",
+  "ATLAS_FEATURE_DISABLED": "Đã tắt {{feature}} vì {{exporter}} không hỗ trợ",
+  "ATLAS_META_UNREADABLE": "Không đọc được GUID từ {{path}}; đã tạo GUID mới"
 }

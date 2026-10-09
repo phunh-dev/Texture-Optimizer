@@ -23,5 +23,13 @@
   "RENAME_SOURCE_MISSING": "File not found: {{path}}",
   "RENAME_TARGET_EXISTS": "A file already exists at {{path}}; nothing was changed",
   "RENAME_IO_FAILED": "Could not rename {{from}} to {{to}}: {{detail}}. All changes were rolled back",
-  "RENAME_ROLLBACK_FAILED": "Renaming failed and some files could not be restored: {{paths}}"
+  "RENAME_ROLLBACK_FAILED": "Renaming failed and some files could not be restored: {{paths}}",
+  "ATLAS_DOES_NOT_FIT": "Sprite \"{{name}}\" ({{width}}×{{height}}) does not fit in an atlas of at most {{maxWidth}}×{{maxHeight}}",
+  "ATLAS_EMPTY": "The atlas has no sprites",
+  "ATLAS_EXPORTER_UNSUPPORTED": "The {{exporter}} exporter does not support {{feature}}",
+  "ATLAS_PROJECT_INVALID": "Atlas project file is invalid ({{reason}})",
+  "ATLAS_DUPLICATE_NAME": "Duplicate sprite name \"{{name}}\": the last image was used",
+  "ATLAS_LAYOUT_RESET": "Previous layout could not be kept ({{reason}}); atlas was repacked",
+  "ATLAS_FEATURE_DISABLED": "{{feature}} was turned off because {{exporter}} does not support it",
+  "ATLAS_META_UNREADABLE": "Could not read the GUID from {{path}}; a new one was generated"
 }
